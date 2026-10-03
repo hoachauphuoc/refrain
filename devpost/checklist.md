@@ -11,7 +11,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
 
 ## Slices
 
-- [ ] **1. Your survey becomes a real AI roadmap**
+- [x] **1. Your survey becomes a real AI roadmap**
   Becomes usable: Open Refrain locally, read the Welcome screen and its data notice, answer the four survey questions, and get a roadmap of 4–6 stages (minutes and sessions per day) with a reason Gemini wrote from your answers. It is still there after a reload, and **Reset everything** brings Welcome back.
   Why now: It proves the riskiest piece first — the app's own Gemini 3.8 Flash calls through Vertex AI with no API key (a direct REST call on the new project already worked) — and bootstraps the server, page shell, palette, and saved progress inside the first behavior you can use. Every later slice lands on this Home screen.
   PRD ref: `prd.md > The Core Journey` (steps 1–3), `prd.md > Survey and Roadmap`, `prd.md > Screens and Layout` (Welcome, Survey, Home), `prd.md > Progress on This Device`

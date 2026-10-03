@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Refrain — a coach for focus and memory</title>
+  <meta name="description" content="Refrain trains your focus and your memory in one study loop, built from your own words.">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <script type="module" src="/static/js/main.js"></script>
+</head>
+<body>
+  <main class="column">
+
+    <section id="screen-welcome" class="screen" hidden aria-labelledby="welcome-title">
+      <p class="eyebrow">A coach for focus and memory</p>
+      <h1 id="welcome-title" tabindex="-1">Refrain</h1>
+      <p class="promise">Train your focus and your memory in the same study session, with a coach that works from your own words.</p>
+      <ol class="how">
+        <li><strong>Focus</strong> for one session, and tap once whenever your attention slips.</li>
+        <li><strong>Teach back</strong> the core idea, then <strong>recall</strong> it from memory next time.</li>
+      </ol>
+      <p class="notice">Your answers and notes are sent to Google's Gemini AI on Google Cloud only to write your coaching — Google doesn't use them to train its models. Your progress stays in this browser.</p>
+      <button type="button" class="primary" id="welcome-start">Start</button>
+    </section>
+
+    <section id="screen-survey" class="screen" hidden aria-labelledby="survey-title">
+      <p class="eyebrow">Your starting point</p>
+      <h2 id="survey-title" tabindex="-1">Four questions for your roadmap</h2>
+      <p class="muted">Your coach uses them to decide where your training starts.</p>
+      <form id="survey-form" class="card" novalidate>
+        <fieldset id="survey-fields">
+          <div class="field">
+            <label for="survey-age">Your age</label>
+            <input id="survey-age" name="age" type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-describedby="survey-age-msg">
+            <p class="field-msg" id="survey-age-msg" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="survey-goal">Your training goal</label>
+            <input id="survey-goal" name="goal" type="text" autocomplete="off" maxlength="200" aria-describedby="survey-goal-examples survey-goal-msg">
+            <div class="chips" id="survey-goal-examples" role="group" aria-label="Example goals">
+              <button type="button" class="chip" data-goal="Study for a certification after work">Study for a certification after work</button>
+              <button type="button" class="chip" data-goal="Revise for exams">Revise for exams</button>
+              <button type="button" class="chip" data-goal="Remember more of what I read">Remember more of what I read</button>
+            </div>
+            <p class="field-msg" id="survey-goal-msg" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="survey-daily">Minutes you can give each day</label>
+            <input id="survey-daily" name="minutesPerDay" type="text" inputmode="numeric" autocomplete="off" maxlength="4" aria-describedby="survey-daily-msg">
+            <p class="field-msg" id="survey-daily-msg" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="survey-max">Maximum minutes per session</label>
+            <input id="survey-max" name="maxMinutes" type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-describedby="survey-max-msg">
+            <p class="field-msg" id="survey-max-msg" aria-live="polite"></p>
+          </div>
+        </fieldset>
+        <p class="status" id="survey-status" role="status"></p>
+        <button type="submit" class="primary" id="survey-submit" disabled>Build my roadmap</button>
+      </form>
+    </section>
+
+    <section id="screen-home" class="screen" hidden aria-labelledby="home-goal">
+      <p class="eyebrow">Your roadmap</p>
+      <h2 id="home-goal" tabindex="-1"></h2>
+      <ol class="stages" id="home-stages" aria-label="Roadmap stages"></ol>
+      <p class="reason" id="home-reason"></p>
+      <p class="tags" id="home-tags"></p>
+
+      <div class="rule-card" id="home-rule">
+        <p class="rule-label" id="home-rule-label">Your rule</p>
+        <p class="rule-text" id="home-rule-text"></p>
+      </div>
+
+      <section class="history" aria-labelledby="home-history-title">
+        <h3 id="home-history-title">Sessions</h3>
+        <p class="muted" id="home-history-empty">Your first session is ready.</p>
+        <ol class="history-list" id="home-history"></ol>
+      </section>
+
+      <div class="reset">
+        <button type="button" class="link" id="home-reset">Reset everything</button>
+        <div class="confirm card" id="home-reset-confirm" hidden>
+          <p id="home-reset-question">Erase all progress on this device?</p>
+          <div class="actions">
+            <button type="button" class="secondary" id="home-reset-erase">Erase</button>
+            <button type="button" class="primary" id="home-reset-cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <noscript><p class="column">Refrain needs JavaScript to run.</p></noscript>
+</body>
+</html>
