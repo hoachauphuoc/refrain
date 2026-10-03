@@ -1,6 +1,7 @@
 """Gemini 3.8 Flash on Vertex AI, one log line per call, and the simulated coach."""
 import json
 import logging
+import re
 import threading
 import time
 
@@ -164,6 +165,15 @@ class FakeGemini:
             else:
                 answer["rule"] = "If my attention slips, then I'll tap, name it, and come back."
         return answer
+
+    @staticmethod
+    def _check(schema, data):
+        verdicts = []
+        for item in data.get("items", []):
+            saved = set(re.findall(r"[^\W\d_]{4,}", item["saved_answer"].lower()))
+            theirs = set(re.findall(r"[^\W\d_]{4,}", item["their_answer"].lower()))
+            verdicts.append("got" if saved & theirs else "partly")
+        return {"verdicts": verdicts}
 
 
 def _user_data(prompt):

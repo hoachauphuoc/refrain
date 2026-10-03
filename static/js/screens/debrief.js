@@ -122,6 +122,7 @@ function historyRow(pending, progression) {
     secondsDone: pending.secondsDone,
     outcome: pending.outcome,
     taps: pending.taps.length,
+    recall: pending.recall ?? null,
     change: progression.change,
     stageAfter: progression.newStageIndex,
   };

@@ -35,6 +35,19 @@ def roadmap():
     })
 
 
+@bp.post("/check")
+def check():
+    warmup, fields = schemas.parse_check(request.get_json(silent=True))
+    if fields:
+        return _error(400, "invalid_input", fields=fields)
+    gemini = _gemini()
+    try:
+        verdicts = coach.check_warmup(gemini, warmup)
+    except coach.CoachUnavailable:
+        return _error(503, "coach_unavailable")
+    return jsonify({"results": [{"verdict": v} for v in verdicts], "simulated": gemini.simulated})
+
+
 @bp.post("/debrief")
 def debrief():
     session, fields = schemas.parse_debrief(request.get_json(silent=True))

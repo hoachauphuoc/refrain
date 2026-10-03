@@ -157,3 +157,42 @@ def debrief_answer_schema(with_explanation, with_pattern, with_rule):
         properties["rule"] = {"type": "string", "description": "One sentence: If ..., then I'll ..."}
         required.append("rule")
     return {"type": "object", "properties": properties, "required": required}
+
+
+# --- Warm-up check ---
+
+VERDICTS = ("got", "partly", "missed")
+
+
+class CheckItem(BaseModel):
+    question: _text(300, min_length=1)
+    answer: _text(300, min_length=1)
+    response: _text(600) = ""
+
+
+class Check(BaseModel):
+    topic: _text(120, min_length=1)
+    items: Annotated[list[CheckItem], Field(min_length=1, max_length=2)]
+
+
+def parse_check(data):
+    try:
+        return Check.model_validate(data), None
+    except ValidationError as error:
+        return None, _field_errors(error, {})
+
+
+def check_answer_schema(count):
+    """One verdict per answered item, in order."""
+    return {
+        "type": "object",
+        "properties": {
+            "verdicts": {
+                "type": "array",
+                "minItems": count,
+                "maxItems": count,
+                "items": {"type": "string", "enum": list(VERDICTS)},
+            },
+        },
+        "required": ["verdicts"],
+    }

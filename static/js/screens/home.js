@@ -62,7 +62,9 @@ function renderHistory(history) {
 }
 
 function renderStart() {
-  $("#home-start-btn").disabled = $("#home-topic").value.trim() === "";
+  const button = $("#home-start-btn");
+  button.disabled = $("#home-topic").value.trim() === "";
+  button.textContent = store.state.warmup ? "Start with warm-up" : "Start session";
 }
 
 function render() {
@@ -90,9 +92,11 @@ function startSession() {
   const topic = $("#home-topic").value.trim();
   if (!topic) return;
   unlockSound(); // this click is what lets the browser play the end chime
-  const { roadmap, stageIndex, settings } = store.state;
+  const { roadmap, stageIndex, settings, warmup } = store.state;
   const demo = Boolean(settings.demoLength);
-  nav.go("focus", { topic, plannedMinutes: demo ? 1 : roadmap.stages[stageIndex].minutes, demo });
+  const session = { topic, plannedMinutes: demo ? 1 : roadmap.stages[stageIndex].minutes, demo };
+  // Questions saved by the last debrief come first; otherwise the session starts directly.
+  nav.go(warmup ? "warmup" : "focus", session);
 }
 
 let nav;

@@ -5,10 +5,11 @@ import { store } from "./store.js";
 import * as welcome from "./screens/welcome.js";
 import * as survey from "./screens/survey.js";
 import * as home from "./screens/home.js";
+import * as warmup from "./screens/warmup.js";
 import * as focus from "./screens/focus.js";
 import * as debrief from "./screens/debrief.js";
 
-const screens = { welcome, survey, home, focus, debrief };
+const screens = { welcome, survey, home, warmup, focus, debrief };
 
 const nav = {
   go(name, data) {

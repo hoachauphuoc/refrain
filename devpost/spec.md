@@ -258,7 +258,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **What it does:**
   - Shows the two saved questions with answer boxes and **Check**.
   - After the check, each question shows got it (amber) / partly / missed (muted) and its saved one-line answer.
-  - **Start focusing** clears `warmup` and opens Focus.
+  - **Start focusing** clears `warmup` and opens Focus, carrying the got / partly / missed counts into the session so its history row keeps them as `recall` (browser only; the server stays stateless).
   - If the check fails: the calm message with **Try again**. **Start focusing** still works, so a coach outage never blocks studying.
 - **Talks to:** `POST /api/check`, `store.js`, `focus.js`.
 - PRD ref: `prd.md > Warm-up Recall`.
@@ -508,7 +508,7 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
   "pending": null,
   "history": [
     { "endedAt": "2026-10-05T12:19:00Z", "topic": "Managing risks", "plannedMinutes": 1, "demo": true,
-      "secondsDone": 60, "outcome": "completed", "taps": 2, "change": "up", "stageAfter": 1 }
+      "secondsDone": 60, "outcome": "completed", "taps": 2, "recall": null, "change": "up", "stageAfter": 1 }
   ],
   "settings": { "demoLength": true }
 }
@@ -518,6 +518,7 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
 ```json
 { "endedAt": "…", "topic": "…", "plannedMinutes": 10, "demo": false, "secondsDone": 372,
   "outcome": "pulled_away", "taps": [ { "atSec": 95, "note": "Slack" }, { "atSec": 240, "note": "" } ],
+  "recall": { "got": 1, "partly": 1, "missed": 0 },
   "resumeNote": { "where": "…", "next": "…" }, "explanation": "…", "submitted": true,
   "stageIndexBefore": 1, "stages": [10, 15, 20, 25, 30], "progressionApplied": false, "progression": null }
 ```
@@ -530,7 +531,7 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
 | Waiting questions | `warmup` | Set by a debrief with an explanation; cleared at **Start focusing** | Kept until **Start focusing** |
 | "Pick up" note | `resume` | Replaced or cleared at every session end | Kept until the next session ends |
 | Finished session awaiting debrief | `pending` | Written at session end; explanation and `submitted` set at **Get feedback** or **Skip**; cleared when coaching arrives or at **Back to roadmap** | Reopens Teach-back (not sent yet) or the debrief retry state (sent) |
-| Session history | `history` | One row when the progression is applied | Kept |
+| Session history | `history` | One row when the progression is applied; `recall` holds the warm-up's got / partly / missed counts when the session opened with a checked warm-up, otherwise `null` | Kept |
 | Demo switch | `settings.demoLength` | When toggled | Kept |
 | Running session (timer, taps) | Memory only | During Focus | Discarded, as the PRD requires; the roadmap is unchanged |
 | Everything | — | **Reset everything** deletes the key | Welcome |

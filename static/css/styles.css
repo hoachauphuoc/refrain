@@ -536,6 +536,28 @@ body[data-screen="focus"] :focus-visible { outline-color: var(--night-ink); }
 .questions { margin: 0 0 var(--s1); padding-left: 1.3em; }
 .questions li { margin-bottom: 6px; }
 
+/* Warm-up: got it is an "aha" (amber); partly and missed stay neutral */
+.warmup-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.warmup-item { margin-bottom: var(--s3); }
+.warmup-item label { margin-bottom: 8px; }
+textarea[readonly] { background: var(--paper); }
+.verdict-line { margin: 10px 0 0; }
+.verdict {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 2px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 999px;
+}
+.verdict.got { color: var(--amber-ink); background: var(--amber-soft); }
+.verdict.partly { color: var(--ink); background: var(--line); }
+.verdict.missed { color: var(--muted); border: 1px solid var(--line); }
+
 @media (prefers-reduced-motion: reduce) {
   .track, .track::after { transition: none; }
 }

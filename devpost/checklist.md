@@ -31,7 +31,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: With **Demo length** on, run one session on something you studied today: tap **Distracted** twice with your own notes, let the minute end, write two sentences, and read the debrief. Does the rule sound like it was written for you, and is *What's missing* fair? Once, leave the tab in the background for the whole minute and check that the chime still plays on time.
   Commit: `Add focus session, teach-back, and AI debrief`
 
-- [ ] **3. The next session opens by asking what you remember**
+- [x] **3. The next session opens by asking what you remember**
   Becomes usable: After a debrief with an explanation, Home offers **Start with warm-up**. You answer the two saved questions from memory and press **Check**; each shows got it, partly, or missed with its one-line answer, and **Start focusing** clears them and opens the focus screen. After a skipped teach-back, the next session starts directly.
   Why now: It closes the memory half of the kernel — the recall that makes the teach-back worth doing — using the questions slice 2 already saves.
   PRD ref: `prd.md > The Core Journey` (steps 5 and 10), `prd.md > Warm-up Recall`, `prd.md > Screens and Layout` (Warm-up)
@@ -89,3 +89,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Debrief prompt now asks for a replacement action in the then-part — Tavily found that "if …, then not …" plans can strengthen the habit they target while replacement plans break it (Adriaanse et al. 2011); `spec.md > Coach: debrief writer` updated.
 - `progress()` takes the stage list instead of the stage count — the next session's minutes come from the list; `spec.md > Fixed rules` updated.
 - Debrief API tests live in `tests/test_api.py` as the file structure says; no new test file.
+- Warm-up results are kept: **Start focusing** carries the got / partly / missed counts into the session, and its history row stores them as `recall` (`spec.md > Data Model`, `spec.md > Warm-up screen`), so a later slice can show recall on Home. Measured with real Gemini on Oct 3, 2026: the first check after the server starts took 12.4 s (10.4 s inside Gemini, 168 thinking tokens), later checks 3.0–3.5 s, about $0.0009 each.

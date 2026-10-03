@@ -75,6 +75,7 @@ function endSession(outcome, resumeNote = null) {
       secondsDone,
       outcome,
       taps: finished.taps,
+      recall: finished.recall,
       resumeNote: wroteNote ? resumeNote : null,
       explanation: null,
       submitted: false,
@@ -104,10 +105,11 @@ export function init(navigation) {
   $("#focus-note-skip").addEventListener("click", backToButton);
 }
 
-// enter({ topic, plannedMinutes, demo }) starts the countdown at once.
-export function enter({ topic, plannedMinutes, demo }) {
+// enter({ topic, plannedMinutes, demo, recall }) starts the countdown at once.
+// `recall` is the warm-up's { got, partly, missed } when the session opened with one.
+export function enter({ topic, plannedMinutes, demo, recall = null }) {
   const now = Date.now();
-  session = { topic, plannedMinutes, demo, startedAt: now, endAt: now + plannedMinutes * 60_000, taps: [] };
+  session = { topic, plannedMinutes, demo, recall, startedAt: now, endAt: now + plannedMinutes * 60_000, taps: [] };
 
   $("#focus-topic").textContent = topic;
   const { rule } = store.state;

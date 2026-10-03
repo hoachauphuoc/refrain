@@ -105,6 +105,21 @@
       </div>
     </section>
 
+    <section id="screen-warmup" class="screen" hidden aria-labelledby="warmup-title">
+      <p class="eyebrow">Warm-up</p>
+      <h2 id="warmup-title" tabindex="-1">What do you remember?</h2>
+      <p class="muted" id="warmup-from"></p>
+      <form class="card" id="warmup-form" novalidate>
+        <ol class="warmup-list" id="warmup-items"></ol>
+        <p class="tags" id="warmup-tags"></p>
+        <p class="status" id="warmup-status" role="status"></p>
+        <div class="actions left">
+          <button type="submit" class="primary" id="warmup-check">Check</button>
+          <button type="button" class="primary" id="warmup-start" hidden>Start focusing</button>
+        </div>
+      </form>
+    </section>
+
     <section id="screen-focus" class="screen" hidden aria-label="Focus session">
       <h2 class="sr-only" tabindex="-1">Focus session</h2>
       <p class="focus-topic" id="focus-topic"></p>

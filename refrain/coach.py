@@ -255,3 +255,39 @@ def write_debrief(gemini, session, result):
             # Logged, not enforced: a paraphrase ("a chat ping" for "Slack") is fine.
             log.info(json.dumps({"event": "debrief_rule_check", "rule_quotes_note": rules.quotes_note(out["rule"], notes)}))
     return out
+
+
+# --- Warm-up checker ---
+
+def check_prompt(check, answered):
+    return (
+        "Mark each answer they gave from memory against the saved one-line answer, in order:\n"
+        "- got: the key idea is there, in any words.\n"
+        "- partly: part of the key idea is there, or it is vague.\n"
+        "- missed: it is wrong, or the key idea is not there.\n"
+        "Be fair to answers in their own words; spelling and grammar don't matter.\n"
+        + user_data(
+            topic=check.topic,
+            items=[{"question": i.question, "saved_answer": i.answer, "their_answer": i.response} for i in answered],
+        )
+    )
+
+
+def check_warmup(gemini, check):
+    """One verdict per question. Empty answers are "missed" by code; all empty means no Gemini call."""
+    answered = [item for item in check.items if item.response]
+    if not answered:
+        return ["missed"] * len(check.items)
+
+    def problem_of(data):
+        verdicts = data.get("verdicts")
+        if (not isinstance(verdicts, list) or len(verdicts) != len(answered)
+                or any(v not in schemas.VERDICTS for v in verdicts)):
+            return f"did not give exactly {len(answered)} verdicts, each got, partly, or missed"
+        return None
+
+    data = _ask(gemini, "check", check_prompt(check, answered), schemas.check_answer_schema(len(answered)), problem_of)
+    if data is None:
+        raise CoachUnavailable("Both check answers broke a check")
+    verdicts = iter(data["verdicts"])
+    return [next(verdicts) if item.response else "missed" for item in check.items]
