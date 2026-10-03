@@ -505,7 +505,7 @@ flask --app main run --debug --port 8080</pre>
       <li><div class="head">Add the budget alert — 260,000 VND (about $10, the account's currency) a month, counted before credits (50 / 90 / 100%) <span class="pill free">notifies only</span></div></li>
       <li><div class="head">Create service account <code>refrain-run</code> with only <code>roles/aiplatform.user</code> <span class="pill free">free</span></div></li>
       <li><div class="head">Deploy from source — max 1 instance, public URL <span class="pill bill">pay per use</span></div><pre>gcloud run deploy refrain --source . --region us-central1 --project refrain-coach-&lt;suffix&gt; ...</pre></li>
-      <li><div class="head">Walk the demo path on the <code>run.app</code> URL; delete the service after judging to stop all spending</div></li>
+      <li><div class="head">Walk the demo path on the <code>run.app</code> URL; delete the service after judging to stop all spending</div><p class="small muted" style="margin:6px 0 0">Deployed Oct 3, 2026: <a href="https://refrain-476222056020.us-central1.run.app">refrain-476222056020.us-central1.run.app</a></p></li>
     </ol>
     <p class="small muted">Every command passes <code>--project</code>; your default gcloud project is never changed. The demo video and public GitHub repo come from <code>6-ship</code> — the link is extra.</p>
   </section>

@@ -25,3 +25,9 @@ def client(app):
 def fake(app):
     """The simulated coach. Queue answers or CoachErrors on `fake.queue`; `fake.calls` lists the jobs called."""
     return app.extensions["refrain.gemini"]
+
+
+@pytest.fixture
+def limits(app):
+    """The rate limits (30 an hour per visitor, 360 Gemini calls a day); tests can lower them."""
+    return app.extensions["refrain.limits"]

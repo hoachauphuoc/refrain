@@ -1,7 +1,10 @@
+from datetime import datetime, timezone
+
 import pytest
 
 from refrain import rules
 from refrain.gemini import CoachError
+from refrain.ratelimit import Limits, RateLimited
 
 SURVEY = {"age": 34, "goal": "Study for a certification after work", "minutesPerDay": 60, "maxMinutes": 30}
 GOOD = {"stages": [10, 15, 20, 25, 30], "reason": "With 60 minutes after work, you start at 10 and build to 30."}
@@ -373,18 +376,85 @@ def test_resume_notes_are_limited_to_160_characters(client, fake):
     assert fake.calls == []
 
 
+# --- Rate limits ---
+
+def test_the_31st_request_in_an_hour_is_refused(client, fake):
+    for _ in range(30):
+        assert post_check(client, ["", ""])[0] == 200
+    status, body = post_check(client, ["", ""])
+    assert status == 429 and body == {"error": "rate_limited"}
+    assert fake.calls == []  # empty answers cost nothing but still count
+
+
+def test_a_refused_roadmap_answers_429_without_a_gemini_call(client, fake, limits):
+    limits.per_hour = 1
+    assert post_roadmap(client).status_code == 200
+    response = post_roadmap(client)
+    assert response.status_code == 429 and response.get_json() == {"error": "rate_limited"}
+    assert fake.calls == ["roadmap"]
+
+
+def test_a_refused_debrief_still_returns_its_progression(client, fake, limits):
+    limits.per_hour = 0
+    status, body = post(client)
+    assert status == 200
+    assert body["progression"]["change"] == "up" and body["progression"]["newStageIndex"] == 1
+    assert body["coach"] is None and body["coachError"] == "rate_limited"
+    assert fake.calls == []
+
+
+def test_visitors_are_counted_by_the_last_forwarded_address(client, limits):
+    limits.per_hour = 2
+
+    def check_from(forwarded):
+        response = client.post("/api/check", json=check_body(["", ""]), headers={"X-Forwarded-For": forwarded})
+        return response.status_code
+
+    # Cloud Run appends the address it saw; earlier entries are whatever the client sent.
+    assert check_from("10.0.0.1, 203.0.113.9") == 200
+    assert check_from("10.0.0.2, 203.0.113.9") == 200
+    assert check_from("10.0.0.3, 203.0.113.9") == 429
+    assert check_from("203.0.113.10") == 200  # a different visitor
+
+
+def test_the_daily_cap_counts_every_gemini_call_including_retries(client, fake, limits):
+    limits.daily_cap = 3
+    fake.queue = [{"stages": [10, 20, 15, 25, 30], "reason": GOOD["reason"]}, GOOD]
+    assert post_roadmap(client).status_code == 200  # two calls: a broken answer and its retry
+    assert post_roadmap(client).status_code == 200  # the third call
+    assert post_roadmap(client).status_code == 429  # the day's calls are used up
+    assert fake.calls == ["roadmap"] * 3
+
+
+def test_the_hour_rolls_and_the_day_starts_again_at_midnight_utc():
+    now = [datetime(2026, 10, 26, 23, 30, tzinfo=timezone.utc).timestamp()]
+    limits = Limits(per_hour=1, daily_cap=1, clock=lambda: now[0])
+    limits.admit("203.0.113.9")
+    limits.take_call()
+    with pytest.raises(RateLimited):
+        limits.admit("203.0.113.9")
+    with pytest.raises(RateLimited):
+        limits.take_call()
+    now[0] += 3600  # 00:30 UTC on the next day: a new hour and a new day
+    limits.admit("203.0.113.9")
+    limits.take_call()
+
+
 # --- Warm-up check ---
 
 WARMUP = FULL["questions"]  # what the debrief saved: "What two scores rank a risk?", "What else does each risk need?"
 
 
-def post_check(client, responses, **changes):
-    body = {
+def check_body(responses, **changes):
+    return {
         "topic": "Project management course — managing risks",
         "items": [{**item, "response": response} for item, response in zip(WARMUP, responses)],
         **changes,
     }
-    response = client.post("/api/check", json=body)
+
+
+def post_check(client, responses, **changes):
+    response = client.post("/api/check", json=check_body(responses, **changes))
     return response.status_code, response.get_json()
 
 

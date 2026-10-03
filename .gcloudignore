@@ -1,0 +1,29 @@
+# What `gcloud run deploy --source .` uploads. When this file exists gcloud ignores .gitignore,
+# so the secret and local-only rules are repeated here.
+.gcloudignore
+.git/
+.gitignore
+
+# Local credentials
+.env
+.env.*
+
+# Local tooling and caches
+.venv/
+__pycache__/
+.pytest_cache/
+.snowflake/
+
+# Not needed to run the app
+devpost/
+tests/
+scripts/
+requirements-dev.txt
+README.md
+LICENSE
+
+# The installed Devpost skill pack
+.agents/
+.claude/
+agent/
+skills-lock.json

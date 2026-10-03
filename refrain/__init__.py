@@ -10,6 +10,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 from . import routes
 from .gemini import FakeGemini, Gemini
+from .ratelimit import Limits
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -51,6 +52,10 @@ def create_app():
             thinking=os.environ.get("REFRAIN_THINKING", "medium"),
         )
     app.extensions["refrain.gemini"] = gemini
+    app.extensions["refrain.limits"] = Limits(
+        per_hour=int(os.environ.get("REFRAIN_RATE_PER_HOUR", "30")),
+        daily_cap=int(os.environ.get("REFRAIN_DAILY_CAP", "360")),
+    )
 
     @app.get("/")
     def index():

@@ -1,13 +1,18 @@
-"""Refrain's JSON API: check the input, ask the coach, answer with JSON."""
+"""Refrain's JSON API: check the input, check the rate limits, ask the coach, answer with JSON."""
 from flask import Blueprint, current_app, jsonify, request
 
 from . import coach, rules, schemas
+from .ratelimit import CappedGemini, RateLimited, client_ip
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
 
+def _limits():
+    return current_app.extensions["refrain.limits"]
+
+
 def _gemini():
-    return current_app.extensions["refrain.gemini"]
+    return CappedGemini(current_app.extensions["refrain.gemini"], _limits())
 
 
 def _error(status, code, **extra):
@@ -21,7 +26,10 @@ def roadmap():
         return _error(400, "invalid_input", fields=fields)
     gemini = _gemini()
     try:
+        _limits().admit(client_ip())
         stages, reason, source = coach.build_roadmap(gemini, survey)
+    except RateLimited:
+        return _error(429, "rate_limited")
     except coach.CoachUnavailable:
         return _error(503, "coach_unavailable")
     return jsonify({
@@ -42,7 +50,10 @@ def check():
         return _error(400, "invalid_input", fields=fields)
     gemini = _gemini()
     try:
+        _limits().admit(client_ip())
         verdicts = coach.check_warmup(gemini, warmup)
+    except RateLimited:
+        return _error(429, "rate_limited")
     except coach.CoachUnavailable:
         return _error(503, "coach_unavailable")
     return jsonify({"results": [{"verdict": v} for v in verdicts], "simulated": gemini.simulated})
@@ -65,7 +76,10 @@ def debrief():
     }
     gemini = _gemini()
     try:
+        _limits().admit(client_ip())
         coaching, coach_error = coach.write_debrief(gemini, session, result), None
+    except RateLimited:
+        coaching, coach_error = None, "rate_limited"
     except coach.CoachUnavailable:
         coaching, coach_error = None, "coach_unavailable"
     return jsonify({

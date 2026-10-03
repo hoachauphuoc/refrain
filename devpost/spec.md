@@ -112,9 +112,10 @@ Every billable step below gets a final yes from the learner at the start of `5-b
    ```
 6. Deploy:
    ```
-   gcloud run deploy refrain --source . --region us-central1 --project refrain-coach-<suffix> --service-account refrain-run@refrain-coach-<suffix>.iam.gserviceaccount.com --allow-unauthenticated --max-instances 1 --concurrency 8 --memory 512Mi --timeout 60 --set-env-vars GOOGLE_GENAI_USE_ENTERPRISE=true,GOOGLE_CLOUD_PROJECT=refrain-coach-<suffix>,GOOGLE_CLOUD_LOCATION=global --quiet
+   gcloud run deploy refrain --source . --region us-central1 --project refrain-coach-<suffix> --service-account refrain-run@refrain-coach-<suffix>.iam.gserviceaccount.com --allow-unauthenticated --max-instances 1 --concurrency 8 --memory 512Mi --timeout 60 --set-env-vars "GOOGLE_GENAI_USE_ENTERPRISE=true,GOOGLE_CLOUD_PROJECT=refrain-coach-<suffix>,GOOGLE_CLOUD_LOCATION=global" --quiet
    ```
-7. Open the printed `https://refrain-….run.app` URL and walk the demo path once.
+   Keep the `--set-env-vars` list in quotes: unquoted, PowerShell hands it to `gcloud` as a single variable (found in `5-build`).
+7. Open the printed `https://refrain-….run.app` URL and walk the demo path once. *Deployed Oct 3, 2026: https://refrain-476222056020.us-central1.run.app*
 8. To stop all spending later (for example after judging), delete the service:
    ```
    gcloud run services delete refrain --region us-central1 --project refrain-coach-<suffix>
@@ -464,7 +465,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Files:** `refrain/ratelimit.py`.
 - **What it does:**
   - In-memory, thread-safe counters, checked before any Gemini call.
-  - Per visitor: at most `REFRAIN_RATE_PER_HOUR` (30) AI requests per client IP per rolling hour. On Cloud Run the IP comes from `X-Forwarded-For`; which entry is the real client is checked on the deployed service.
+  - Per visitor: at most `REFRAIN_RATE_PER_HOUR` (30) AI requests per client IP per rolling hour. On Cloud Run the IP is the last `X-Forwarded-For` entry: Cloud Run appends the address it saw, and anything earlier is whatever the client sent. Confirmed on the deployed service in `5-build` (a forged entry arrived in front of the real address, which matched Cloud Run's request log), with a diagnostic line that logs only when `REFRAIN_LOG_FORWARDED=1` and was switched off right after.
   - Whole service: at most `REFRAIN_DAILY_CAP` (360) Gemini calls per UTC day, retries included — about $3.60 at the estimated $0.01 per call with thinking at `medium`.
   - Over a limit → 429 for roadmap and check; the debrief still returns its progression with `coachError: "rate_limited"`.
   - One gunicorn worker keeps the counters shared, and `--max-instances 1` keeps one copy of them.
@@ -481,7 +482,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   - `Procfile`: `web: gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app`.
 - **Settings:** `--max-instances 1`, `--concurrency 8`, 512 MiB, 60 s request timeout, public (`--allow-unauthenticated`).
 - **Identity:** runs as `refrain-run`, which holds only `roles/aiplatform.user`.
-- `.gcloudignore` keeps `.env`, `devpost/`, `tests/`, `.venv/`, and the skill-pack folders out of the upload.
+- `.gcloudignore` keeps `.env`, `devpost/`, `tests/`, `scripts/`, `.venv/`, and the skill-pack folders out of the upload (checked with `gcloud meta list-files-for-upload`: only `main.py`, `refrain/`, `static/`, `requirements.txt`, `.python-version`, and `Procfile` go up).
 - Doc: https://cloud.google.com/run/docs/deploying-source-code
 
 #### Project, billing, and budget
@@ -581,8 +582,8 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
 ├── .python-version              # 3.13 for the Cloud Run buildpack
 ├── Procfile                     # gunicorn start command for Cloud Run
 ├── .env.example                 # GOOGLE_GENAI_USE_ENTERPRISE, GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_QUOTA_PROJECT, GOOGLE_CLOUD_LOCATION, REFRAIN_FAKE_AI
-├── .gcloudignore                # keeps .env, devpost/, tests/, .venv/, skill packs out of the deploy upload
-├── .gitignore                   # existing rules + .venv/, __pycache__/, .pytest_cache/
+├── .gcloudignore                # keeps .env, devpost/, tests/, scripts/, .venv/, skill packs out of the deploy upload
+├── .gitignore                   # existing rules + .venv/, __pycache__/, .pytest_cache/, .snowflake/
 ├── README.md                    # what Refrain is, run locally, deploy, demo path
 ├── LICENSE                      # open-source license, chosen by the learner in 6-ship
 ├── devpost/                     # Devpost learning workspace (scope, PRD, spec, checklist, HTML companions)
@@ -727,7 +728,7 @@ These are unconfirmed in the docs read on Oct 3, 2026; `scripts/smoke_gemini.py`
 5. The `gcloud billing budgets create` flags; the reference page didn't load. *Checked with `--help` and run on Oct 3, 2026 (see **Where It Runs**, step 4).*
 6. Cloud Build permissions on a brand-new project. A first source deploy can need an extra role on the default build service account; follow the error message.
 7. That `GOOGLE_CLOUD_QUOTA_PROJECT` in `.env` overrides the quota project saved with the learner's Google sign-in, without changing their global settings.
-8. Which `X-Forwarded-For` entry holds the real client IP on Cloud Run (log the header once on the deployed service).
+8. Which `X-Forwarded-For` entry holds the real client IP on Cloud Run (log the header once on the deployed service). *Answered in slice 6: the last entry.*
 9. The chime scheduled on the Web Audio clock still plays on time when the tab sits in the background for a full session.
 
 A direct REST call on Oct 3, 2026, before slice 1, settled the API side of items 1–4: `global` reaches `gemini-3.8-flash`, thinking level `MEDIUM` is accepted, the array and integer limits in `responseJsonSchema` hold, and the usage fields are `promptTokenCount`, `candidatesTokenCount`, `thoughtsTokenCount`, and `totalTokenCount`, with total = prompt + candidates + thoughts. One roadmap took 5.6 s and about $0.003. The SDK spellings (`enterprise=True`, the timeout unit, `response.parsed`) are still checked by `scripts/smoke_gemini.py`.
