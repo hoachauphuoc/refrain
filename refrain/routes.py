@@ -33,3 +33,31 @@ def roadmap():
         "source": source,
         "simulated": gemini.simulated,
     })
+
+
+@bp.post("/debrief")
+def debrief():
+    session, fields = schemas.parse_debrief(request.get_json(silent=True))
+    if fields:
+        return _error(400, "invalid_input", fields=fields)
+    # The fixed rules decide the roadmap change first, so it comes back even when the coach can't answer.
+    result = rules.progress(session.stages, session.stage_index, session.outcome, len(session.taps),
+                            session.planned_minutes)
+    progression = {
+        "change": result["change"],
+        "newStageIndex": result["new_index"],
+        "nextMinutes": result["next_minutes"],
+        "allowance": result["allowance"],
+        "sentence": rules.roadmap_sentence(result),
+    }
+    gemini = _gemini()
+    try:
+        coaching, coach_error = coach.write_debrief(gemini, session, result), None
+    except coach.CoachUnavailable:
+        coaching, coach_error = None, "coach_unavailable"
+    return jsonify({
+        "progression": progression,
+        "coach": coaching,
+        "coachError": coach_error,
+        "simulated": gemini.simulated,
+    })

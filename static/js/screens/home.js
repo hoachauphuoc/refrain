@@ -1,7 +1,11 @@
-// Home: the goal, the roadmap stages, the rule, the session history, and Reset everything.
+// Home: the goal, the roadmap stages, the rule, starting a session, the history, and Reset everything.
 
 import { $, el } from "../dom.js";
 import { store } from "../store.js";
+import { unlockSound } from "../timer.js";
+
+const OUTCOMES = { completed: "completed", pulled_away: "pulled away", lost_focus: "ended early" };
+const CHANGES = { up: "Up", hold: "Hold", ease_back: "Ease back" };
 
 function renderStages(stages, current) {
   const list = $("#home-stages");
@@ -26,13 +30,43 @@ function renderStages(stages, current) {
 }
 
 function renderRule(rule) {
-  const card = $("#home-rule");
-  card.classList.toggle("empty", !rule);
+  $("#home-rule").classList.toggle("empty", !rule);
   $("#home-rule-text").textContent = rule ? rule.text : "Your first rule will come from your first session.";
 }
 
+function sessionLength(row) {
+  if (row.demo) return "1 min demo";
+  if (row.outcome === "completed") return `${row.plannedMinutes} min`;
+  return `${Math.floor(row.secondsDone / 60)} of ${row.plannedMinutes} min`;
+}
+
+function when(iso) {
+  const date = new Date(iso);
+  const day = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return `${day} · ${time}`;
+}
+
+function renderHistory(history) {
+  $("#home-history-empty").hidden = history.length > 0;
+  $("#home-history").replaceChildren(
+    ...history.map((row) =>
+      el("li", { className: "history-row" }, [
+        el("span", { className: "h-when", text: when(row.endedAt) }),
+        el("span", { className: "h-topic", text: row.topic }),
+        el("span", { className: "h-meta", text: `${sessionLength(row)} · ${OUTCOMES[row.outcome]} · ${row.taps} noted` }),
+        el("span", { className: `h-change ${row.change}`, text: CHANGES[row.change] }),
+      ]),
+    ),
+  );
+}
+
+function renderStart() {
+  $("#home-start-btn").disabled = $("#home-topic").value.trim() === "";
+}
+
 function render() {
-  const { survey, roadmap, stageIndex, rule, history } = store.state;
+  const { survey, roadmap, stageIndex, rule, history, settings } = store.state;
   $("#home-goal").textContent = survey.goal;
   renderStages(roadmap.stages, stageIndex);
   $("#home-reason").textContent = roadmap.reason;
@@ -42,7 +76,9 @@ function render() {
       .map((label) => el("span", { className: "tag", text: label })),
   );
   renderRule(rule);
-  $("#home-history-empty").hidden = history.length > 0;
+  $("#home-demo").checked = Boolean(settings.demoLength);
+  renderStart();
+  renderHistory(history);
 }
 
 function closeConfirm() {
@@ -50,7 +86,28 @@ function closeConfirm() {
   $("#home-reset").hidden = false;
 }
 
-export function init(nav) {
+function startSession() {
+  const topic = $("#home-topic").value.trim();
+  if (!topic) return;
+  unlockSound(); // this click is what lets the browser play the end chime
+  const { roadmap, stageIndex, settings } = store.state;
+  const demo = Boolean(settings.demoLength);
+  nav.go("focus", { topic, plannedMinutes: demo ? 1 : roadmap.stages[stageIndex].minutes, demo });
+}
+
+let nav;
+
+export function init(navigation) {
+  nav = navigation;
+  $("#home-topic").addEventListener("input", renderStart);
+  $("#home-topic").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") startSession();
+  });
+  $("#home-demo").addEventListener("change", (event) => {
+    store.update({ settings: { ...store.state.settings, demoLength: event.target.checked } });
+  });
+  $("#home-start-btn").addEventListener("click", startSession);
+
   $("#home-reset").addEventListener("click", () => {
     $("#home-reset").hidden = true;
     $("#home-reset-confirm").hidden = false;
@@ -77,4 +134,8 @@ export function init(nav) {
 export function enter() {
   closeConfirm();
   render();
+}
+
+export function reset() {
+  $("#home-topic").value = "";
 }

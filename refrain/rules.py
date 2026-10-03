@@ -74,3 +74,89 @@ def has_claim(text):
     """Flags statistics, research, and medical claims the coach must never make."""
     lowered = text.lower()
     return any(marker in lowered for marker in CLAIM_MARKERS)
+
+
+# --- Progression: up, hold, or ease back. Taps never cause an ease back. ---
+
+SENTENCES = {
+    "within": "Up a stage to {next} minutes: you stayed within the {allowance} distractions this session allows.",
+    "at_top": ("Holding at {next} minutes, the top of your roadmap, because you stayed within "
+               "the {allowance} distractions this session allows."),
+    "over": ("Holding at {next} minutes: you noticed {taps} distractions and this session allows {allowance}, "
+             "and every one was a rep of coming back."),
+    "pulled_away": "Holding at {next} minutes, because being pulled away is not a focus lapse.",
+    "lost_focus": ("Easing back to {next} minutes, a length you've already reached, "
+                   "so the next session is one you can finish."),
+    "lost_focus_first": "Staying at {next} minutes, your first stage, so the next session is one you can finish.",
+}
+
+# "Phone" is left out on purpose: scrolling a phone is the user's own distraction, not an outside interruption.
+OUTSIDE_WORDS = ("meeting", "call", "manager", "boss", "urgent", "colleague", "client", "customer")
+_OUTSIDE = re.compile(r"\b(?:" + "|".join(OUTSIDE_WORDS) + r")s?\b", re.IGNORECASE)
+_IF_THEN = re.compile(r"If .+, then I(?:'|’)ll .+|If .+, then I will .+", re.DOTALL)
+
+
+def tap_allowance(minutes):
+    """One distraction tap per 5 planned minutes, and at least 2: 25 → 5, 12 → 2, a demo minute → 2."""
+    return max(2, minutes // 5)
+
+
+def progress(stages, stage_index, outcome, taps, minutes):
+    """The roadmap change for one finished session, decided by code alone.
+
+    `stages` is the list of stage lengths, `minutes` the length actually planned (1 for a demo).
+    """
+    allowance = tap_allowance(minutes)
+    on_last = stage_index == len(stages) - 1
+    if outcome == "completed" and taps <= allowance:
+        change, new_index, code = ("hold", stage_index, "at_top") if on_last else ("up", stage_index + 1, "within")
+    elif outcome == "completed":
+        change, new_index, code = "hold", stage_index, "over"
+    elif outcome == "pulled_away":
+        change, new_index, code = "hold", stage_index, "pulled_away"
+    elif stage_index > 0:  # lost focus
+        change, new_index, code = "ease_back", stage_index - 1, "lost_focus"
+    else:
+        change, new_index, code = "hold", stage_index, "lost_focus_first"
+    return {
+        "change": change,
+        "new_index": new_index,
+        "next_minutes": stages[new_index],
+        "allowance": allowance,
+        "taps": taps,
+        "reason_code": code,
+    }
+
+
+def roadmap_sentence(result):
+    return SENTENCES[result["reason_code"]].format(
+        next=result["next_minutes"], allowance=result["allowance"], taps=result["taps"]
+    )
+
+
+def outside_interruption(outcome, notes):
+    """True when the session ended "pulled away" or a note names a meeting, a call, a manager, and so on."""
+    return outcome == "pulled_away" or any(_OUTSIDE.search(note) for note in notes)
+
+
+# --- Checks on the coach's debrief ---
+
+def is_if_then(rule):
+    return _IF_THEN.fullmatch(rule.strip()) is not None
+
+
+def quotes_note(text, notes):
+    """True when the text contains at least one note word for word (case-insensitive)."""
+    lowered = text.lower()
+    return any(note.lower() in lowered for note in notes if note)
+
+
+def notes_lead(notes):
+    """'You noted “Slack” and “email ping”.' from the first two different notes."""
+    first = []
+    for note in notes:
+        if note and note.lower() not in (seen.lower() for seen in first):
+            first.append(note)
+        if len(first) == 2:
+            break
+    return "You noted " + " and ".join(f"“{note}”" for note in first) + "."

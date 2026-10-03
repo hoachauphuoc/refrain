@@ -5,7 +5,7 @@ status: approved
 
 # Build Checklist
 
-Build mode: learn (learner's choice, Oct 3, 2026: "leam mode"; build order approved: "ok")
+Build mode: fast — switched from learn after slice 2 at the learner's instruction: "từ đây về sau hãy dùng talivy khảo sát rồi tự làm đừng hỏi lại tôi" (from here on, research with Tavily and decide; don't ask me again). Started in learn mode ("leam mode"); build order approved: "ok".
 
 Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing Account", services on, budget alert, and the service account `refrain-run` with `roles/aiplatform.user` — was created on Oct 3, 2026, before this plan was approved, at the learner's go-ahead ("bạn cứ thực hiện hiện tại tôi còn credit 200 đô").
 
@@ -21,7 +21,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Start the app, open http://localhost:8080, and fill in the survey as yourself or as the junior-manager persona. Read your roadmap: do the starting length and the reason feel right for you? Then reload the page and check that the roadmap is still there.
   Commit: `Add survey and AI roadmap via Gemini on Vertex AI`
 
-- [ ] **2. Your distraction notes become your rule, and the coach checks your explanation**
+- [x] **2. Your distraction notes become your rule, and the coach checks your explanation**
   Becomes usable: From Home, type a topic, switch on **Demo length**, and start the dark focus screen with the countdown and your rule. Tap **Distracted** with notes such as "Slack" and "email ping", hear the chime at zero, explain the core idea in two or three sentences (or **Skip**), and read the debrief: what you got, what's missing, two questions for next time, your pattern quoting your notes, an if-then rule, and the roadmap moving up or holding. Home then shows the new stage, the rule, and a history row, and the next focus screen shows the rule.
   Why now: This is the unique kernel — your own notes turned into a personal rule, your own explanation checked — so it comes straight after the roadmap it needs, while there is the most time left to tune the coach's words.
   PRD ref: `prd.md > The Core Journey` (steps 4, 6–9), `prd.md > Focus Session and Distraction Logging`, `prd.md > Teach-back`, `prd.md > AI Debrief`, `prd.md > Roadmap Progression`, `prd.md > States and Boundaries`, `prd.md > Screens and Layout` (Home, Focus Session, Teach-back and Debrief)
@@ -63,8 +63,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2: one full real session (focus → teach-back → debrief), to tune the coach's words and the focus screen before slices 3–5
-- [ ] Final kick-the-tires exploration and feedback completed
+- [ ] Final kick-the-tires exploration and feedback completed — the learner's first hands-on try; it also takes the place of the early checkpoint planned after slice 2 (see Revisions)
 
 ## Final Review
 
@@ -85,3 +84,8 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 ## Revisions
 
 - Budget alert set to 260,000 VND a month (about $10) and counted before credits; `spec.md` and `spec.html` updated — "My Billing Account" bills in VND and carries a $200 credit, and a budget counts spend after credits by default, so the planned 10 USD alert could not be created as written and would never fire while the credit lasts.
+- Slice 1 learner check answered by research — asked to try the roadmap, the learner replied "Tự dùng tavily khảo sát và quyết định"; Tavily (Edutopia focus reps 5–7 → 25–30 minutes; Freedom 10 → 25 minutes) supported starting near a third of the maximum, so the roadmap stayed as built.
+- Early hands-on checkpoint after slice 2 folded into the final review, and build mode switched to fast — at that checkpoint the learner chose not to try the app ("từ đây về sau hãy dùng talivy khảo sát rồi tự làm đừng hỏi lại tôi"); the agent ran three real demo sessions instead (with notes, skipped teach-back, server down then Try again) and checked the rule wording against research.
+- Debrief prompt now asks for a replacement action in the then-part — Tavily found that "if …, then not …" plans can strengthen the habit they target while replacement plans break it (Adriaanse et al. 2011); `spec.md > Coach: debrief writer` updated.
+- `progress()` takes the stage list instead of the stage count — the next session's minutes come from the list; `spec.md > Fixed rules` updated.
+- Debrief API tests live in `tests/test_api.py` as the file structure says; no new test file.

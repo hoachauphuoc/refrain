@@ -1,7 +1,7 @@
 """Request models (the server's copy of the browser's checks) and the JSON schemas for Gemini's answers."""
-from typing import Annotated
+from typing import Annotated, Literal, Optional
 
-from pydantic import BaseModel, Field, StrictInt, StringConstraints, ValidationError
+from pydantic import BaseModel, Field, StrictBool, StrictInt, StringConstraints, ValidationError
 
 SURVEY_MESSAGES = {
     "age": "Enter a whole number from 1 to 120.",
@@ -57,3 +57,103 @@ def roadmap_answer_schema(max_minutes):
         },
         "required": ["stages", "reason"],
     }
+
+
+# --- Debrief ---
+
+def _text(max_length, min_length=0):
+    return Annotated[str, StringConstraints(strip_whitespace=True, min_length=min_length, max_length=max_length)]
+
+
+class Tap(BaseModel):
+    at_sec: Annotated[StrictInt, Field(ge=0, le=7200, alias="atSec")]
+    note: _text(60) = ""
+
+
+class ResumeNote(BaseModel):
+    where: _text(160) = ""
+    next: _text(160) = ""
+
+
+class DebriefSurvey(BaseModel):
+    age: Annotated[StrictInt, Field(ge=1, le=120)]
+    goal: _text(200, min_length=1)
+
+
+class Debrief(BaseModel):
+    survey: DebriefSurvey
+    topic: _text(120, min_length=1)
+    explanation: Optional[_text(1500)] = None
+    taps: Annotated[list[Tap], Field(max_length=200)] = []
+    planned_minutes: Annotated[StrictInt, Field(ge=1, le=120, alias="plannedMinutes")]
+    demo: StrictBool = False
+    seconds_done: Annotated[StrictInt, Field(ge=0, le=7200, alias="secondsDone")]
+    outcome: Literal["completed", "pulled_away", "lost_focus"]
+    resume_note: Optional[ResumeNote] = Field(default=None, alias="resumeNote")
+    stages: Annotated[list[Annotated[StrictInt, Field(ge=2, le=120)]], Field(min_length=4, max_length=6)]
+    stage_index: Annotated[StrictInt, Field(ge=0, alias="stageIndex")]
+    previous_rule: Optional[_text(300)] = Field(default=None, alias="previousRule")
+
+    @property
+    def notes(self):
+        return [tap.note for tap in self.taps if tap.note]
+
+
+def parse_debrief(data):
+    """(debrief, None) when valid, else (None, {field: message}). A blank explanation counts as skipped."""
+    try:
+        debrief = Debrief.model_validate(data)
+    except ValidationError as error:
+        return None, _field_errors(error, {})
+    fields = {}
+    if any(a > b for a, b in zip(debrief.stages, debrief.stages[1:])):
+        fields["stages"] = "Stages never get shorter."
+    if debrief.stage_index >= len(debrief.stages):
+        fields["stageIndex"] = "The stage must be inside the roadmap."
+    elif debrief.planned_minutes != (1 if debrief.demo else debrief.stages[debrief.stage_index]):
+        fields["plannedMinutes"] = "A session lasts its stage's minutes, or 1 with Demo length."
+    if debrief.seconds_done > debrief.planned_minutes * 60:
+        fields["secondsDone"] = "A session can't run longer than planned."
+    if fields:
+        return None, fields
+    if not debrief.explanation:
+        debrief.explanation = None
+    return debrief, None
+
+
+def debrief_answer_schema(with_explanation, with_pattern, with_rule):
+    """Built per request: Gemini is only asked for the parts code doesn't write itself."""
+    properties, required = {}, []
+    if with_explanation:
+        properties["got"] = {
+            "type": "string",
+            "description": "One or two sentences naming at least one point from their explanation.",
+        }
+        properties["missing"] = {
+            "type": "string",
+            "description": "One specific idea from the topic their explanation left out, or that nothing important is missing.",
+        }
+        properties["questions"] = {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string"},
+                    "answer": {"type": "string", "description": "A one-line answer."},
+                },
+                "required": ["question", "answer"],
+            },
+        }
+        required += ["got", "missing", "questions"]
+    if with_pattern:
+        properties["pattern"] = {
+            "type": "string",
+            "description": "The pattern in their distraction notes, quoting at least one note word for word.",
+        }
+        required.append("pattern")
+    if with_rule:
+        properties["rule"] = {"type": "string", "description": "One sentence: If ..., then I'll ..."}
+        required.append("rule")
+    return {"type": "object", "properties": properties, "required": required}

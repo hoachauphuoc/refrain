@@ -121,21 +121,54 @@ class FakeGemini:
     def __init__(self):
         self.queue = []
         self.calls = []
+        self.prompts = []
 
     def generate_json(self, job, system, user, schema):
         self.calls.append(job)
+        self.prompts.append(user)
         if self.queue:
             answer = self.queue.pop(0)
             if isinstance(answer, Exception):
                 raise answer
             return answer
-        return getattr(self, f"_{job}")(schema)
+        return getattr(self, f"_{job}")(schema, _user_data(user))
 
     @staticmethod
-    def _roadmap(schema):
+    def _roadmap(schema, data):
         top = schema["properties"]["stages"]["items"]["maximum"]
         stages = rules.default_roadmap(top)
         return {
             "stages": stages,
             "reason": f"A simulated plan: it starts at {stages[0]} minutes and builds to your {top}-minute maximum.",
         }
+
+    @staticmethod
+    def _debrief(schema, data):
+        wanted = schema["properties"]
+        notes = [item["note"] for item in data.get("distraction_notes", [])]
+        answer = {}
+        if "got" in wanted:
+            answer["got"] = f"You put the core of \"{data['topic']}\" in your own words."
+            answer["missing"] = "Simulated: a real coach would name one idea your explanation left out."
+            answer["questions"] = [
+                {"question": f"What is the main idea of {data['topic']}?", "answer": "The idea you explained."},
+                {"question": "Which step would you explain first, and why?", "answer": "The first step you named."},
+            ]
+        if "pattern" in wanted:
+            answer["pattern"] = f"You noted \u201c{notes[0]}\u201d, and each time you came back to your topic."
+        if "rule" in wanted:
+            if data["how_it_ended"].startswith("pulled away"):
+                answer["rule"] = "If something pulls me away, then I'll write where I stopped and my next step before I go."
+            elif notes:
+                answer["rule"] = f"If {notes[0]} pulls at me, then I'll note it and come back to my topic."
+            else:
+                answer["rule"] = "If my attention slips, then I'll tap, name it, and come back."
+        return answer
+
+
+def _user_data(prompt):
+    """The JSON inside <user_data> \u2026 </user_data>, so the simulated coach can echo the user's own notes."""
+    start, end = prompt.find("<user_data>"), prompt.rfind("</user_data>")
+    if start == -1 or end == -1:
+        return {}
+    return json.loads(prompt[start + len("<user_data>"):end])

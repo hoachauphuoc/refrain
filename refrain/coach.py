@@ -1,9 +1,12 @@
 """The AI jobs. Each builds a prompt, asks Gemini for JSON, checks the answer, and
 enforces the edge cases in code. At most two Gemini calls per request."""
 import json
+import logging
 
 from . import rules, schemas
 from .gemini import CoachError
+
+log = logging.getLogger("refrain.coach")
 
 SYSTEM = "\n".join([
     "You are Refrain, a kind study coach.",
@@ -25,25 +28,34 @@ def user_data(**fields):
     return f"<user_data>\n{text}\n</user_data>"
 
 
-def _ask(gemini, job, user, schema, problem_of):
+def _ask(gemini, job, user, schema, problem_of, soft_problem_of=None):
     """The first call plus one retry, for a Gemini error or an answer that breaks a check.
 
-    Returns the first answer that passes, or None when both answers broke a check.
-    Raises CoachUnavailable when the last call failed.
+    `problem_of` finds hard problems; `soft_problem_of` finds ones code can repair, which earn a
+    retry the first time and are accepted (for the caller to repair) after that.
+    Returns the first acceptable answer, or None when both answers had hard problems.
+    Raises CoachUnavailable when no acceptable answer came back because a call failed.
     """
-    note = ""
+    note, fallback = "", None
     for attempt in (1, 2):
         try:
             data = gemini.generate_json(job, SYSTEM, user + note, schema)
         except CoachError as e:
+            if fallback is not None:
+                return fallback
             if attempt == 1 and e.retryable:
                 continue
             raise CoachUnavailable(str(e)) from e
         problem = problem_of(data)
         if problem is None:
-            return data
+            soft = soft_problem_of(data) if soft_problem_of else None
+            if soft is None or attempt == 2:
+                return data
+            fallback, problem = data, soft
+        elif fallback is not None:
+            return fallback
         note = f"\n\nYour previous answer {problem}. Answer again and fix that."
-    return None
+    return fallback
 
 
 def roadmap_prompt(survey):
@@ -93,3 +105,153 @@ def build_roadmap(gemini, survey):
         stages = rules.default_roadmap(survey.max_minutes)
         return stages, rules.default_reason(survey, stages), "default"
     return data["stages"], data["reason"].strip(), "ai"
+
+
+# --- Debrief writer ---
+
+def _clock(seconds):
+    return f"{seconds // 60}:{seconds % 60:02d}"
+
+
+def _templated_pattern(taps, pulled):
+    if not taps:
+        return "No distractions noted before you were pulled away." if pulled else "No distractions noted this session."
+    if len(taps) == 1:
+        return ("You noticed once but left no note, so I can't see what pulled you away. "
+                "Next time, add a word or two.")
+    return (f"You noticed {len(taps)} times but left no notes, so I can't see what pulled you away. "
+            "Next time, add a word or two.")
+
+
+def debrief_prompt(session, result, needs, outside):
+    lines = ["Write the coach's debrief for this study session. Answer only with the parts listed below."]
+    if needs["explanation"]:
+        lines += [
+            "- got: one or two sentences naming at least one point from their explanation, in their words.",
+            "- missing: one specific idea from the topic that their explanation left out, or say plainly that "
+            "nothing important is missing. If the explanation is very short or off-topic, say kindly what a "
+            "fuller explanation would include.",
+            "- questions: exactly two questions about the topic that they can answer from memory, without the "
+            "material in front of them, each with a one-line answer. Ask about the topic even when the "
+            "explanation was short or off-topic.",
+        ]
+    if needs["pattern"]:
+        lines.append(
+            "- pattern: one or two sentences on the pattern in their distraction notes, quoting at least one "
+            "note word for word. Every tap was noticing and coming back: a rep, not a failure."
+        )
+    if needs["rule"]:
+        # Replacement plans break habits; "if ..., then not ..." plans can strengthen them (Adriaanse et al. 2011).
+        action = (" The then-part names something to do instead (for example: note it and reply at the break), "
+                  "not only something to avoid.")
+        if outside:
+            lines.append(
+                "- rule: one sentence in the form \"If ..., then I'll ...\". Something outside their control "
+                "pulled them away, so make it a ready-to-resume plan: before they go, they write where they "
+                "stopped and their next step. Name what pulled them away when they noted it."
+            )
+        elif session.notes:
+            lines.append("- rule: one sentence in the form \"If ..., then I'll ...\" that refers to something they noted."
+                         + action)
+        else:
+            lines.append(
+                "- rule: one sentence in the form \"If ..., then I'll ...\". They tapped without notes, so keep "
+                "it general but honest about noticing and returning; don't guess what distracted them." + action
+            )
+    resume = session.resume_note
+    return "\n".join(lines) + "\n" + user_data(
+        age=session.survey.age,
+        goal=session.survey.goal,
+        topic=session.topic,
+        explanation=session.explanation,
+        distraction_notes=[{"at": _clock(t.at_sec), "note": t.note} for t in session.taps if t.note],
+        distraction_taps=len(session.taps),
+        planned_minutes=session.planned_minutes,
+        minutes_done=round(session.seconds_done / 60, 1),
+        how_it_ended={"completed": "completed", "pulled_away": "pulled away by something outside their control",
+                      "lost_focus": "ended early: lost focus"}[session.outcome],
+        roadmap_change_already_decided=f"{result['change'].replace('_', ' ')}, next session {result['next_minutes']} minutes",
+        where_they_stopped=resume.where if resume else "",
+        their_next_step=resume.next if resume else "",
+        previous_rule=session.previous_rule,
+    )
+
+
+def _debrief_problems(needs):
+    def problem_of(data):
+        if needs["explanation"]:
+            for key in ("got", "missing"):
+                value = data.get(key)
+                if not isinstance(value, str) or not value.strip():
+                    return f"left out \"{key}\""
+                if len(value) >= 600:
+                    return f"made \"{key}\" longer than two sentences"
+            questions = data.get("questions")
+            if not isinstance(questions, list) or len(questions) != 2:
+                return "did not give exactly two questions"
+            for item in questions:
+                if not isinstance(item, dict):
+                    return "gave a question without its answer"
+                for key in ("question", "answer"):
+                    value = item.get(key)
+                    if not isinstance(value, str) or not value.strip() or len(value) >= 300:
+                        return "gave a question or answer that was empty or too long"
+        if needs["pattern"]:
+            pattern = data.get("pattern")
+            if not isinstance(pattern, str) or not pattern.strip() or len(pattern) >= 600:
+                return "left out the pattern or made it too long"
+        if needs["rule"]:
+            rule = data.get("rule")
+            if not isinstance(rule, str) or len(rule) >= 300 or not rules.is_if_then(rule):
+                return "did not write the rule as one sentence in the form \"If ..., then I'll ...\""
+        return None
+    return problem_of
+
+
+def write_debrief(gemini, session, result):
+    """The coach's cards for a finished session. The roadmap card is code's sentence, never the AI's."""
+    taps, notes = session.taps, session.notes
+    pulled = session.outcome == "pulled_away"
+    outside = rules.outside_interruption(session.outcome, notes)
+    needs = {
+        "explanation": session.explanation is not None,
+        "pattern": bool(notes),
+        # No taps means no new rule, unless being pulled away gives a real reason for a ready-to-resume one.
+        "rule": bool(taps) or pulled,
+    }
+    out = {
+        "got": None,
+        "missing": None,
+        "questions": None,
+        "pattern": None if notes else _templated_pattern(taps, pulled),
+        "rule": None,
+        "keepPreviousRule": not needs["rule"],
+    }
+    if not any(needs.values()):
+        return out  # nothing for the AI to write
+
+    def pattern_misses_notes(data):
+        if needs["pattern"] and not rules.quotes_note(data["pattern"], notes):
+            return "did not quote any of their notes word for word in the pattern"
+        return None
+
+    data = _ask(gemini, "debrief", debrief_prompt(session, result, needs, outside),
+                schemas.debrief_answer_schema(**{f"with_{k}": v for k, v in needs.items()}),
+                _debrief_problems(needs), pattern_misses_notes)
+    if data is None:
+        raise CoachUnavailable("Both debrief answers broke a check")
+
+    if needs["explanation"]:
+        out["got"] = data["got"].strip()
+        out["missing"] = data["missing"].strip()
+        out["questions"] = [{"question": q["question"].strip(), "answer": q["answer"].strip()}
+                            for q in data["questions"]]
+    if needs["pattern"]:
+        pattern = data["pattern"].strip()
+        out["pattern"] = pattern if rules.quotes_note(pattern, notes) else f"{rules.notes_lead(notes)} {pattern}"
+    if needs["rule"]:
+        out["rule"] = data["rule"].strip()
+        if notes:
+            # Logged, not enforced: a paraphrase ("a chat ping" for "Slack") is fine.
+            log.info(json.dumps({"event": "debrief_rule_check", "rule_quotes_note": rules.quotes_note(out["rule"], notes)}))
+    return out

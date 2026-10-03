@@ -86,3 +86,88 @@ def test_mentions_survey(reason, expected):
 ])
 def test_has_claim(text, expected):
     assert rules.has_claim(text) is expected
+
+
+# --- Progression ---
+
+STAGES = [10, 15, 20, 25, 30]
+
+
+@pytest.mark.parametrize("minutes, expected", [(25, 5), (12, 2), (1, 2), (10, 2), (30, 6), (120, 24)])
+def test_tap_allowance(minutes, expected):
+    assert rules.tap_allowance(minutes) == expected
+
+
+@pytest.mark.parametrize("index, outcome, taps, minutes, change, new_index, code", [
+    (1, "completed", 3, 15, "up", 2, "within"),            # within the allowance → up
+    (1, "completed", 0, 15, "up", 2, "within"),
+    (4, "completed", 2, 30, "hold", 4, "at_top"),          # within, on the last stage → hold
+    (1, "completed", 4, 15, "hold", 1, "over"),            # more taps than allowed → hold
+    (1, "pulled_away", 9, 15, "hold", 1, "pulled_away"),   # pulled away → hold, whatever the taps
+    (2, "lost_focus", 0, 20, "ease_back", 1, "lost_focus"),
+    (0, "lost_focus", 0, 10, "hold", 0, "lost_focus_first"),  # never below the first stage
+    (0, "completed", 2, 1, "up", 1, "within"),             # a demo minute allows 2
+    (0, "completed", 3, 1, "hold", 0, "over"),
+])
+def test_progress_every_row(index, outcome, taps, minutes, change, new_index, code):
+    result = rules.progress(STAGES, index, outcome, taps, minutes)
+    assert (result["change"], result["new_index"], result["reason_code"]) == (change, new_index, code)
+    assert result["next_minutes"] == STAGES[new_index]
+    assert result["allowance"] == rules.tap_allowance(minutes)
+
+
+def test_taps_never_ease_the_roadmap_back():
+    for taps in range(0, 60):
+        assert rules.progress(STAGES, 3, "completed", taps, 25)["change"] in ("up", "hold")
+
+
+@pytest.mark.parametrize("index, outcome, taps, minutes, sentence", [
+    (0, "completed", 2, 1, "Up a stage to 15 minutes: you stayed within the 2 distractions this session allows."),
+    (4, "completed", 1, 30, "Holding at 30 minutes, the top of your roadmap, because you stayed within "
+                           "the 6 distractions this session allows."),
+    (1, "completed", 4, 15, "Holding at 15 minutes: you noticed 4 distractions and this session allows 3, "
+                           "and every one was a rep of coming back."),
+    (1, "pulled_away", 0, 15, "Holding at 15 minutes, because being pulled away is not a focus lapse."),
+    (2, "lost_focus", 1, 20, "Easing back to 15 minutes, a length you've already reached, "
+                            "so the next session is one you can finish."),
+    (0, "lost_focus", 1, 10, "Staying at 10 minutes, your first stage, so the next session is one you can finish."),
+])
+def test_roadmap_sentence(index, outcome, taps, minutes, sentence):
+    assert rules.roadmap_sentence(rules.progress(STAGES, index, outcome, taps, minutes)) == sentence
+
+
+@pytest.mark.parametrize("outcome, notes, expected", [
+    ("pulled_away", [], True),
+    ("completed", ["team meeting"], True),
+    ("completed", ["Manager asked something"], True),
+    ("completed", ["client calls"], True),
+    ("completed", ["urgent email"], True),
+    ("completed", ["Slack", "email ping"], False),
+    ("completed", ["phone"], False),       # the user's own distraction, not an outside interruption
+    ("completed", ["recall the formula"], False),  # whole words only: "recall" is not "call"
+    ("lost_focus", [], False),
+])
+def test_outside_interruption(outcome, notes, expected):
+    assert rules.outside_interruption(outcome, notes) is expected
+
+
+@pytest.mark.parametrize("rule, expected", [
+    ("If Slack pings, then I'll note it and reply at the break.", True),
+    ("If Slack pings, then I’ll note it and reply at the break.", True),
+    ("If a meeting pulls me away, then I will write where I stopped.", True),
+    ("When Slack pings, I'll note it.", False),
+    ("If Slack pings I'll note it.", False),
+    ("Note Slack pings and reply at the break.", False),
+])
+def test_is_if_then(rule, expected):
+    assert rules.is_if_then(rule) is expected
+
+
+def test_quotes_note_is_word_for_word_and_case_insensitive():
+    assert rules.quotes_note("Twice it was slack that pulled you.", ["Slack"])
+    assert not rules.quotes_note("A chat ping pulled you twice.", ["Slack", "email ping"])
+
+
+def test_notes_lead_uses_the_first_two_different_notes():
+    assert rules.notes_lead(["Slack", "slack", "email ping", "news"]) == "You noted “Slack” and “email ping”."
+    assert rules.notes_lead(["Slack"]) == "You noted “Slack”."

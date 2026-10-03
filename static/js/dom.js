@@ -9,8 +9,10 @@ export function show(name) {
   for (const screen of document.querySelectorAll(".screen")) {
     screen.hidden = screen.id !== `screen-${name}`;
   }
+  document.body.dataset.screen = name; // the focus screen turns the whole page dark
   window.scrollTo(0, 0);
-  document.querySelector(`#screen-${name} [tabindex="-1"]`)?.focus({ preventScroll: true });
+  const headings = document.querySelectorAll(`#screen-${name} [tabindex="-1"]`);
+  [...headings].find((heading) => heading.offsetParent !== null)?.focus({ preventScroll: true });
 }
 
 // el("p", { className: "tag", text: "Default plan" }, [child, "more text"])

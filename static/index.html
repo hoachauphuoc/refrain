@@ -74,6 +74,19 @@
         <p class="rule-text" id="home-rule-text"></p>
       </div>
 
+      <div class="start card">
+        <label for="home-topic">What will you study?</label>
+        <input id="home-topic" type="text" maxlength="120" autocomplete="off" placeholder="For example: Project management course — managing risks">
+        <div class="start-row">
+          <label class="switch" for="home-demo">
+            <input id="home-demo" type="checkbox" role="switch">
+            <span class="track" aria-hidden="true"></span>
+            <span>Demo length (1 minute)</span>
+          </label>
+          <button type="button" class="primary" id="home-start-btn" disabled>Start session</button>
+        </div>
+      </div>
+
       <section class="history" aria-labelledby="home-history-title">
         <h3 id="home-history-title">Sessions</h3>
         <p class="muted" id="home-history-empty">Your first session is ready.</p>
@@ -87,6 +100,56 @@
           <div class="actions">
             <button type="button" class="secondary" id="home-reset-erase">Erase</button>
             <button type="button" class="primary" id="home-reset-cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-focus" class="screen" hidden aria-label="Focus session">
+      <h2 class="sr-only" tabindex="-1">Focus session</h2>
+      <p class="focus-topic" id="focus-topic"></p>
+      <div class="countdown" id="focus-countdown" role="timer" aria-label="Time left">0:00</div>
+      <p class="focus-rule" id="focus-rule" hidden></p>
+      <button type="button" class="distracted" id="focus-distracted">Distracted</button>
+      <div class="note-row" id="focus-note-row" hidden>
+        <label for="focus-note" class="sr-only">What pulled you away?</label>
+        <input id="focus-note" type="text" maxlength="60" autocomplete="off" placeholder="What pulled you away?" enterkeyhint="done">
+        <button type="button" class="link" id="focus-note-skip">Skip</button>
+      </div>
+      <p class="focus-tally" id="focus-tally" aria-live="polite"></p>
+    </section>
+
+    <section id="screen-debrief" class="screen" hidden aria-label="Teach-back and debrief">
+      <div id="teach">
+        <p class="eyebrow">Teach back</p>
+        <h2 id="teach-topic" tabindex="-1"></h2>
+        <form class="card" id="teach-form" novalidate>
+          <label for="teach-text">In two or three sentences, what's the core idea?</label>
+          <textarea id="teach-text" rows="5" maxlength="1500" aria-describedby="teach-count"></textarea>
+          <p class="field-msg" id="teach-count"></p>
+          <p class="status" id="teach-status" role="status"></p>
+          <div class="actions left">
+            <button type="button" class="primary" id="teach-submit" disabled>Get feedback</button>
+            <button type="button" class="secondary" id="teach-skip">Skip</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="debrief" hidden>
+        <p class="eyebrow">Debrief</p>
+        <h2 id="debrief-title" tabindex="-1"></h2>
+        <p class="tags" id="debrief-tags"></p>
+        <div class="debrief-cards" id="debrief-cards"></div>
+        <p class="status" id="debrief-status" role="status"></p>
+        <div class="actions left">
+          <button type="button" class="primary" id="debrief-retry" hidden>Try again</button>
+          <button type="button" class="secondary" id="debrief-back">Back to roadmap</button>
+        </div>
+        <div class="confirm card" id="debrief-leave" hidden>
+          <p>Leave without the debrief? This session won't count toward your roadmap.</p>
+          <div class="actions">
+            <button type="button" class="secondary" id="debrief-leave-yes">Leave</button>
+            <button type="button" class="primary" id="debrief-leave-no">Stay</button>
           </div>
         </div>
       </div>

@@ -354,7 +354,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Files:** `refrain/rules.py`.
 - **What it does:** Pure functions with no AI and no network, covered by `tests/test_rules.py`.
   - `tap_allowance(minutes) = max(2, minutes // 5)`, using the minutes actually planned for the session — 25 → 5, 12 → 2, a demo minute → 2.
-  - `progress(stage_index, stage_count, outcome, taps, minutes)` → `{change, new_index, next_minutes, allowance, reason_code}`:
+  - `progress(stages, stage_index, outcome, taps, minutes)` → `{change, new_index, next_minutes, allowance, reason_code}` (takes the stage list, because the next length comes from it):
 
     | Outcome | Condition | Change | Reason code |
     |---|---|---|---|
@@ -443,7 +443,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   - **Pattern quotes a note:** when notes exist, the pattern must contain at least one of them word for word (case-insensitive). If the retry still misses, code puts "You noted “Slack” and “email ping”." (the user's first two notes) in front of the AI's pattern.
   - **Roadmap card:** always `roadmap_sentence`, so the numbers are always right.
 - **Soft check (logged, not enforced):** the rule refers to a note — a paraphrase such as "a chat ping" for "Slack" is fine, so code can't judge it reliably. It is verified with real AI during the build.
-- **Prompt guidance:** covers *What's missing* (a specific missing idea, or "nothing important is missing"), questions answerable without the material, and kind handling of short or off-topic explanations.
+- **Prompt guidance:** covers *What's missing* (a specific missing idea, or "nothing important is missing"), questions answerable without the material, kind handling of short or off-topic explanations, and a rule whose then-part names something to do instead rather than only something to avoid — "if …, then not …" plans can strengthen the habit they target (Adriaanse et al. 2011, added during `5-build`).
 - PRD ref: `prd.md > AI Debrief`, `prd.md > Teach-back`, `prd.md > States and Boundaries`.
 
 #### Gemini client and simulated coach
