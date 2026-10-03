@@ -191,17 +191,20 @@
     .swatch .chip-color { height: 52px; }
     .swatch .lbl { padding: 8px 10px; font-size: 0.85rem; }
     .swatch .lbl span { display: block; color: var(--muted); font-size: 0.76rem; }
-    .focus-mock { background: #0f1513; color: #dfe8e3; border-radius: 14px; padding: 22px 18px; text-align: center; border: 1px solid #22302b; }
-    .focus-mock .topic { font-size: 0.8rem; color: #8fa39b; letter-spacing: 0.04em; }
-    .focus-mock .clock { font-size: 3.2rem; font-weight: 300; letter-spacing: 0.04em; margin: 4px 0 6px; font-variant-numeric: tabular-nums; }
-    .focus-mock .rule { font-size: 0.92rem; color: #fbbf24; margin: 0 auto 14px; max-width: 30em; }
-    .focus-mock .big { display: inline-block; font-size: 1.05rem; padding: 12px 26px; border-radius: 999px; border: 1px solid #2f6f66; background: #133a35; color: #e6fffa; }
-    .focus-mock .tally { font-size: 0.85rem; color: #8fa39b; margin-top: 10px; }
-    .paper-mock { background: #f6f1e7; color: #1f2a28; border-radius: 14px; padding: 18px; border: 1px solid #e4dccd; }
-    .paper-mock h4 { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 1.35rem; margin: 0 0 6px; font-weight: 600; }
-    .paper-mock p { margin: 0 0 10px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #5f6b66; }
-    .paper-mock .rulecard { background: #fdf3e3; border-left: 4px solid #d97706; border-radius: 10px; padding: 10px 12px; color: #92400e; font-weight: 600; }
-    .paper-mock .go { display: inline-block; margin-top: 10px; background: #0f766e; color: #ffffff; border-radius: 999px; padding: 8px 18px; font-weight: 600; }
+    .focus-mock { background: radial-gradient(120% 90% at 50% 0%, #0F1B30 0%, #060A13 70%); color: #EAF0FA; border-radius: 18px; padding: 22px 18px; text-align: center; border: 1px solid rgba(255,255,255,0.12); }
+    .focus-mock .topic { font-size: 0.8rem; color: #B3BDD0; letter-spacing: 0.04em; }
+    .focus-mock .ring { display: block; margin: 8px auto 6px; }
+    .focus-mock .rule { font-size: 0.92rem; color: #FBBF24; margin: 0 auto 14px; max-width: 30em; }
+    .focus-mock .big { display: inline-block; font-size: 1.05rem; padding: 12px 26px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.08); color: #EAF0FA; }
+    .focus-mock .tally { font-size: 0.85rem; color: #B3BDD0; margin-top: 10px; }
+    .night-mock { background: radial-gradient(90% 70% at 15% 0%, rgba(45,212,191,0.16), transparent 60%), radial-gradient(80% 60% at 100% 100%, rgba(251,191,36,0.10), transparent 60%), linear-gradient(180deg, #0F1B30, #0A1220); color: #EAF0FA; border-radius: 18px; padding: 18px; border: 1px solid rgba(255,255,255,0.12); }
+    .night-mock h4 { font-family: Georgia, "Times New Roman", serif; font-size: 1.35rem; margin: 0 0 6px; font-weight: 500; }
+    .night-mock p { margin: 0 0 10px; color: #B3BDD0; }
+    .night-mock .rulecard { background: rgba(255,255,255,0.06); border: 1px solid rgba(251,191,36,0.45); border-radius: 12px; padding: 10px 12px; color: #FBBF24; }
+    .night-mock .lit { background: #FBF7EE; color: #1F2A28; border-radius: 12px; padding: 10px 12px; margin-top: 10px; box-shadow: 0 0 30px rgba(251,191,36,0.18); }
+    .night-mock mark { background: #BFEFE5; color: #1F2A28; border-radius: 3px; padding: 0 2px; }
+    .night-mock .add { color: #92400E; font-size: 0.9rem; margin: 6px 0 0; }
+    .night-mock .go { display: inline-block; margin-top: 10px; background: linear-gradient(90deg, #2DD4BF, #22D3EE); color: #03241F; border-radius: 999px; padding: 8px 18px; font-weight: 600; box-shadow: 0 6px 22px -6px rgba(45,212,191,0.6); }
 
     details { border-top: 1px solid var(--line); padding: 7px 0; }
     details:first-of-type { border-top: none; }
@@ -511,32 +514,39 @@ flask --app main run --debug --port 8080</pre>
   </section>
 
   <section id="look">
-    <h2>Look and feel — exact tokens</h2>
+    <h2>Look and feel — Night study tokens</h2>
     <div class="swatches">
-      <div class="swatch"><div class="chip-color" style="background:#f6f1e7"></div><div class="lbl">Paper #f6f1e7<span>page background</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#1f2a28"></div><div class="lbl">Ink #1f2a28<span>text · 13.1:1 on paper</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#5f6b66"></div><div class="lbl">Muted #5f6b66<span>missed · ease back · 4.9:1</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#0f766e"></div><div class="lbl">Teal #0f766e<span>actions · progress · 5.5:1 white</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#d97706"></div><div class="lbl">Amber #d97706<span>accent bars only</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#92400e"></div><div class="lbl">Amber ink #92400e<span>rule · got it · 6.3:1</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#0f1513"></div><div class="lbl">Night #0f1513<span>focus screen</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#0F1B30"></div><div class="lbl">Sky #0F1B30<span>page background</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#EAF0FA"></div><div class="lbl">Ink #EAF0FA<span>text · 15.0:1 on sky</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#B3BDD0"></div><div class="lbl">Muted #B3BDD0<span>missed · ease back · 4.8:1 worst case</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#2DD4BF"></div><div class="lbl">Teal #2DD4BF<span>actions · progress · 9.3:1</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#FBBF24"></div><div class="lbl">Star #FBBF24<span>stars · rule · got it · 10.3:1</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#FBF7EE"></div><div class="lbl">Page #FBF7EE<span>long text · ink 13.8:1</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#BFEFE5"></div><div class="lbl">Marker #BFEFE5<span>what you got</span></div></div>
     </div>
     <div class="grid3">
-      <div class="paper-mock">
+      <div class="night-mock">
         <h4>Study for a certification after work</h4>
         <p>Stage 2 of 5 · 15 minutes · 4 a day</p>
         <div class="rulecard">If team chat pings, then I'll note it and reply at the break.</div>
+        <div class="lit">Risk is <mark>the chance of an event</mark> that affects <mark>the goal</mark>.<p class="add">Add: score each risk by likelihood × impact.</p></div>
         <span class="go">Start with warm-up</span>
       </div>
       <div class="focus-mock">
         <div class="topic">Project management course — managing risks</div>
-        <div class="clock">14:32</div>
+        <svg class="ring" width="150" height="150" viewBox="0 0 150 150" role="img" aria-label="The ring two-thirds full, with two stars where attention came back">
+          <circle cx="75" cy="75" r="62" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="6"/>
+          <circle cx="75" cy="75" r="62" fill="none" stroke="#2DD4BF" stroke-width="6" stroke-linecap="round" stroke-dasharray="389.6" stroke-dashoffset="130" transform="rotate(-90 75 75)"/>
+          <circle cx="134" cy="55.8" r="5" fill="#FBBF24"/>
+          <circle cx="75" cy="137" r="5" fill="#FBBF24"/>
+          <text x="75" y="85" text-anchor="middle" font-size="30" font-weight="300" fill="#EAF0FA">12:48</text>
+        </svg>
         <div class="rule">If team chat pings, then I'll note it and reply at the break.</div>
         <span class="big">Distracted</span>
         <div class="tally">2 noted · End early</div>
       </div>
     </div>
-    <p class="small muted" style="margin-top:10px">Headings in Georgia (bookish serif), body in the system sans at 17 px, countdown at weight 300 with tabular digits. System fonts only; the chime is two soft Web Audio tones. No red anywhere; no gradients, sparkles, chat bubbles, badges, confetti, or streaks.</p>
+    <p class="small muted" style="margin-top:10px">Revised during 5-build. Headings in Fraunces and interface text in Inter, both under the SIL Open Font License and self-hosted (about 140 KB for English text). Countdown in Inter with tabular digits. Glass carries labels, numbers, and buttons; long text sits on the lamp-lit page. During a session, nothing moves except the ring and the star your own tap lights. No red anywhere. No purple-to-pink gradients, four-point "AI" sparkle icons, chat bubbles, badges, confetti, or streaks.</p>
   </section>
 
   <section id="failures">
@@ -580,7 +590,7 @@ flask --app main run --debug --port 8080</pre>
         <li><b>Fixed rules in Python; AI writes words only</b> — progression must be exactly right and testable.</li>
         <li><b>Templated roadmap sentence and edge-case lines</b> — numbers and “not a focus lapse” can never be wrong.</li>
         <li><b>In-memory rate limits on one instance</b> instead of Redis or an API gateway.</li>
-        <li><b>Stateless AI calls, system fonts, synthesized chime, a labelled simulated coach</b> for tests — never in the demo.</li>
+        <li><b>Stateless AI calls, self-hosted fonts (no third-party requests), synthesized chime, a labelled simulated coach</b> for tests — never in the demo.</li>
       </ul>
     </details>
     <div class="callout" style="margin:12px 0">
@@ -914,7 +924,7 @@ flask --app main run --debug --port 8080</pre>
     gemini: { t: 'Gemini client and simulated coach', what: 'One generate_content call with a JSON schema and a 25-second timeout. Logs prompt and total tokens with an estimated cost — counts only. REFRAIN_FAKE_AI=1 swaps in FakeGemini and marks every reply simulated.', prd: 'prd.md > States and Boundaries (AI request fails)' },
     ratelimit: { t: 'Rate limits', what: 'In-memory, thread-safe: 30 AI requests per IP per hour, 360 Gemini calls per UTC day. One worker and one instance keep a single copy of the counters.', prd: 'Protects the public link' },
     index: { t: 'Page shell', what: 'One HTML page with one <section> per screen; scripts load as ES modules; no inline scripts or styles, to match the security headers.', prd: 'prd.md > Screens and Layout' },
-    css: { t: 'Styles', what: 'Palette tokens (paper, ink, teal, amber, night), Georgia headings, system sans body, cards, the stage row that scrolls sideways on phones, the dark focus screen, reduced-motion rules.', prd: 'prd.md > Look and Feel' },
+    css: { t: 'Styles', what: 'Night study tokens (sky, glass, teal, star, page), Fraunces and Inter, glass and lamp-lit page surfaces, the focus ring, motion and accessibility rules (reduced motion, reduced transparency, more contrast).', prd: 'prd.md > Look and Feel' },
     mainjs: { t: 'Boot and navigation', what: 'Loads progress and picks the first screen: Welcome, Teach-back (pending not sent), the debrief retry state (sent, no coaching yet), or Home.', prd: 'prd.md > States and Boundaries' },
     store: { t: 'Saved progress', what: 'One JSON value under refrain.v1: load (fresh state if missing, unreadable, or unknown version), save on every change, reset.', prd: 'prd.md > Progress on This Device' },
     api: { t: 'Server calls', what: 'POST JSON with a 55-second timeout; maps failures to “The coach couldn\u2019t respond. Your work is saved.” or “The coach needs a short break.”; passes the simulated flag through.', prd: 'prd.md > States and Boundaries (AI request fails)' },

@@ -71,6 +71,150 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Open the public link in another browser or on your phone, walk the demo path once, and say whether it behaves the same as on your laptop.
   Commit: `Deploy Refrain to Cloud Run with rate limits`
 
+- [ ] **7. Refrain looks like a product: the Night study design**
+  Becomes usable: Every screen moves to the Night study look, and everything works as before:
+  - a night sky with a faint aurora, glass cards, and long text on a lamp-lit page;
+  - Fraunces headings and Inter text;
+  - a top bar with the ring-and-star logo, icons, glowing buttons, and the stage path;
+  - "What the coach is doing" while the AI works;
+  - smooth changes between screens.
+  Why now: The learner found the interface too plain: "Khảo sát thêm về giao diện hiện tại giao diện quá đơn điệu tôi muốn 1 giao diện chuyên nghiệp và lung linh khiến người dùng thích thú và ban giám khảo phải wow" ("survey the current interface further — it's too monotonous; I want a professional, sparkling interface that delights users and wows the judges"). Building the design system first lets slices 8–12 be built straight into it instead of being restyled later. People judge better-looking interfaces as easier to use (Kurosu & Kashimura 1995), and a judge's first impression is formed in the opening seconds of the video.
+  PRD ref: `prd.md > Look and Feel`, `prd.md > Screens and Layout`
+  Spec ref: `spec.md > Look and Feel`, `spec.md > Components` (Page shell and screen switching, Server calls), `spec.md > File Structure`, `spec.md > External Services and Dependencies` (Bundled fonts and icons), `spec.md > Decisions and Open Issues`
+  Build:
+  - `styles.css` rewritten around the spec's tokens, glass and page surfaces, and components, with the accessibility media queries.
+  - `static/fonts/`: Fraunces and Inter, Latin and Vietnamese subsets. `static/licenses/`: the OFL and Lucide ISC texts. `font/woff2` registered in `refrain/__init__.py`.
+  - In `index.html`: the icon sprite, the top bar, and the new markup for the six screens. A new `favicon.svg`.
+  - View Transitions in `show()`; "What the coach is doing" in `api.js`; Home's grid of cards around the existing content.
+  - `tests/js/contrast.test.mjs`, which reads the tokens from `styles.css` and checks every text/background pair from the spec.
+  Verify (mechanical):
+  - `pytest` passes, including the fonts' `font/woff2` type and no `style=` attribute in `index.html`.
+  - `node --test tests/js` passes the contrast pairs.
+  - Screenshots of all six screens at 100% and 200% zoom.
+  - A keyboard-only walk works.
+  - No request leaves the app's origin, and the first load is 350 KB or less.
+  Learner check: Open Refrain and walk Welcome → Home → a demo session. Does it look professional and "lung linh" to you, and which screen still feels plain?
+  Commit: `Redesign Refrain as Night study`
+
+- [ ] **8. Each time you come back, a star lights up**
+  Becomes usable: The focus screen is the quiet night:
+  - a glowing ring fills with the countdown;
+  - each **Distracted** tap places an amber star on the ring at that moment;
+  - while you type the note, your plan from the rule shows above the field ("Your plan: close the chat and write my next step");
+  - after saving, "Noted. Back to {topic}." shows for two seconds.
+  Why now: It is the first of the visible-help slices, because the session is where the app most needs to show that noticing and returning counts. Support works best at the moment it is needed (Nahum-Shani et al. 2018). Motion onset captures attention (Abrams & Christ 2003), so nothing moves on its own.
+  PRD ref: `prd.md > Focus Session and Distraction Logging`, `prd.md > Screens and Layout` (Focus Session), `prd.md > Look and Feel`
+  Spec ref: `spec.md > Components` (Focus screen and timer), `spec.md > Look and Feel` (Focus screen, Motion)
+  Build:
+  - The ring in `index.html`.
+  - `focus.js` draws progress from the timer's tick and adds a star per tap.
+  - `progress.js`: `starPoint` (where a tap sits on the ring) and `planFrom` (the then-part of the rule).
+  - The "Noted" line, and the reduced-motion rules.
+  - Node tests for `starPoint` and `planFrom`.
+  Verify (mechanical):
+  - `node --test tests/js` passes.
+  - In the browser, a demo session shows:
+    - the ring filling in step with the countdown, also after the tab sat in the background;
+    - a star at each tap's position;
+    - the plan cue when a rule exists, and none without one;
+    - "Noted…" after saving.
+  Learner check: Run a demo session and tap **Distracted** twice. Do the stars and your plan make a tap feel like a rep rather than a failure?
+  Commit: `Light a star for each return on the focus ring`
+
+- [ ] **9. The debrief marks up your own words**
+  Becomes usable: The debrief opens with the session's small ring and three numbers: minutes focused, returns, and the longest stretch. Below them:
+  - *Your words* shows your explanation on the lamp-lit page, with a teal marker over what you got and an amber "Add: …" for what's missing;
+  - *Your session* is a line of focus stretches with a star and its note at each return, and the longest stretch glows;
+  - *Your North Star* highlights the words that came from your notes;
+  - moving up a stage lights the next stage once.
+  Why now: Feedback works better the more specific information it carries (Wisniewski, Zierer & Hattie 2020). Marking the user's own sentences is the most specific feedback there is, and it is the moment the video shows the AI at work.
+  PRD ref: `prd.md > AI Debrief`, `prd.md > Screens and Layout` (Teach-back and Debrief)
+  Spec ref: `spec.md > Components` (Teach-back and Debrief screen, Coach: debrief writer), `spec.md > External Services and Dependencies` (Refrain's own API), `spec.md > Data Model`
+  Build:
+  - Server:
+    - `got_quotes` in the debrief schema, asked only when there is an explanation;
+    - only quotes that appear in the explanation are kept (verbatim, ignoring case), with one retry through the existing soft-problem path;
+    - `coach.gotQuotes` in the response, and quotes from the simulated coach.
+  - Browser:
+    - `progress.js`: `highlightRanges` and `stretches`;
+    - the cards in `debrief.js`, built with `createElement` and `textContent`;
+    - the ring gliding into the debrief header with a view transition.
+  - Tests in `pytest` and Node.
+  Verify (mechanical):
+  - `pytest` and `node --test tests/js` pass.
+  - Five scripted real-Gemini sessions with explanations: record how many have at least one verbatim quote, plus cost and latency compared with $0.0046 and 8.2 s.
+  - In the browser, a demo session shows the marks, the timeline, and the highlights, and a skipped teach-back shows no *Your words* card.
+  Learner check: Write a two-sentence explanation that leaves something out on purpose. Does the marked-up text show exactly what you got and what to add?
+  Commit: `Mark up your explanation and draw the session in the debrief`
+
+- [ ] **10. Ideas you missed come back until you remember them**
+  Becomes usable:
+  - A warm-up question you missed, or got partly, comes back at your next warm-up, labelled "Back again — you missed this on Oct 3".
+  - A question you got returns once more after three sessions.
+  - Getting it a second time counts as an idea kept, shown with a star.
+  Why now: The scope promises that warm-ups show you remember more. Today the warm-up drops each question after one try — the condition in which people recalled 33–36% a week later, against about 80% when items kept being tested (Karpicke & Roediger 2008).
+  PRD ref: `prd.md > Warm-up Recall`, `prd.md > Deferred From the POC` (spaced review, now done by session count)
+  Spec ref: `spec.md > Components` (Warm-up screen, Coach: warm-up checker), `spec.md > Data Model` (`reviews`), `spec.md > External Services and Dependencies` (Refrain's own API: `/api/check` with up to three items)
+  Build:
+  - `reviews` in `store.js`, merged over `emptyState()`.
+  - `afterCheck` and `dueReviews` in `progress.js`.
+  - The warm-up asks two new questions plus at most one review, and opens even when only a review is due.
+  - The "Back again" label, the Kept star, and "ideas kept" on Home.
+  - `Check.items` raised to a maximum of 3.
+  - Tests.
+  Verify (mechanical):
+  - `pytest` passes: three items accepted, four refused.
+  - `node --test tests/js` passes: the schedule, a failed check keeping its items, and old saved data.
+  - In the browser:
+    - a missed question returns at the next warm-up;
+    - two gots make "1 idea kept";
+    - a reload keeps it, and Reset clears it.
+  Learner check: Miss one warm-up question on purpose, then run two more demo sessions. Does it come back, and does "kept" feel earned?
+  Commit: `Bring missed warm-up ideas back until they're kept`
+
+- [ ] **11. Home shows your rule at work and your sky**
+  Becomes usable: Home becomes a dashboard:
+  - counters for sessions, minutes focused, returns, and ideas kept;
+  - *Your North Star*, with "Rule at work": how often the notes behind the rule came up since it started;
+  - *What pulls you away most*: your three most frequent notes;
+  - *Your sky*: one row of stars per session.
+  Why now: Monitoring progress helps people reach goals, more so when it is recorded (Harkin et al. 2016). Slices 8–10 now save what is needed to show it.
+  PRD ref: `prd.md > Screens and Layout` (Home (Roadmap)), `prd.md > Possible Later Enhancements` (charts: only these in-app views now)
+  Spec ref: `spec.md > Components` (Home screen), `spec.md > Data Model` (`tapSecs`, `notes`, `rule.baseline`)
+  Build:
+  - History rows save `tapSecs` and `notes`, and the rule saves `baseline`.
+  - `ruleAtWork` and `topNotes` in `progress.js`.
+  - The dashboard in `home.js`, with numbers that count up.
+  - Old rows without tap times show only their count.
+  - Tests.
+  Verify (mechanical):
+  - `node --test tests/js` passes for `ruleAtWork`, `topNotes`, and old data.
+  - In the browser, after four demo sessions: the counters, rule at work, top notes, and sky rows are right; a reload keeps them, and Reset clears them.
+  Learner check: After a few sessions, can you tell at a glance whether your rule is working and what pulls you away most?
+  Commit: `Show your rule at work and your sky on Home`
+
+- [ ] **12. A first screen that shows the loop, and a polished public link**
+  Becomes usable:
+  - Welcome plays a short animation of the loop once: the ring draws itself, three stars light up, a marker sweeps a line, and a question comes back. The three steps sit on glass cards.
+  - Every control has its hover, keyboard-focus, pressed, and disabled look.
+  - The public link runs the new version.
+  - The README has screenshots and credits.
+  Why now: It goes last because it shows the pieces built in slices 7–11, and the demo path must be rewritten around them.
+  PRD ref: `prd.md > Screens and Layout` (Welcome), `prd.md > Look and Feel`
+  Spec ref: `spec.md > Components` (Welcome screen, Cloud Run service), `spec.md > Look and Feel`, `spec.md > Where It Runs and How Someone Tries It` (Demo recording path)
+  Build:
+  - The Welcome animation in SVG and CSS, played once, showing its last frame when reduced motion is on.
+  - A state-by-state pass: empty, waiting, and error.
+  - The spec's demo recording path rewritten around the new moments, under three minutes.
+  - README screenshots and a Credits section.
+  - Redeploy with the quoted environment list.
+  Verify (mechanical):
+  - `pytest` and `node --test tests/js` pass.
+  - Screenshots of every screen.
+  - On the public link: a four-session demo walk with real Gemini, the security headers, and a 429 on the 31st request.
+  Learner check: Watch the Welcome animation and walk the new demo path on the public link. Is this what you want the judges to see first?
+  Commit: `Add the Welcome loop animation and polish the public link`
+
 ## Hands-on Checkpoints
 
 - [ ] Final kick-the-tires exploration and feedback completed — the learner's first hands-on try; it also takes the place of the early checkpoint planned after slice 2 (see Revisions)
@@ -113,3 +257,21 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
   - **Finding the real client address:** instead of logging `X-Forwarded-For` permanently (an IP address in the logs), a diagnostic line logs it only when `REFRAIN_LOG_FORWARDED=1`. With it on for one revision, a request carrying a forged `203.0.113.77` arrived as `203.0.113.77, <client>`, and `<client>` matched the address in Cloud Run's own request log, so the code keys on the last entry. The variable was removed right after. Tavily agreed: on Cloud Run only the last entry can be trusted.
   - **Build permissions:** no grant was needed — the build runs as the Compute Engine default service account, which already holds `roles/editor` in this project.
   - Verified on the public URL with real Gemini: the three security headers; the whole demo path (survey → roadmap; a demo session with "team chat" and "email ping" → a debrief with every card and a rule from those notes; the warm-up, 1 got it and 1 missed; **I was pulled away** with both fields → the stage held with "not a focus lapse", and Home showed the pick-up card, the totals, and both rows). After the walk's 4 AI requests, 26 empty checks were allowed and the next was refused with `429 {"error":"rate_limited"}`, even though each carried a different forged `X-Forwarded-For` entry.
+- New slices 7–12 (the Night study design and visible help) were added after the deploy, following two messages from the learner:
+  - "Tôi muốn ban giám khảo phải wow với app nhưng app hiện tại tôi thấy rất đơn điệu và chưa thấy giúp ít gì rõ rệt cho người dùng" ("I want the judges to be wowed by the app, but right now I find it very monotonous, and I don't see it clearly helping users").
+  - "Khảo sát thêm về giao diện hiện tại giao diện quá đơn điệu tôi muốn 1 giao diện chuyên nghiệp và lung linh khiến người dùng thích thú và ban giám khảo phải wow" ("survey the current interface further — it's too monotonous; I want a professional, sparkling interface that delights users and wows the judges").
+  - **The agent's survey of the deployed app:**
+    - a flat paper background;
+    - system fonts only;
+    - no logo, icons, or images;
+    - equal-weight cards in one 680 px column;
+    - a 150 ms fade as the only motion;
+    - and each session's help hidden in text, with nothing showing what happened in a session, whether the rule works, or whether recall improves over time.
+  - **The decision:** the learner approved the plan and asked for it to be carried out.
+  - **Doc changes:**
+    - It replaces the approved calm-paper look with Night study. `prd.md > Look and Feel` and `spec.md > Look and Feel` were rewritten, with new tokens whose contrast was computed with the WCAG formula.
+    - The Avoid list keeps its purpose but is narrowed: purple-to-pink gradients and four-point "AI" sparkle icons, instead of all sparkle.
+    - Spaced review by session count moves forward from Deferred.
+    - In-app progress views stand in for the Later charts.
+    - `scope.md` records the revision.
+    - The final review and the hands-on checkpoint above now come after slice 12.

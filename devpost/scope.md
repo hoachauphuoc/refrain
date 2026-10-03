@@ -34,6 +34,7 @@ Why they come back: the plan becomes more personal after every session, the warm
 - Couch to 5K — a beginner program that starts small and builds up step by step; the roadmap should feel like that for focus. https://www.nhs.uk/better-health/get-active/get-running-with-couch-to-5k
 - Tone: a kind coach, never guilt. Contrast: Forest users describe guilt when the virtual tree dies and stress over broken streaks. https://unstar.app/blog/opal-forest-freedom-one-sec-jomo-screen-time-apps-ranked-2026
 - Calm design: clarity over cleverness, forgiveness over fear. https://www.uxmatters.com/mt/archives/2025/05/designing-calm-ux-principles-for-reducing-users-anxiety.php
+- Night study: a night sky where each return lights a star, so noticing a slip reads as a rep, not a failure. The look stays quiet during a session and shines around it. Added during `5-build`, when the learner asked for a professional, sparkling interface.
 - Visual direction is captured in `prd.md > Look and Feel`.
 
 ## Why This Matters to the Learner
@@ -55,6 +56,7 @@ The "oh, that's cool" beats: two-word notes come back as a rule written for this
 ## The POC Boundary
 - Four-question survey and an AI-generated starting roadmap.
 - Warm-up: recall of the previous session's two questions, checked by the AI.
+- Questions you missed come back at later warm-ups until you've recalled them twice, counted by sessions rather than days (added during `5-build`).
 - Session timer with one-tap distraction logging and an optional short note.
 - End early that tells "pulled away" (the roadmap holds, and a where-I-stopped note is kept for next time) from "lost focus".
 - Teach-back after each session.
@@ -65,9 +67,9 @@ The "oh, that's cool" beats: two-word notes come back as a rule written for this
 
 ## Later
 - Memory drills: names and faces (face-name mnemonic), phone numbers (chunking, the major system), and the memory palace (method of loci).
-- Spaced review that brings back older questions on a schedule, beyond the next session.
+- Spaced review on a calendar — days apart, with reminders. The PoC counts sessions instead.
 - A weekly check-in comparing measured focus span with the survey estimate.
-- Charts of focus span across the 66-day journey.
+- Charts of focus span across the 66-day journey. The PoC shows each session's stars and a history of them instead.
 - Reminders and notifications.
 - Accounts and sync across devices.
 - AI sorting of "parked" thoughts into do now / later / drop.
@@ -114,3 +116,9 @@ Closest existing products
 - **Revision (approved Oct 3, 2026, during `3-prd`):** the learner added memory training as a core goal and asked for the plan to go deeper than Focusito. The agent researched each of the learner's examples; the learner approved ("ok") keeping teach-back and next-session recall in the PoC, moving memory drills to Later, and cutting speed reading.
 - **Decisions made during `3-prd` (Oct 3, 2026):** the learner shared their story as a junior manager, chose a working-adult demo persona like themselves instead of a student, approved an End-early choice that separates being pulled away from losing focus, and chose the name **Refrain** from a shortlist the agent researched and collision-checked at the learner's request.
 - **Revision (approved Oct 3, 2026, during `5-build`):** the audience became adults 18 and over. Asked whether the project follows the judges' rules, the agent checked the third-party terms the hackathon requires entrants to follow: Google Cloud's Service Specific Terms (Generative AI Services, "Age Restrictions", last modified Sep 30, 2026) don't allow its generative AI services in a website "directed towards or is likely to be accessed by individuals under the age of 18". School students left the audience, the survey accepts ages 18–120, and the Welcome notice says Refrain is for adults; the learner approved this in the plan they asked the agent to carry out.
+- **Revision (approved Oct 3, 2026, during `5-build`):** the learner said the app felt monotonous and didn't clearly help its users, and asked for a professional, sparkling interface that wows the judges.
+  - The agent surveyed the interface and researched design and learning evidence with Tavily.
+  - The learner approved the plan that resulted:
+    - the Night study look (`prd.md > Look and Feel`);
+    - visible help in every step of the loop;
+    - missed warm-up questions coming back by session count, moved forward from Later.

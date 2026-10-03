@@ -136,9 +136,10 @@
     .swatch .chip-color { height: 56px; }
     .swatch .lbl { padding: 8px 10px; font-size: 0.85rem; }
     .swatch .lbl span { display: block; color: var(--muted); font-size: 0.78rem; }
-    .typo { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: light-dark(#f6f1e7, #1d1b16); }
-    .typo .serif { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 1.6rem; margin: 0 0 4px; color: light-dark(#1f2a28, #f1ece2); }
-    .typo .sans { margin: 0; color: light-dark(#3a4642, #cfd8d3); }
+    .typo { border: 1px solid var(--line); border-radius: 18px; padding: 16px; background: radial-gradient(90% 80% at 10% 0%, rgba(45,212,191,0.16), transparent 60%), linear-gradient(180deg, #0F1B30, #0A1220); }
+    .typo .serif { font-family: Georgia, "Times New Roman", serif; font-size: 1.6rem; margin: 0 0 4px; color: #EAF0FA; }
+    .typo .sans { margin: 0; color: #B3BDD0; }
+    .typo .star { color: #FBBF24; }
     .voice { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 14px; }
     .voice div { border-radius: 12px; padding: 10px 14px; border: 1px solid var(--line); }
     .voice .yes { border-color: var(--accent); }
@@ -313,27 +314,27 @@
   </section>
 
   <section id="look">
-    <h2>Look and feel</h2>
-    <p style="margin-top:0">Calm and warm, like a quiet study desk — clarity over cleverness, forgiveness over fear (<a href="https://www.uxmatters.com/mt/archives/2025/05/designing-calm-ux-principles-for-reducing-users-anxiety.php">UXmatters, “Designing Calm”</a>).</p>
+    <h2>Look and feel — Night study</h2>
+    <p style="margin-top:0">Revised during <code>5-build</code>: the learner asked for a professional, sparkling interface (“chuyên nghiệp và lung linh”). You study under a night sky, your words sit on a lamp-lit page, and each time you bring your attention back, a star lights up. It is quiet during a session and shines around it.</p>
     <div class="swatches">
-      <div class="swatch"><div class="chip-color" style="background:#f6f1e7"></div><div class="lbl">Paper<span>background</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#1f2a28"></div><div class="lbl">Ink<span>text</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#0f766e"></div><div class="lbl">Deep teal<span>actions · progress</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#d97706"></div><div class="lbl">Warm amber<span>“aha” moments only</span></div></div>
-      <div class="swatch"><div class="chip-color" style="background:#0f1513"></div><div class="lbl">Focus dark<span>session screen</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#0F1B30"></div><div class="lbl">Night sky<span>background, with a faint aurora</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#EAF0FA"></div><div class="lbl">Ink<span>text on the night</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#2DD4BF"></div><div class="lbl">Bright teal<span>actions · progress</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#FBBF24"></div><div class="lbl">Starlight amber<span>“aha” moments only</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#FBF7EE"></div><div class="lbl">Lamp-lit page<span>long text you write or read</span></div></div>
     </div>
     <div class="typo">
-      <p class="serif">Stage 3 · 15-minute sessions</p>
-      <p class="sans">Serif headings for a bookish feel; a clean, highly legible sans-serif for body text and inputs; large numerals for the countdown. Rounded cards, soft shadows, generous whitespace, minimal motion.</p>
+      <p class="serif">Stage 3 · 15-minute sessions <span class="star">• • •</span></p>
+      <p class="sans">An editorial serif for headings and a clean sans-serif for the interface, both shipped with the app. Frosted-glass cards with thin light edges. A star for each return, a glowing ring for the session, the North Star for your rule. Motion is short and purposeful, and still during a session.</p>
     </div>
-    <p class="muted" style="font-size:0.85rem">Swatches and fonts are illustrative; <code>4-spec</code> sets the exact values. No red or alarm colors anywhere.</p>
+    <p class="muted" style="font-size:0.85rem">Exact values and contrast are in <code>spec.md > Look and Feel</code>. No red or alarm colors anywhere.</p>
     <div class="voice">
       <div class="yes">You held 15 minutes with two notes — moving up to 20.</div>
       <div class="no">Failed! You lost your streak.</div>
       <div class="yes">The meeting pulled you away — that's not a lapse. Your next step is saved: “finish the risk table”.</div>
       <div class="no">✨ Amazing!!! You're a focus superstar 🚀</div>
     </div>
-    <p class="muted" style="font-size:0.9rem;margin:12px 0 0">Avoid generic AI-app styling: purple gradients, sparkles, chat-bubble layouts, gamified badges, confetti.</p>
+    <p class="muted" style="font-size:0.9rem;margin:12px 0 0">Avoid generic AI-app styling: purple-to-pink gradients, four-point “AI magic” sparkle icons, chat-bubble layouts, gamified badges, confetti, and streaks. Light only marks something you did.</p>
   </section>
 
   <section id="decisions">
@@ -397,7 +398,7 @@
         <details><summary>Accounts and sync</summary><p>One device proves the loop; accounts add sign-in, storage, and privacy work.</p></details>
         <details><summary>Memory drills</summary><p>Names &amp; faces, phone numbers, memory palace — a second loop that would dilute the two-minute demo.</p></details>
         <details><summary>Prioritizing work tasks</summary><p>Part of your story, but a separate problem with its own loop.</p></details>
-        <details><summary>Spaced review beyond the next session</summary><p>Needs a review calendar; the PoC proves recall at the next session.</p></details>
+        <details><summary>Spaced review on a calendar</summary><p>Days apart needs reminders and a review calendar. The PoC brings missed warm-up questions back by session count instead (added during <code>5-build</code>).</p></details>
         <details><summary>Several good sessions before moving up</summary><p>More realistic, but it would hide the roadmap change in the demo.</p></details>
         <details><summary>Tuning the tap allowance from real usage</summary><p>Needs data from many sessions.</p></details>
         <details><summary>Keeping a phone screen awake</summary><p>The laptop is the primary device for the PoC.</p></details>

@@ -59,15 +59,41 @@ Full-screen, dark, nearly empty: large countdown, the topic in small text, the n
 One screen in two states. **Teach-back:** the topic, the prompt "In two or three sentences, what's the core idea?", a text box, **Get feedback** and **Skip**. **Debrief:** the coach's response as stacked cards — *What you got*, *What's missing*, *Next warm-up* (the two questions), *Your pattern*, *Your rule* (highlighted), *Your roadmap* (the change and why) — then **Back to roadmap**.
 
 ## Look and Feel
-Agreed direction (the learner asked the agent to research it and approved the proposal). Develops `scope.md > Inspiration & Identity`.
+**Night study** — revised during `5-build` (Oct 3, 2026). The learner found the first look monotonous and asked for an interface that is professional and sparkling ("chuyên nghiệp và lung linh") and delights users. They approved the agent's researched proposal. It replaces the first agreed direction, a calm paper study desk. Develops `scope.md > Inspiration & Identity`.
 
-- **Overall:** calm and warm, like a quiet study desk — clarity over cleverness, forgiveness over fear (UXmatters, "Designing Calm", 2025).
-- **Colors:** warm off-white paper background; one deep teal accent for actions and progress; warm amber only for "aha" moments (the new rule, recall answers you got). No red or alarm colors anywhere — misses and ease-backs use neutral tones.
-- **Typography:** a serif for headings for a bookish feel; a clean, highly legible sans-serif for body text and inputs; large numerals for the countdown.
-- **Shapes and space:** rounded cards, soft shadows, generous whitespace, minimal motion.
-- **Focus screen:** dark and nearly empty, low stimulation.
-- **Coach voice:** short, kind, specific sentences that use the user's own words. "Ease back", never "failed". Being pulled away is never treated as a lapse. No emojis.
-- **Avoid:** generic AI-app styling — purple gradients, sparkles, chat-bubble layouts, gamified badges, confetti.
+- **Overall:** studying under a night sky. What you write sits on a lamp-lit page, and each time you bring your attention back, a star lights up. Light always marks something you did: the app stays quiet during a session and shines around it. Attractive interfaces are also judged easier to use (Kurosu & Kashimura 1995; NN/g).
+- **Picture language:**
+  - **A star:** one time you noticed a slip and came back — a rep, never a failure.
+  - **A glowing ring:** the session in progress.
+  - **The North Star:** your if-then rule.
+  - **Your sky:** past sessions, one row of stars each.
+  - **The lamp-lit page:** anything you write, or read at length.
+- **Colors:**
+  - a deep night-sky background with a faint, slow aurora of teal, blue, and amber;
+  - frosted-glass cards;
+  - bright teal for actions and progress;
+  - amber starlight only for "aha" moments (stars, the rule, answers you got).
+  - No red or alarm colors anywhere. Misses and ease-backs use neutral tones.
+- **Typography:**
+  - an editorial serif for headings, which keeps the bookish feel;
+  - a clean sans-serif for the interface and text;
+  - large, even-width numerals for the countdown.
+  - Both fonts ship with the app.
+- **Shapes and space:**
+  - rounded glass cards with thin light edges and soft glows;
+  - a top bar with the ring-and-star logo;
+  - Home as a grid of cards on wide screens;
+  - generous whitespace.
+- **Motion:**
+  - Feedback takes about 100 ms and screen changes 200–300 ms (NN/g), with smooth transitions between screens.
+  - During a session nothing moves on its own, because motion that starts captures attention (Abrams & Christ 2003). Only your own tap makes a star twinkle.
+  - When the device asks for reduced motion or reduced transparency, the app is still and solid.
+- **Reading:**
+  - Long text sits on the light page: your explanation, warm-up answers, and the marked-up debrief. Dark text on a light background is read more accurately (Piepenbrock et al. 2013).
+  - Glass carries only short labels, numbers, and buttons.
+- **Focus screen:** the darkest, quietest screen. It holds the ring, the countdown, the stars you've lit, and one large **Distracted** button.
+- **Coach voice:** unchanged — short, kind, specific sentences that use the user's own words. "Ease back", never "failed". Being pulled away is never treated as a lapse. No emojis.
+- **Avoid:** generic AI-app styling — purple-to-pink gradients, four-point "AI magic" sparkle icons, chat-bubble layouts, gamified badges, confetti, and streaks.
 
 ## Features and Behavior
 
@@ -181,7 +207,7 @@ Agent proposals the learner approved after asking the agent to research them:
 - **End early** separates **I was pulled away** (hold, plus a ready-to-resume note — Leroy & Glomb 2018) from **I lost focus** (ease back) — approved with the working-adult persona.
 - Progression thresholds: up when completed within one tap per 5 minutes (at least 2); more → hold. Students' minds wander on roughly a third to half of thought probes during lectures (Wammes et al. 2016; review: https://pmc.ncbi.nlm.nih.gov/articles/PMC3730052), and no study sets a standard threshold, so the allowance is generous and scales with session length — otherwise users could learn to stop tapping to move up, which would undermine the self-monitoring the kernel depends on.
 - Laptop-first web app that also works on a phone — the phone is the main distraction, so the app shouldn't require holding one.
-- Calm visual direction in **Look and Feel**.
+- Visual direction in **Look and Feel**: first a calm paper study desk. During `5-build` it was revised to Night study, after the learner asked for an interface that is "chuyên nghiệp và lung linh" (professional and sparkling).
 
 Assumptions the learner approved with this PRD ("looks good"):
 - A "What will you study?" field before each session, so the coach can check the explanation and write fair questions.
@@ -207,7 +233,7 @@ Assumptions the learner approved with this PRD ("looks good"):
 - **Accounts and sync** — progress on one device is enough to prove the loop; accounts add sign-in, storage, and privacy work.
 - **Memory drills** (names and faces, phone numbers, memory palace) — a second training mode with its own loop; it would dilute the two-minute demo.
 - **Prioritizing work tasks** — part of the learner's story, but a separate problem with its own loop (see AI sorting of parked thoughts below).
-- **Spaced review beyond the next session** — the PoC proves recall at the next session; scheduling older questions needs a review calendar.
+- **Spaced review on a calendar** — the PoC brings missed warm-up questions back by session count (added during `5-build`, `checklist.md` slice 10). Spacing reviews by days needs reminders and a review calendar.
 - **Requiring several good sessions before moving up a stage** — slower progression is more realistic but would hide the roadmap change in the demo.
 - **Tuning the tap allowance from real usage** — needs data from many sessions.
 - **Keeping a phone's screen awake during a session** — the laptop is the primary device for the PoC.
@@ -215,7 +241,7 @@ Assumptions the learner approved with this PRD ("looks good"):
 
 ## Possible Later Enhancements
 - A weekly check-in comparing measured focus span with the survey estimate.
-- Charts of focus span and recall across the 66-day journey.
+- Charts of focus span and recall across the 66-day journey. The PoC shows smaller in-app views instead: the stars of each session, your sky, rule at work, top distractions, and ideas kept (`checklist.md` slices 8–11).
 - Gentle reminders at the user's chosen study time.
 - AI sorting of parked thoughts and interrupting tasks into do now / later / drop.
 - Study tips looked up for the user's goal, for example with Tavily web search.

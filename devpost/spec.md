@@ -125,57 +125,110 @@ Every billable step below gets a final yes from the learner at the start of `5-b
 The repo is initialized with git at the start of `5-build` (each step is committed) and made public on GitHub in `6-ship`. The required demo video and public repository come from `6-ship`; the public link is extra.
 
 ## Look and Feel
-Carried from `prd.md > Look and Feel` and `scope.md > Inspiration & Identity`; no new design decisions.
+Carried from `prd.md > Look and Feel` (Night study, revised during `5-build`) and `scope.md > Inspiration & Identity`. The values below are the agent's specifics for that approved direction, and they replace the first paper theme. Token names are the ones used in `styles.css`.
 
-**Colors (CSS custom properties in `styles.css`; contrast checked against WCAG AA).**
+**Colors (CSS custom properties; WCAG AA checked by `tests/js/contrast.test.mjs`).** "Worst case" is the lightest place text can sit: hover glass over the brightest aurora glow.
 
-| Token | Hex | Use | Contrast |
+| Token | Value | Use | Contrast |
 |---|---|---|---|
-| `--paper` | `#f6f1e7` | Page background | — |
-| `--card` | `#fffdf8` | Cards and inputs | — |
-| `--ink` | `#1f2a28` | Body text | 13.1:1 on paper |
-| `--muted` | `#5f6b66` | Secondary text; neutral states (missed, ease back) | 4.9:1 on paper |
-| `--line` | `#e4dccd` | Borders, dividers | — |
-| `--teal` | `#0f766e` | Buttons, current stage, progress | white on teal 5.5:1 |
-| `--teal-soft` | `#e3f0ec` | Highlighted stage background | teal text 4.7:1 |
-| `--amber` | `#d97706` | Accent bars and borders only, never text | — |
-| `--amber-ink` | `#92400e` | Amber text: the rule, "got it" | 6.3:1 on paper |
-| `--amber-soft` | `#fdf3e3` | Rule card background | amber text 6.5:1 |
-| `--night` | `#0f1513` | Focus screen background | — |
-| `--night-ink` | `#dfe8e3` | Focus screen text and countdown | 14.8:1 |
-| `--night-muted` | `#8fa39b` | Topic, tally, small links on the focus screen | 6.9:1 |
-| `--night-teal` | `#133a35` | Distracted button | button text 11.9:1 |
-| `--night-amber` | `#fbbf24` | The rule on the focus screen | 11.1:1 |
+| `--sky-0` | `#060A13` | Focus screen background | — |
+| `--sky-1` | `#0A1220` | Page background, bottom of the gradient | — |
+| `--sky-2` | `#0F1B30` | Page background, top of the gradient | — |
+| `--surface` | `#111C30` | Solid cards when glass is off | — |
+| `--surface-2` | `#172640` | Text boxes on the night | — |
+| `--glass` / `--glass-strong` | white at 6% / 10% | Cards, chips, buttons / hover | — |
+| `--edge` | white at 12% | Card edges and dividers (decorative) | — |
+| `--field-edge` | white at 40% | Borders of text boxes and switches | 3.0:1 or more |
+| `--ink` | `#EAF0FA` | Text on the night | 15.0:1 on sky-2; 7.9:1 worst case |
+| `--muted` | `#B3BDD0` | Secondary text; neutral states (missed, ease back) | 9.1:1 on sky-2; 4.8:1 worst case |
+| `--teal` | `#2DD4BF` | Actions, progress, links | 9.3:1 on sky-2; 4.9:1 worst case |
+| `--teal-hi` | `#5EEAD4` | Hover, keyboard focus ring | 11.6:1 on sky-2 |
+| `--cyan` | `#22D3EE` | Second stop of the button gradient | — |
+| `--on-teal` | `#03241F` | Text on teal buttons | 8.8:1 on teal; 9.1:1 on cyan |
+| `--star` | `#FBBF24` | Stars, the rule, "got it" | 10.3:1 on sky-2; 5.4:1 worst case |
+| `--blue` | `#3B82F6` | Aurora only, never text | — |
+| `--page` | `#FBF7EE` | The lamp-lit page | — |
+| `--page-ink` | `#1F2A28` | Text on the page | 13.8:1 |
+| `--page-muted` | `#5B6661` | Secondary text on the page | 5.6:1 |
+| `--page-edge` | `#8C826F` | Text box border on the page | 3.6:1 |
+| `--marker` | `#BFEFE5` | Teal marker behind what you got | page ink 11.8:1 |
+| `--marker-star` | `#FDE68A` | Amber marker behind words from your notes | page ink 11.9:1 |
+| `--teal-ink` | `#0F766E` | Teal text on the page | 5.1:1 |
+| `--amber-ink` | `#92400E` | Amber text on the page ("Add: …") | 6.6:1 |
 
-There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm color. The app has a light theme only (paper), with the dark focus screen as the single exception.
+There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm color. The app is dark throughout, and the lamp-lit page is its one light surface, for long text.
+
+**Surfaces.**
+- **Glass** (`.glass`): holds cards, chips, buttons, labels, and numbers, never paragraphs.
+  - Built from the `--glass` fill, a 1 px `--edge` border, a faint top highlight, and `backdrop-filter: blur(18px) saturate(140%)`.
+  - Without `backdrop-filter`, or with `prefers-reduced-transparency: reduce`, glass becomes solid `--surface`.
+  - With `prefers-contrast: more`, edges become white at 60% and glows are dropped.
+- **Page** (`.page`): holds the teach-back box, the warm-up answers, and the marked-up explanation.
+  - Solid `--page` with a soft amber glow behind it, like a lamp.
+  - Dark text on a light background is read more accurately (Piepenbrock et al. 2013).
+- **Background:** a vertical gradient from `--sky-2` to `--sky-1`, with faint, still star dust.
+  - Three blurred aurora glows (teal, blue, amber), each at most 16% opacity, drift with `transform` only, on loops of 60 s or longer.
+  - On the focus screen the background is `--sky-0` and the aurora is dimmed and still.
 
 **Typography.**
-- Headings: `Georgia, "Iowan Old Style", "Times New Roman", serif` (bookish).
-- Body and inputs: `system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`, at a 17 px base and 1.6 line height.
-- Countdown: 5–6 rem, weight 300, `font-variant-numeric: tabular-nums` so the digits don't jiggle.
-- System fonts only, so nothing is downloaded and the page works offline.
+- **Headings:** Fraunces (variable weight and optical size), weights 400–600. Fallback `Georgia, "Times New Roman", serif`.
+- **Interface and body text:** Inter (variable weight and optical size), at a 17 px base and 1.6 line height. Fallback `system-ui, "Segoe UI", Roboto, Arial, sans-serif`.
+- **Countdown and numbers:** Inter. The countdown uses weight 200–300, and `font-variant-numeric: tabular-nums` keeps the digits from jiggling.
+- **Font files:** self-hosted in `static/fonts/`.
+  - Latin and Vietnamese subsets are split by `unicode-range`, so English text loads only the two Latin files, about 140 KB.
+  - `font-display: swap`, and the two Latin files are preloaded.
+- **License:** both fonts use the SIL Open Font License 1.1, which ships in `static/licenses/`.
 
-**Shapes, space, and motion.**
-- A single centered column, at most 680 px wide.
-- Cards: 14 px radius, a soft two-layer shadow, an 8 px spacing scale, and generous whitespace.
-- Stage cards sit in one row that scrolls sideways on narrow screens.
-- Motion is limited to 150 ms fades between screens, and none when `prefers-reduced-motion` is set.
+**Icons and logo.**
+- About a dozen Lucide icons (ISC license) in one inline SVG sprite in `index.html`. The copyright notice sits beside the sprite and in `static/licenses/`. Icons next to text are `aria-hidden`.
+- The logo is Refrain's own: a ring with a gap, and a star in the gap — the moment you come back. It is also the favicon.
 
-**Focus screen.** Full-screen `--night` with:
-- the large countdown;
-- the topic and the "next step" note in small muted text;
-- the rule in `--night-amber`;
-- one large rounded **Distracted** button;
+**Shapes, space, and layout.**
+- Radii of 12, 18, and 28 px. A 4 px spacing scale: 4, 8, 12, 16, 24, 32, 48, 64.
+- Soft shadows, plus teal or amber glows on focusable and "aha" elements.
+- A top bar with the logo and the current stage on every screen except Focus.
+- Home is a grid of cards from 960 px wide and one column below that. The other screens use a 680 px column.
+
+**Motion.**
+- **Durations** (NN/g): about 100 ms for feedback such as a press or a toggle, and 200–300 ms for bigger changes. One easing curve: `cubic-bezier(0.2, 0.8, 0.2, 1)`.
+- **Screen changes** use the View Transitions API (`document.startViewTransition` in `show()`).
+  - A 250 ms cross-fade; named elements glide between screens (the logo, and from slice 9 the session ring).
+  - Without the API, or with reduced motion, the screen switches with the 150 ms fade.
+- **During a session**, nothing starts moving on its own, because motion onset captures attention (Abrams & Christ 2003).
+  - The ring advances with the countdown.
+  - A star twinkles for 600 ms, and only after the user's own tap.
+- **Small touches:**
+  - The primary button shows a light sheen on hover and presses down 2% when clicked.
+  - Counters count up once, when they first appear.
+- **`prefers-reduced-motion: reduce`** turns off every animation and transition: the aurora, the sheen, count-ups, twinkles, and view transitions.
+
+**Waiting for the coach.**
+- Each AI wait shows "What the coach is doing": two or three lines that describe what that request asks for.
+  - Roadmap: "Reading your answers", "Sizing your first stage", "Writing why".
+  - Warm-up check: "Comparing your answers with the questions", "Writing a one-line answer for each".
+  - Debrief: "Reading your explanation", "Looking at your session and notes", "Writing your rule and your next questions".
+- A soft shimmer moves through the lines, and the usual wait time sits beneath them.
+- There are no tick marks, because it is one request, not separate steps.
+- Showing the work done during a wait raises how much people value the result (Buell & Norton 2011).
+
+**Focus screen.** Full-screen `--sky-0` with:
+- the topic and the "next step" note in small `--muted` text;
+- the large countdown inside a glowing ring, with a star on the ring for each return (slice 8);
+- the rule in `--star`;
+- one large glass **Distracted** button;
 - the tally ("2 noted") and a small **End early** link;
-- the End-early panel as a darker card over the screen.
+- the End-early panel as a glass card over the screen.
 
 **Chime.** Two soft sine tones (about 660 Hz, then 880 Hz, 0.4 s each, with a gentle fade), made with the Web Audio API. There is no audio file.
 
 **Copy voice.** Short, kind, and specific. Examples: "Ease back — next session is 10 minutes, a step you've already reached." "Being pulled away is not a focus lapse. Your stage holds." Each tap is "noticed and returned". No emojis, and never "failed".
 
-**Avoid.** Purple gradients, sparkles, chat bubbles, badges, confetti, and streak counters.
+**Avoid.** Purple-to-pink gradients, four-point "AI magic" sparkle icons, chat bubbles, badges, confetti, and streak counters. Light only marks something the user did.
 
-**What the stack can't honor exactly.** System fonts differ slightly by device (Georgia ships with Windows and macOS; other systems fall back to their own serif).
+**What the stack can't honor exactly.**
+- `backdrop-filter` costs GPU time on low-end devices, so each screen keeps only a few glass elements.
+- Firefox and Safari don't support `prefers-reduced-transparency` yet, so glass stays on there. Its text still meets AA in the worst case above.
+- Browsers older than Chrome/Edge 111, Safari 18, or Firefox 144 have no View Transitions, so they switch screens with the fade.
 
 ## Components
 
@@ -555,14 +608,18 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
 │   ├── gemini.py                # Gemini client (Vertex AI), token logging, FakeGemini for REFRAIN_FAKE_AI=1
 │   └── ratelimit.py             # in-memory per-IP and daily caps
 ├── static/                      # everything the browser loads
-│   ├── index.html               # one page, one <section> per screen
+│   ├── index.html               # one page, one <section> per screen, top bar, icon sprite
+│   ├── favicon.svg              # the ring-and-star logo
 │   ├── css/
-│   │   └── styles.css           # palette tokens, type, cards, stage row, dark focus screen, responsive rules
+│   │   └── styles.css           # Night study tokens, glass and page surfaces, components, focus screen, motion and accessibility rules
+│   ├── fonts/                   # Fraunces and Inter (variable), Latin and Vietnamese woff2 subsets
+│   ├── licenses/                # SIL OFL 1.1 for both fonts, ISC for the Lucide icons
 │   └── js/
 │       ├── main.js              # boot: load progress, choose first screen, wire navigation
 │       ├── store.js             # localStorage "refrain.v1": load, save, reset
-│       ├── api.js               # POST to /api/*, timeout, calm error messages
-│       ├── dom.js               # show a screen, build elements, set text safely (textContent)
+│       ├── api.js               # POST to /api/*, timeout, calm error messages, what the coach is doing
+│       ├── dom.js               # show a screen (View Transitions when available), build elements, set text safely (textContent)
+│       ├── progress.js          # pure helpers, no DOM: ring geometry, highlights, focus stretches, review schedule, rule at work
 │       ├── timer.js             # countdown from Date.now(), Web Audio chime
 │       └── screens/
 │           ├── welcome.js       # promise, how it works, data notice, Start
@@ -574,7 +631,8 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
 ├── tests/
 │   ├── conftest.py              # app fixture with REFRAIN_FAKE_AI=1
 │   ├── test_rules.py            # every progression case, allowance, default plan for max 5–120
-│   └── test_api.py              # validation errors, edge cases, AI failure path, rate limit
+│   ├── test_api.py              # validation errors, edge cases, AI failure path, rate limit
+│   └── js/                      # node --test, no packages: contrast of the color tokens, progress.js helpers
 ├── scripts/
 │   └── smoke_gemini.py          # loads .env, makes one real Gemini call: confirms SDK settings, prints tokens and cost
 ├── requirements.txt             # Flask, gunicorn, google-genai, pydantic, python-dotenv (pinned)
@@ -632,6 +690,14 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
   - Pricing: https://cloud.google.com/vertex-ai/generative-ai/pricing
   - Data use: https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/zero-data-retention
 
+### Bundled fonts and icons (files in the repo, no runtime service)
+- **Fraunces and Inter**, both variable fonts.
+  - Source: the `@fontsource-variable/fraunces` and `@fontsource-variable/inter` 5.3.0 packages, fetched once with `npm pack`. Only the woff2 files and the licenses are kept; the repo has no `package.json`.
+  - License: SIL Open Font License 1.1. The fonts may be used, bundled, and redistributed with software, as long as the license ships with them.
+  - https://fontsource.org/fonts/fraunces, https://fontsource.org/fonts/inter
+- **Lucide icons**: ISC license, with some icons derived from Feather under MIT. They may be copied, modified, and distributed with the copyright and permission notice. https://lucide.dev/license
+- **Serving:** the files come from `/static/` like the rest of the page, so the CSP stays `default-src 'self'`. `refrain/__init__.py` registers `font/woff2`, so the fonts are sent with the right type under `X-Content-Type-Options: nosniff`.
+
 ### Google Cloud Run, Cloud Build, Artifact Registry
 - **What they do:** source deploy uploads the repo, Cloud Build builds an image with the Python buildpack, Artifact Registry stores it, and Cloud Run serves it.
 - **Cost:** Cloud Run's request-based free tier is 2 million requests, 180,000 vCPU-seconds, and 360,000 GiB-seconds per month per billing account (us-central1). That is far above a hackathon's traffic, so hosting should round to about $0. Cloud Build and Artifact Registry bill separately with their own free tiers; a few deploys cost cents at most.
@@ -685,7 +751,7 @@ Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`
 - **Templated roadmap sentence and edge-case lines** instead of AI-written ones, so numbers and promises ("not a focus lapse") can never be wrong.
 - **In-memory rate limits on one instance** instead of a shared store or an API gateway. That is enough for one Cloud Run instance; the fuller version would keep counters in Redis or Firestore.
 - **Stateless AI calls** — each job sends everything it needs in one request, so there is no chat history and nothing is stored server-side.
-- **System fonts and a synthesized chime** instead of downloaded fonts and audio files — no extra files and no network fetches.
+- **Self-hosted fonts and a synthesized chime** — the fonts come from the app's own server (about 140 KB for English text, cached after the first visit), so there are still no third-party requests, and the chime needs no audio file. During `5-build` this replaced system fonts, for the Night study look.
 - **A simulated coach** for tests and offline UI work, always labelled on screen. It never stands in for the real AI in the demo.
 
 ## Decisions and Open Issues
@@ -699,6 +765,10 @@ Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`
 - **Paid AI service and a separate new Google Cloud project** (3-prd).
 - **Data-notice wording:** updated in `prd.md` and `prd.html` from "not used to improve the provider's products" (the Gemini API paid-tier wording) to "Google does not use this content to train its models", which is Vertex AI's actual commitment. Same learner decision, accurate wording.
 - **Thinking level `medium`** (spec review: "looks good. Suy nghĩ mid" — "looks good. Thinking: medium"), instead of the proposed `low`. Tradeoff accepted: deeper feedback for roughly $0.02 instead of $0.012 per session, and slower replies. `low` is the fallback if latency or cost runs high in testing.
+- **Night study look** (during `5-build`):
+  - The learner asked: "Khảo sát thêm về giao diện hiện tại giao diện quá đơn điệu tôi muốn 1 giao diện chuyên nghiệp và lung linh khiến người dùng thích thú và ban giám khảo phải wow" ("survey the current interface further — it's too monotonous; I want a professional, sparkling interface that delights users and wows the judges").
+  - They approved the agent's researched proposal in the plan they asked to be carried out.
+  - Tradeoff accepted: about 140 KB of fonts on the first visit, and more CSS to maintain.
 
 Approved by the learner on Oct 3, 2026 ("looks good"), with thinking changed to `medium`.
 
@@ -711,7 +781,7 @@ Approved by the learner on Oct 3, 2026 ("looks good"), with thinking changed to 
 - If the countdown reaches zero while the End-early panel is open, the session counts as completed.
 - One gunicorn worker so the rate-limit counters are shared.
 - Dedicated service account with only `roles/aiplatform.user` (least privilege), instead of the project's default compute account.
-- Light theme only, with the dark focus screen as the single exception.
+- One dark theme (Night study), with the lamp-lit page as the light surface for long text. During `5-build` this replaced a light theme with a dark focus screen.
 - License: the submission needs an open-source license; the learner picks it in `6-ship`.
 
 ### The useful unknown

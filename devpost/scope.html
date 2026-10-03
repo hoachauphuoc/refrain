@@ -274,6 +274,7 @@
         <ul>
           <li>Four-question survey and an AI-generated starting roadmap</li>
           <li>Warm-up: recall of last session's two questions, checked by the AI</li>
+          <li>Missed questions come back at later warm-ups until recalled twice, counted by sessions (added during <code>5-build</code>)</li>
           <li>Session timer with one-tap distraction logging and an optional short note</li>
           <li>End early: “pulled away” (roadmap holds, where-I-stopped note kept) vs. “lost focus”</li>
           <li>Teach-back after each session</li>
@@ -287,9 +288,9 @@
         <h3>Later</h3>
         <ul>
           <li>Memory drills: names &amp; faces, phone numbers, memory palace</li>
-          <li>Spaced review of older questions on a schedule</li>
+          <li>Spaced review on a calendar (days apart, with reminders)</li>
           <li>Weekly check-in: measured focus span vs. the survey estimate</li>
-          <li>Charts across the 66-day journey</li>
+          <li>Charts across the 66-day journey (the PoC shows each session's stars instead)</li>
           <li>Reminders and notifications</li>
           <li>Accounts and sync across devices</li>
           <li>AI sorting of “parked” thoughts</li>
@@ -344,6 +345,10 @@
       <div class="card">
         <h3>Calm design</h3>
         <p style="margin:0">Clarity over cleverness, forgiveness over fear. <a href="https://www.uxmatters.com/mt/archives/2025/05/designing-calm-ux-principles-for-reducing-users-anxiety.php">UXmatters 2025</a> · Visual direction lives in <code>prd.md &gt; Look and Feel</code>.</p>
+      </div>
+      <div class="card">
+        <h3>Night study</h3>
+        <p style="margin:0">A night sky where each return lights a star, so noticing a slip reads as a rep, not a failure. Quiet during a session, shining around it. Added during <code>5-build</code>, when the learner asked for a professional, sparkling interface.</p>
       </div>
     </div>
   </section>
@@ -431,6 +436,7 @@
       <li><strong>Revision (during <code>3-prd</code>):</strong> the learner added memory training and asked to go deeper than Focusito. The agent researched each example; the learner approved keeping teach-back and next-session recall in the PoC, moving memory drills to Later, and cutting speed reading.</li>
       <li><strong>Decisions during <code>3-prd</code>:</strong> the learner shared their story as a junior manager, chose a working-adult demo persona like themselves, approved an End-early choice that separates being pulled away from losing focus, and chose the name <strong>Refrain</strong> from a researched, collision-checked shortlist.</li>
       <li><strong>Revision (during <code>5-build</code>):</strong> the audience became adults 18 and over, because Google Cloud's generative AI terms don't allow a site directed to, or likely used by, people under 18. The survey accepts ages 18–120, and the Welcome notice says Refrain is for adults.</li>
+      <li><strong>Revision (during <code>5-build</code>):</strong> the learner said the app felt monotonous and didn't clearly help its users, and asked for a professional, sparkling interface. They approved the resulting plan: the Night study look, visible help in every step of the loop, and missed warm-up questions coming back by session count.</li>
     </ul>
     <p>This page is a companion. <code>devpost/scope.md</code> is canonical.</p>
   </footer>
