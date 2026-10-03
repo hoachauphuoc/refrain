@@ -1,7 +1,7 @@
 // Warm-up: answer the last session's two questions from memory, then the coach marks each one.
 // A coach outage never blocks studying: Start focusing works whether or not the check came back.
 
-import { post } from "../api.js";
+import { post, WAITS } from "../api.js";
 import { $, el } from "../dom.js";
 import { store } from "../store.js";
 import { unlockSound } from "../timer.js";
@@ -67,7 +67,7 @@ async function check(event) {
   const { warmup } = store.state;
   if (busy || !warmup) return;
   busy = true;
-  $("#warmup-status").textContent = "";
+  $("#warmup-status").textContent = WAITS.check;
   renderButtons("busy");
 
   const responses = answerBoxes().map((box) => box.value.trim().slice(0, MAX_ANSWER));

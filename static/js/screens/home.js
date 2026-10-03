@@ -32,6 +32,16 @@ function renderStages(stages, current) {
 function renderRule(rule) {
   $("#home-rule").classList.toggle("empty", !rule);
   $("#home-rule-text").textContent = rule ? rule.text : "Your first rule will come from your first session.";
+  const source = rule ? ruleSource(rule) : "";
+  $("#home-rule-source").textContent = source;
+  $("#home-rule-source").hidden = !source;
+}
+
+// Where the rule came from, so it reads as yours rather than a generic tip.
+function ruleSource(rule) {
+  if (rule.fromNotes?.length) return `From your notes: ${rule.fromNotes.map((note) => `“${note}”`).join(", ")}.`;
+  if (rule.pulledAway) return "Written after a session you were pulled away from.";
+  return "";
 }
 
 // Shown only after "I was pulled away" with a note; cleared when the next session ends.
@@ -63,14 +73,45 @@ function when(iso) {
   return `${day} · ${time}`;
 }
 
+function plural(n, word) {
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
+}
+
+function recallText(recall) {
+  const asked = recall.got + recall.partly + recall.missed;
+  return `warm-up ${recall.got} of ${asked}${recall.partly ? `, ${recall.partly} partly` : ""}`;
+}
+
+// Running totals only: they grow with every session and never reset, so a missed day costs nothing.
+function renderTotals(history) {
+  $("#home-totals").hidden = history.length === 0;
+  if (history.length === 0) return;
+  const seconds = history.reduce((sum, row) => sum + row.secondsDone, 0);
+  const focused = seconds > 0 && seconds < 60 ? "under a minute focused" : `${plural(Math.floor(seconds / 60), "minute")} focused`;
+  const parts = [plural(history.length, "session"), focused];
+  const recalls = history.map((row) => row.recall).filter(Boolean);
+  if (recalls.length > 0) {
+    const total = (key) => recalls.reduce((sum, recall) => sum + recall[key], 0);
+    const asked = total("got") + total("partly") + total("missed");
+    parts.push(`${total("got")} of ${asked} warm-up answers recalled${total("partly") ? `, ${total("partly")} partly` : ""}`);
+  }
+  $("#home-totals").textContent = parts.join(" · ");
+}
+
 function renderHistory(history) {
   $("#home-history-empty").hidden = history.length > 0;
+  renderTotals(history);
   $("#home-history").replaceChildren(
     ...history.map((row) =>
       el("li", { className: "history-row" }, [
         el("span", { className: "h-when", text: when(row.endedAt) }),
         el("span", { className: "h-topic", text: row.topic }),
-        el("span", { className: "h-meta", text: `${sessionLength(row)} · ${OUTCOMES[row.outcome]} · ${row.taps} noted` }),
+        el("span", {
+          className: "h-meta",
+          text: [sessionLength(row), OUTCOMES[row.outcome], `${row.taps} noted`, row.recall && recallText(row.recall)]
+            .filter(Boolean)
+            .join(" · "),
+        }),
         el("span", { className: `h-change ${row.change}`, text: CHANGES[row.change] }),
       ]),
     ),

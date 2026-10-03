@@ -1,7 +1,7 @@
 // Teach-back and Debrief: one screen in two states.
 // The roadmap change is applied once per session, whether or not the coach answers.
 
-import { MESSAGES, post } from "../api.js";
+import { MESSAGES, post, WAITS } from "../api.js";
 import { $, el } from "../dom.js";
 import { store } from "../store.js";
 
@@ -55,6 +55,7 @@ async function submitTeach(explanation) {
   store.save();
   sending = true;
   $("#teach-submit").textContent = "The coach is thinking…";
+  $("#teach-status").textContent = WAITS.debrief;
   renderTeachButton();
   await fetchDebrief();
 }
@@ -128,6 +129,16 @@ function historyRow(pending, progression) {
   };
 }
 
+// The first two different notes (as the server's notes_lead picks them), so Home can say where the rule came from.
+function firstNotes(taps) {
+  const notes = [];
+  for (const { note } of taps) {
+    if (note && !notes.some((seen) => seen.toLowerCase() === note.toLowerCase())) notes.push(note);
+    if (notes.length === 2) break;
+  }
+  return notes;
+}
+
 async function fetchDebrief() {
   const pending = store.state.pending;
   const result = await post("/api/debrief", requestBody(pending));
@@ -156,7 +167,14 @@ async function fetchDebrief() {
   }
 
   const changes = { pending: null };
-  if (coach.rule && !coach.keepPreviousRule) changes.rule = { text: coach.rule, createdAt: new Date().toISOString() };
+  if (coach.rule && !coach.keepPreviousRule) {
+    changes.rule = {
+      text: coach.rule,
+      createdAt: new Date().toISOString(),
+      fromNotes: firstNotes(pending.taps),
+      pulledAway: pending.outcome === "pulled_away",
+    };
+  }
   if (coach.questions?.length === 2) changes.warmup = { topic: pending.topic, items: coach.questions };
   // Rendered before the rule is replaced, so "Your rule stays" can still read the previous one.
   showDebrief({ coach, progression, simulated });
@@ -168,6 +186,7 @@ async function retry() {
   sending = true;
   $("#debrief-retry").disabled = true;
   $("#debrief-retry").textContent = "The coach is thinking…";
+  $("#debrief-status").textContent = WAITS.debrief;
   await fetchDebrief();
 }
 

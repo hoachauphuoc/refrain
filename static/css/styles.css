@@ -196,6 +196,7 @@ input:disabled { color: var(--muted); background: var(--paper); }
   padding-left: 1.3em;
 }
 .how li { margin-bottom: 6px; }
+.plan-note { margin-bottom: var(--s3); }
 .notice {
   margin-bottom: var(--s4);
   padding-left: var(--s2);
@@ -307,6 +308,11 @@ input:disabled { color: var(--muted); background: var(--paper); }
   font-size: 1rem;
   color: var(--muted);
 }
+.rule-source {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
 
 /* Pick up where you left off */
 .pickup {
@@ -331,6 +337,13 @@ input:disabled { color: var(--muted); background: var(--paper); }
 
 /* History */
 .history { margin-top: var(--s4); }
+.totals {
+  margin: 0 0 var(--s1);
+  padding: 12px var(--s2);
+  font-weight: 600;
+  background: var(--teal-soft);
+  border-radius: var(--radius);
+}
 .history-list {
   margin: 0;
   padding: 0;

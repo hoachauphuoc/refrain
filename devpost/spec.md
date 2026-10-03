@@ -212,6 +212,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
     - "The coach couldn't respond. Your work is saved." — network, timeout, or `coach_unavailable`;
     - "The coach needs a short break. Try again in a few minutes." — `rate_limited`.
   - Passes `simulated: true` through so screens can show the **Simulated coach** label.
+  - `WAITS`: the line each screen shows while the coach works, from times measured with real Gemini in `5-build` — "The coach is building your plan. This usually takes about 10 seconds." (roadmap), "… checking your answers. This usually takes a few seconds." (warm-up check), "… reading your session. This usually takes 5 to 20 seconds." (debrief, and its **Try again**).
 - **Talks to:** the server's **API routes**.
 - PRD ref: `prd.md > States and Boundaries` (AI request fails).
 
@@ -219,9 +220,10 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Files:** `static/js/screens/welcome.js`.
 - **What it shows:**
   - **Refrain**.
-  - The one-sentence promise.
-  - The two-line "how it works" (focus → teach back → recall).
-  - The data notice: "Your answers and notes are sent to Google's Gemini AI on Google Cloud only to write your coaching — Google doesn't use them to train its models. Your progress stays in this browser."
+  - The promise, which names the problem: "Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words."
+  - The three-step "how it works": focus and note what pulled you → teach back, get what's missing and one rule → recall next time.
+  - One line on the plan: it starts at a length you can finish, a meeting that cuts a session short never counts against you, and nothing resets to zero.
+  - The data notice: "Your answers and notes are sent to Google's Gemini AI on Google Cloud only to write your coaching — Google doesn't use them to train its models. Your progress stays in this browser. Refrain is for adults 18 and over."
   - **Start**.
 - Shown only when nothing is saved.
 - PRD ref: `prd.md > Screens and Layout > Welcome`, `prd.md > The Core Journey` step 1.
@@ -246,10 +248,10 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **What it shows, top to bottom:**
   1. The goal as a heading.
   2. The stage cards (minutes, sessions per day): earlier stages marked done, the current one highlighted in teal, later ones dimmed. A small muted "Default plan" note appears when the roadmap came from the built-in plan.
-  3. The rule card in amber, or "Your first rule will come from your first session".
+  3. The rule card in amber, or "Your first rule will come from your first session". Under the rule, where it came from: "From your notes: “team chat”, “email ping”." from `rule.fromNotes`, or "Written after a session you were pulled away from." when `rule.pulledAway` and there were no notes.
   4. **Pick up where you left off**, when `resume` exists.
   5. The topic field (up to 120 characters), the **Demo length (1 minute)** switch, and **Start session** / **Start with warm-up**.
-  6. History rows, newest first: date, length ("6 of 10 min", or "1 min demo"), outcome (completed / pulled away / ended early), taps, and change (up / hold / ease back). The first time, it shows "Your first session is ready" instead.
+  6. A totals line — sessions, minutes focused (`secondsDone` summed), and warm-up answers recalled (`recall` summed; partly counted separately) — then history rows, newest first: date, length ("6 of 10 min", or "1 min demo"), outcome (completed / pulled away / ended early), taps, "warm-up 1 of 2" when `recall` exists, and change (up / hold / ease back). Totals only grow, so there is no streak to lose. The first time, it shows "Your first session is ready" instead.
   7. **Reset everything**, which opens an inline confirmation ("Erase all progress on this device?" with **Erase** / **Cancel**) and then shows Welcome.
 - PRD ref: `prd.md > Screens and Layout > Home (Roadmap)`, `prd.md > Roadmap Progression`, `prd.md > Ending Early and Pulled Away`, `prd.md > Progress on This Device`.
 
@@ -502,7 +504,8 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
     "source": "ai"
   },
   "stageIndex": 0,
-  "rule": { "text": "If Slack pings, then I'll note it and reply at the break.", "createdAt": "2026-10-05T12:20:00Z" },
+  "rule": { "text": "If Slack pings, then I'll note it and reply at the break.", "createdAt": "2026-10-05T12:20:00Z",
+            "fromNotes": ["Slack"], "pulledAway": false },
   "warmup": { "topic": "Managing risks", "items": [ { "question": "…", "answer": "…" }, { "question": "…", "answer": "…" } ] },
   "resume": { "topic": "Managing risks", "where": "Risk register, step 3", "next": "Score the top five risks" },
   "pending": null,
@@ -527,7 +530,7 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
 |---|---|---|---|
 | Survey, roadmap | `refrain.v1` | After **Build my roadmap** succeeds | Kept; Home opens |
 | Current stage | `stageIndex` | When the debrief's progression is applied (once per session) | Kept |
-| Active rule | `rule` | Debrief with a new rule; unchanged when there were no taps (unless the session ended with **I was pulled away**) | Kept; shown on Home and Focus |
+| Active rule | `rule` | Debrief with a new rule; unchanged when there were no taps (unless the session ended with **I was pulled away**). `fromNotes` keeps the session's first two different notes and `pulledAway` its end reason, so Home can say where the rule came from | Kept; shown on Home and Focus |
 | Waiting questions | `warmup` | Set by a debrief with an explanation; cleared at **Start focusing** | Kept until **Start focusing** |
 | "Pick up" note | `resume` | Replaced or cleared at every session end | Kept until the next session ends |
 | Finished session awaiting debrief | `pending` | Written at session end; explanation and `submitted` set at **Get feedback** or **Skip**; cleared when coaching arrives or at **Back to roadmap** | Reopens Teach-back (not sent yet) or the debrief retry state (sent) |

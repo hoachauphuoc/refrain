@@ -51,7 +51,17 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Start a session, press **End early** → **I was pulled away**, write where you stopped and your next step, and check that the debrief says your stage holds and Home shows **Pick up where you left off**. Then try **I lost focus** once and watch the roadmap ease back one stage.
   Commit: `Add end early: pulled away holds, lost focus eases back`
 
-- [ ] **5. A public link anyone can try**
+- [x] **5. You can see what Refrain is doing for you**
+  Becomes usable: Welcome names the problem Refrain solves and the three steps of its loop. Home shows one line of totals — sessions, minutes focused, and warm-up answers recalled — each history row shows its warm-up result, and the rule card says which of your notes the rule came from. While the coach works, the status line says how long it usually takes.
+  Why now: The learner said they couldn't see clearly how the app helps its users ("Tôi chưa thấy rõ app giúp ít cho người dùng như thế nào" — "I don't clearly see how the app helps users"). With the loop complete (slices 1–4), its results can be shown before the public link goes up. Monitoring progress helps people reach goals, more so when it is recorded (Harkin et al. 2016), and past about 10 seconds people should be told how long a wait will be (Nielsen, NN/g).
+  PRD ref: `prd.md > Screens and Layout` (Welcome, Home (Roadmap)), `prd.md > Roadmap Progression` (no streaks), `prd.md > Warm-up Recall`, `prd.md > States and Boundaries`
+  Spec ref: `spec.md > Components` (Server calls, Welcome screen, Home screen, Warm-up screen, Teach-back and Debrief screen), `spec.md > Data Model` (`recall`, `rule.fromNotes`, `rule.pulledAway`)
+  Build: Welcome copy in `index.html`; the totals line and per-row warm-up text in `home.js`; `fromNotes` and `pulledAway` saved with the rule in `debrief.js` and shown on Home's rule card; wait lines in `api.js`, used by the survey, the warm-up, the teach-back, and the debrief's Try again. No server change and no new AI calls.
+  Verify (mechanical): `pytest` passes; in the browser, sessions with and without a warm-up give the right totals and row text, the rule card quotes the notes the rule came from, a reload keeps everything, and Reset clears it; each AI wait shows its line; nothing under `static/` mentions a streak.
+  Learner check: After a few demo sessions, read Home's totals line and the rule card: can you tell at a glance what changed and where your rule came from?
+  Commit: `Show what Refrain is doing for you`
+
+- [ ] **6. A public link anyone can try**
   Becomes usable: Refrain runs at a public `https://refrain-….run.app` address from the new project, with per-visitor and daily limits on AI use, and a README that explains how to run it, deploy it, and switch it off.
   Why now: Everything it serves is already built. Deploying adds only the limits and Cloud Build's first-deploy permissions, so it goes last; if it slips, the demo can still be recorded locally.
   PRD ref: `prd.md > The Core Journey` (success), `prd.md > States and Boundaries` (AI request fails, data boundary)
@@ -97,3 +107,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
   - `low`: $0.0015 per session; debrief median 4.4 s; every check passed too, with no thinking tokens.
   - Decision: keep `medium`, as the learner chose — the plan's rule was to switch the debrief to `low` only if the `medium` median passed 10 s. The occasional 14–17 s debrief is what the wait line in the next slice is for.
   - Two requests in the log that the script didn't send (a roadmap and a debrief from another browser on localhost) are left out of these numbers.
+- New slice 5, "You can see what Refrain is doing for you", added before the deploy, which becomes slice 6 — the learner said "Tôi chưa thấy rõ app giúp ít cho người dùng như thế nào. và đã bám sát rule của ban giám khảo chưa" ("I don't clearly see how the app helps users, and does it follow the judges' rules?"). The agent's audit found that Home never showed what had changed for the user (warm-up results weren't even saved before slice 3), and that the judges score Design and Potential Impact "based on what's demonstrated". The learner approved the plan and asked for it to be carried out.

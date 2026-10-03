@@ -1,6 +1,6 @@
 // Survey: four answers, checked as they're typed, then the coach builds the roadmap.
 
-import { post } from "../api.js";
+import { post, WAITS } from "../api.js";
 import { $ } from "../dom.js";
 import { store } from "../store.js";
 
@@ -66,7 +66,7 @@ async function submit(event) {
   if (busy || Object.keys(errors).length > 0) return;
 
   busy = true;
-  $("#survey-status").textContent = "";
+  $("#survey-status").textContent = WAITS.roadmap;
   $("#survey-submit").textContent = "Building your roadmap…";
   render();
 
@@ -86,6 +86,7 @@ async function submit(event) {
       history: [],
     });
     $("#survey-submit").textContent = SUBMIT_LABEL;
+    $("#survey-status").textContent = "";
     render();
     nav.go("home");
     return;

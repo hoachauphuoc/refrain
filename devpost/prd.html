@@ -431,7 +431,7 @@
     var screens = {
       welcome: {
         name: 'Welcome', ref: 'prd.md > Screens and Layout > Welcome',
-        layout: 'The name Refrain, a one-sentence promise, a two-line “how it works” (focus → teach back → recall), the data notice, and Start. Shown only when nothing is saved.',
+        layout: 'The name Refrain; a short promise that names the problem (meetings and pings break up study time, and much of what you study fades by the next week); a three-step “how it works” (focus and note what pulled you → teach back, get what’s missing and one rule → recall next time); one line on the plan; the data notice, ending “Refrain is for adults 18 and over.”; and Start. Shown only when nothing is saved.',
         criteria: ['On first visit the Welcome screen appears; after Start, the Survey shows the four questions in order.'],
         states: ['First use — nothing saved: Welcome → Survey.', 'Data boundary — progress lives only in this browser; content goes to the AI service only to produce the coaching, on a paid Google Cloud AI service where Google does not use it to train its models.']
       },
@@ -451,9 +451,9 @@
       },
       home: {
         name: 'Home · Roadmap', ref: 'prd.md > Screens and Layout > Home (Roadmap)',
-        layout: 'Top to bottom: the goal as a heading; stage cards in a row; the active if-then rule card; a Pick up where you left off card (after being pulled away); “What will you study?”, the Demo length (1 minute) switch, and Start session (Start with warm-up when questions are waiting); session history; a small Reset everything link.',
+        layout: 'Top to bottom: the goal as a heading; stage cards in a row; the active if-then rule card, with the notes it came from; a Pick up where you left off card (after being pulled away); “What will you study?”, the Demo length (1 minute) switch, and Start session (Start with warm-up when questions are waiting); a line of running totals (sessions, minutes focused, warm-up answers recalled) above the session history; a small Reset everything link.',
         criteria: [
-          'Each history row shows date, length, outcome (completed / pulled away / ended early), taps, and the roadmap change.',
+          'Each history row shows date, length, outcome (completed / pulled away / ended early), taps, the warm-up result when there was one, and the roadmap change.',
           'After a session the new current stage is highlighted.',
           'Pick up where you left off appears only after “I was pulled away” with a note, and clears when the next session ends.',
           'Closing and reopening the browser keeps survey, roadmap, stage, rule, saved questions, the pick-up note, and history.',

@@ -16,11 +16,13 @@
     <section id="screen-welcome" class="screen" hidden aria-labelledby="welcome-title">
       <p class="eyebrow">A coach for focus and memory</p>
       <h1 id="welcome-title" tabindex="-1">Refrain</h1>
-      <p class="promise">Train your focus and your memory in the same study session, with a coach that works from your own words.</p>
+      <p class="promise">Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words.</p>
       <ol class="how">
-        <li><strong>Focus</strong> for one session, and tap once whenever your attention slips.</li>
-        <li><strong>Teach back</strong> the core idea, then <strong>recall</strong> it from memory next time.</li>
+        <li><strong>Focus</strong> for one session. Each time your attention slips, tap once and note what pulled you.</li>
+        <li><strong>Teach back</strong> the core idea in two or three sentences. The coach shows what's missing and turns your notes into one rule for next time.</li>
+        <li><strong>Recall</strong> it next time: the session opens with two questions to answer from memory.</li>
       </ol>
+      <p class="plan-note">Your plan starts at a length you can finish and grows from there. A meeting that cuts a session short never counts against you, and nothing resets to zero.</p>
       <p class="notice">Your answers and notes are sent to Google's Gemini AI on Google Cloud only to write your coaching — Google doesn't use them to train its models. Your progress stays in this browser. Refrain is for adults 18 and over.</p>
       <button type="button" class="primary" id="welcome-start">Start</button>
     </section>
@@ -72,6 +74,7 @@
       <div class="rule-card" id="home-rule">
         <p class="rule-label" id="home-rule-label">Your rule</p>
         <p class="rule-text" id="home-rule-text"></p>
+        <p class="rule-source" id="home-rule-source" hidden></p>
       </div>
 
       <div class="pickup card" id="home-pickup" hidden>
@@ -95,6 +98,7 @@
 
       <section class="history" aria-labelledby="home-history-title">
         <h3 id="home-history-title">Sessions</h3>
+        <p class="totals" id="home-totals" hidden></p>
         <p class="muted" id="home-history-empty">Your first session is ready.</p>
         <ol class="history-list" id="home-history"></ol>
       </section>

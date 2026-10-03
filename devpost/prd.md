@@ -32,7 +32,7 @@ Success: someone who has never seen the app completes steps 1–10 twice in a ro
 Laptop-first web app in the browser; it must also be usable on a phone screen. One column, centered, no sidebars. Develops `scope.md > The POC Boundary`.
 
 ### Welcome
-The name **Refrain**, a one-sentence promise, a two-line "how it works" (focus → teach back → recall), the data notice, and **Start**. Shown only when nothing is saved.
+The name **Refrain**; a short promise that names the problem ("Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words."); a three-step "how it works" (focus and note what pulled you → teach back, get what's missing and one rule → recall next time); one line on the plan (it starts at a length you can finish, a meeting never counts against you, nothing resets to zero); the data notice, which ends "Refrain is for adults 18 and over."; and **Start**. Shown only when nothing is saved.
 
 ### Survey
 One screen, four fields stacked in this order: age; training goal (a few example goals the user can tap to fill in — for example "Study for a certification after work", "Revise for exams", "Remember more of what I read" — or type their own); minutes available per day; maximum minutes per session. **Build my roadmap** at the bottom.
@@ -41,10 +41,10 @@ One screen, four fields stacked in this order: age; training goal (a few example
 The main screen after the survey, top to bottom:
 1. The goal as a heading.
 2. The roadmap as a horizontal row of stage cards (session length, sessions per day); the current stage is highlighted, finished stages are marked, later stages are dimmed.
-3. The active if-then rule on its own card (or "Your first rule will come from your first session").
+3. The active if-then rule on its own card (or "Your first rule will come from your first session"), with where it came from: "From your notes: “team chat”, “email ping”." (or, for a rule written after being pulled away with no notes, "Written after a session you were pulled away from.").
 4. **Pick up where you left off** card — only when the last session ended with "I was pulled away" and a note was written: where they stopped and their next step.
 5. "What will you study?" field, the **Demo length (1 minute)** switch, and **Start session**. If questions are waiting, the button reads **Start with warm-up**.
-6. Session history: one row per session — date, length, outcome (completed / pulled away / ended early), distraction taps, and the roadmap change (up / hold / ease back).
+6. Session history: one line of running totals — sessions, minutes focused, and warm-up answers recalled ("6 sessions · 4 minutes focused · 1 of 4 warm-up answers recalled") — then one row per session: date, length, outcome (completed / pulled away / ended early), distraction taps, the warm-up result when the session opened with one ("warm-up 1 of 2"), and the roadmap change (up / hold / ease back). Totals only ever grow; there is no streak.
 7. A small **Reset everything** link at the bottom.
 
 ### Warm-up
@@ -160,6 +160,7 @@ Develops `scope.md > The POC Boundary`.
 - **Taps without notes** — the debrief says it can't see what pulled them away and asks for a word or two next time; the rule is general but honest, not a guess dressed up as a pattern.
 - **Pulled away with both fields blank** — the roadmap still holds; no **Pick up where you left off** card appears.
 - **Very short or off-topic explanation** — the coach responds kindly, says what a fuller explanation would include, and still writes two questions about the topic.
+- **Waiting for the coach** — while the AI works, the screen says what it is doing and how long it usually takes ("The coach is reading your session. This usually takes 5 to 20 seconds."), so a long wait doesn't look like a frozen app. Added in `5-build`.
 - **AI request fails** — a calm message ("The coach couldn't respond. Your work is saved.") with **Try again**; the user's typed text and the session record are kept.
 - **Page closed during a session** — that session is not saved and the roadmap is unchanged.
 - **Data boundary** — progress lives only in this browser on this device; a different browser or cleared browser data starts fresh. Survey answers, topic, notes, and explanations are sent to the AI service only to produce the coaching. The app uses a paid Google Cloud AI service (Gemini on Vertex AI), under which Google does not use this content to train its models (learner decision: paid, not free); the Welcome notice says so in one plain sentence.

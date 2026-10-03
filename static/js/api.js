@@ -7,6 +7,13 @@ export const MESSAGES = {
   rateLimited: "The coach needs a short break. Try again in a few minutes.",
 };
 
+// Said while the coach works, so a long wait is expected. Times measured with real Gemini in 5-build.
+export const WAITS = {
+  roadmap: "The coach is building your plan. This usually takes about 10 seconds.",
+  check: "The coach is checking your answers. This usually takes a few seconds.",
+  debrief: "The coach is reading your session. This usually takes 5 to 20 seconds.",
+};
+
 // Resolves to { ok: true, data } or { ok: false, code, message, fields, reached }.
 // `reached` is false when the server never answered (offline, timeout).
 export async function post(path, body) {
