@@ -34,6 +34,22 @@ function renderRule(rule) {
   $("#home-rule-text").textContent = rule ? rule.text : "Your first rule will come from your first session.";
 }
 
+// Shown only after "I was pulled away" with a note; cleared when the next session ends.
+function renderPickup(resume) {
+  $("#home-pickup").hidden = !resume;
+  if (!resume) return;
+  $("#home-pickup-topic").textContent = resume.topic;
+  $("#home-pickup-lines").replaceChildren(
+    ...[["Where you stopped", resume.where], ["Your next step", resume.next]]
+      .filter(([, text]) => text)
+      .map(([label, text]) =>
+        el("p", { className: "pickup-line" }, [el("span", { className: "pickup-key", text: `${label}: ` }), text]),
+      ),
+  );
+  // Picking up usually means the same topic, so offer it when the field is empty.
+  if (!$("#home-topic").value.trim()) $("#home-topic").value = resume.topic;
+}
+
 function sessionLength(row) {
   if (row.demo) return "1 min demo";
   if (row.outcome === "completed") return `${row.plannedMinutes} min`;
@@ -68,7 +84,7 @@ function renderStart() {
 }
 
 function render() {
-  const { survey, roadmap, stageIndex, rule, history, settings } = store.state;
+  const { survey, roadmap, stageIndex, rule, resume, history, settings } = store.state;
   $("#home-goal").textContent = survey.goal;
   renderStages(roadmap.stages, stageIndex);
   $("#home-reason").textContent = roadmap.reason;
@@ -78,6 +94,7 @@ function render() {
       .map((label) => el("span", { className: "tag", text: label })),
   );
   renderRule(rule);
+  renderPickup(resume);
   $("#home-demo").checked = Boolean(settings.demoLength);
   renderStart();
   renderHistory(history);

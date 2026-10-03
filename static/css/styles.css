@@ -308,6 +308,27 @@ input:disabled { color: var(--muted); background: var(--paper); }
   color: var(--muted);
 }
 
+/* Pick up where you left off */
+.pickup {
+  margin: 0 0 var(--s3);
+  border-left: 4px solid var(--teal);
+}
+.pickup-label {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.pickup-topic {
+  margin: 0 0 var(--s1);
+  font-family: var(--serif);
+  font-size: 1.15rem;
+}
+.pickup-line { margin: 0 0 4px; }
+.pickup-line:last-child { margin-bottom: 0; }
+.pickup-key { color: var(--muted); }
+
 /* History */
 .history { margin-top: var(--s4); }
 .history-list {
@@ -507,6 +528,73 @@ body[data-screen="focus"] :focus-visible { outline-color: var(--night-ink); }
 .focus-tally,
 .focus-links .link { color: var(--night-muted); }
 .focus-tally { margin: 0; font-size: 0.95rem; }
+/* Light-screen link hover would vanish on the dark screen */
+body[data-screen="focus"] .link:hover { color: var(--night-ink); }
+
+/* The next step from "Pick up where you left off", under the topic */
+.focus-next {
+  max-width: 32em;
+  margin: calc(-1 * var(--s2)) 0 0;
+  font-size: 0.95rem;
+  color: var(--night-ink);
+}
+.focus-links { margin: 0; }
+
+/* End early: the panel takes the Distracted button's place; the countdown keeps running */
+.end-panel {
+  width: min(100%, 420px);
+  text-align: left;
+}
+.end-title {
+  margin: 0 0 var(--s2);
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  text-align: center;
+}
+.end-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.end-choice {
+  padding: 14px 20px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--night-ink);
+  background: #172320;
+  border: 1px solid #2b3d37;
+  border-radius: var(--radius);
+}
+.end-choice:hover { background: #1d2c28; }
+.end-choice small {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--night-muted);
+}
+.end-choices .link { align-self: center; }
+.end-panel .link { color: var(--night-muted); }
+.end-resume label { margin-top: var(--s2); color: var(--night-ink); }
+.end-resume label:first-child { margin-top: 0; }
+.end-resume input[type="text"] {
+  color: var(--night-ink);
+  background: #172320;
+  border-color: #2b3d37;
+}
+.end-resume .actions {
+  align-items: center;
+  margin-top: var(--s3);
+}
+.end-save {
+  min-height: 48px;
+  padding: 10px 28px;
+  font-weight: 600;
+  color: var(--night-ink);
+  background: var(--night-teal);
+  border: 1px solid #1f5049;
+  border-radius: 999px;
+}
+.end-save:hover { background: #18463f; }
 
 /* Teach-back and Debrief */
 #teach-form label { margin-bottom: 10px; }

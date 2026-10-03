@@ -147,8 +147,8 @@ def debrief_prompt(session, result, needs, outside):
         if outside:
             lines.append(
                 "- rule: one sentence in the form \"If ..., then I'll ...\". Something outside their control "
-                "pulled them away, so make it a ready-to-resume plan: before they go, they write where they "
-                "stopped and their next step. Name what pulled them away when they noted it."
+                "pulled them away, so make it a ready-to-resume plan that works for any future session: before they "
+                "go, they write where they stopped and their next step. Name what pulled them away when they noted it."
             )
         elif session.notes:
             lines.append("- rule: one sentence in the form \"If ..., then I'll ...\" that refers to something they noted."
@@ -158,7 +158,8 @@ def debrief_prompt(session, result, needs, outside):
                 "- rule: one sentence in the form \"If ..., then I'll ...\". They tapped without notes, so keep "
                 "it general but honest about noticing and returning; don't guess what distracted them." + action
             )
-    resume = session.resume_note
+    # The resume note stays in the browser: the rule must fit every future session, and the
+    # "Pick up where you left off" card already shows where they stopped.
     return "\n".join(lines) + "\n" + user_data(
         age=session.survey.age,
         goal=session.survey.goal,
@@ -171,8 +172,6 @@ def debrief_prompt(session, result, needs, outside):
         how_it_ended={"completed": "completed", "pulled_away": "pulled away by something outside their control",
                       "lost_focus": "ended early: lost focus"}[session.outcome],
         roadmap_change_already_decided=f"{result['change'].replace('_', ' ')}, next session {result['next_minutes']} minutes",
-        where_they_stopped=resume.where if resume else "",
-        their_next_step=resume.next if resume else "",
         previous_rule=session.previous_rule,
     )
 

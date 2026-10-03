@@ -311,6 +311,68 @@ def test_debrief_rejects_invalid_sessions(client, fake, changes, field):
     assert fake.calls == []
 
 
+# --- Ending early ---
+
+RESUME = {"where": "Risk register, step 3", "next": "Score the top five risks"}
+
+
+def test_pulled_away_holds_and_says_it_is_not_a_lapse(client, fake):
+    status, body = post(client, outcome="pulled_away", secondsDone=35,
+                        taps=[{"atSec": 20, "note": "meeting"}], resumeNote=RESUME)
+    assert status == 200
+    progression = body["progression"]
+    assert progression["change"] == "hold" and progression["newStageIndex"] == 0
+    assert progression["sentence"] == "Holding at 10 minutes, because being pulled away is not a focus lapse."
+    assert body["coach"]["rule"].startswith("If ")
+    prompt = fake.prompts[0]
+    assert "ready-to-resume plan that works for any future session" in prompt
+    # The resume note stays in the browser: a rule that copied it would go stale next session.
+    assert "Risk register" not in prompt and "top five risks" not in prompt
+
+
+def test_pulled_away_with_many_taps_still_holds(client):
+    taps = [{"atSec": t, "note": "meeting"} for t in (5, 10, 15, 20)]
+    status, body = post(client, outcome="pulled_away", secondsDone=30, taps=taps, stageIndex=2)
+    assert body["progression"]["change"] == "hold" and body["progression"]["newStageIndex"] == 2
+
+
+def test_pulled_away_without_taps_still_gets_a_ready_to_resume_rule(client, fake):
+    status, body = post(client, outcome="pulled_away", secondsDone=20, taps=[], explanation=None,
+                        previousRule="If email pings, then I'll check it at the break.")
+    coach = body["coach"]
+    assert coach["pattern"] == "No distractions noted before you were pulled away."
+    assert coach["rule"].startswith("If ") and coach["keepPreviousRule"] is False
+    assert fake.calls == ["debrief"]
+    assert "ready-to-resume plan" in fake.prompts[0]
+
+
+@pytest.mark.parametrize("stage_index, change, new_index, sentence", [
+    (0, "hold", 0, "Staying at 10 minutes, your first stage, so the next session is one you can finish."),
+    (2, "ease_back", 1, "Easing back to 15 minutes, a length you've already reached, "
+                        "so the next session is one you can finish."),
+])
+def test_lost_focus_eases_back_but_never_below_the_first_stage(client, stage_index, change, new_index, sentence):
+    status, body = post(client, outcome="lost_focus", secondsDone=30, stageIndex=stage_index)
+    progression = body["progression"]
+    assert (progression["change"], progression["newStageIndex"], progression["sentence"]) == (change, new_index, sentence)
+
+
+def test_lost_focus_is_not_treated_as_an_outside_interruption(client, fake):
+    post(client, outcome="lost_focus", secondsDone=30)
+    assert "ready-to-resume plan" not in fake.prompts[0]
+
+
+def test_a_note_about_a_meeting_asks_for_a_ready_to_resume_rule(client, fake):
+    post(client, taps=[{"atSec": 10, "note": "manager call"}])
+    assert "ready-to-resume plan" in fake.prompts[0]
+
+
+def test_resume_notes_are_limited_to_160_characters(client, fake):
+    status, body = post(client, outcome="pulled_away", secondsDone=30, resumeNote={"where": "x" * 161, "next": ""})
+    assert status == 400 and "resumeNote" in body["fields"]
+    assert fake.calls == []
+
+
 # --- Warm-up check ---
 
 WARMUP = FULL["questions"]  # what the debrief saved: "What two scores rank a risk?", "What else does each risk need?"

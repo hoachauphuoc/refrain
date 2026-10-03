@@ -1,4 +1,5 @@
-// Focus: the dark screen, the countdown, one-tap distraction logging with an optional note.
+// Focus: the dark screen, the countdown, one-tap distraction logging with an optional note,
+// and End early (pulled away, lost focus, or keep going) while the countdown keeps running.
 // The running session lives only in memory: closing the page discards it, as the PRD requires.
 
 import { $ } from "../dom.js";
@@ -54,6 +55,57 @@ function backToButton() {
   $("#focus-distracted").focus();
 }
 
+// --- End early: the panel takes the Distracted button's place; the countdown keeps running ---
+
+const SESSION_CONTROLS = ["#focus-distracted", "#focus-tally", ".focus-links"];
+
+function panelOpen() {
+  return !$("#focus-end-panel").hidden;
+}
+
+function openEndPanel() {
+  if (!session) return;
+  saveTypedNote();
+  closeNote();
+  for (const selector of SESSION_CONTROLS) $(selector).hidden = true;
+  $("#focus-end-choices").hidden = false;
+  $("#focus-resume").hidden = true;
+  $("#focus-end-panel").hidden = false;
+  $("#focus-pulled").focus();
+}
+
+function closeEndPanel() {
+  $("#focus-end-panel").hidden = true;
+  $("#focus-resume").reset();
+  for (const selector of SESSION_CONTROLS) $(selector).hidden = false;
+}
+
+function keepGoing() {
+  closeEndPanel();
+  $("#focus-distracted").focus();
+}
+
+function showResumeForm() {
+  $("#focus-end-choices").hidden = true;
+  $("#focus-resume").hidden = false;
+  $("#focus-where").focus();
+}
+
+function saveAndEnd(event) {
+  event.preventDefault();
+  const where = $("#focus-where").value.trim().slice(0, 160);
+  const next = $("#focus-next-step").value.trim().slice(0, 160);
+  endSession("pulled_away", { where, next });
+}
+
+function renderNextStep() {
+  // The note from "I was pulled away" last time: the next step, or else where they stopped.
+  const { resume } = store.state;
+  const line = resume?.next ? `Next step: ${resume.next}` : resume?.where ? `Where you stopped: ${resume.where}` : "";
+  $("#focus-next").textContent = line;
+  $("#focus-next").hidden = !line;
+}
+
 function endSession(outcome, resumeNote = null) {
   if (!session) return;
   saveTypedNote();
@@ -63,6 +115,7 @@ function endSession(outcome, resumeNote = null) {
   const secondsDone = outcome === "completed" ? finished.plannedMinutes * 60 : elapsedSeconds();
   session = null;
   closeNote();
+  if (panelOpen()) closeEndPanel(); // zero while the panel is open counts as completed
 
   const { roadmap, stageIndex } = store.state;
   const wroteNote = Boolean(resumeNote && (resumeNote.where || resumeNote.next));
@@ -103,6 +156,16 @@ export function init(navigation) {
     }
   });
   $("#focus-note-skip").addEventListener("click", backToButton);
+
+  $("#focus-end").addEventListener("click", openEndPanel);
+  $("#focus-pulled").addEventListener("click", showResumeForm);
+  $("#focus-lost").addEventListener("click", () => endSession("lost_focus"));
+  $("#focus-keep").addEventListener("click", keepGoing);
+  $("#focus-keep-resume").addEventListener("click", keepGoing);
+  $("#focus-resume").addEventListener("submit", saveAndEnd);
+  $("#focus-end-panel").addEventListener("keydown", (event) => {
+    if (event.key === "Escape") keepGoing();
+  });
 }
 
 // enter({ topic, plannedMinutes, demo, recall }) starts the countdown at once.
@@ -112,10 +175,12 @@ export function enter({ topic, plannedMinutes, demo, recall = null }) {
   session = { topic, plannedMinutes, demo, recall, startedAt: now, endAt: now + plannedMinutes * 60_000, taps: [] };
 
   $("#focus-topic").textContent = topic;
+  renderNextStep();
   const { rule } = store.state;
   $("#focus-rule").hidden = !rule;
   $("#focus-rule").textContent = rule ? rule.text : "";
   closeNote();
+  closeEndPanel();
   renderTally();
 
   scheduleChime(plannedMinutes * 60);

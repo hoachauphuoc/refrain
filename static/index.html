@@ -74,6 +74,12 @@
         <p class="rule-text" id="home-rule-text"></p>
       </div>
 
+      <div class="pickup card" id="home-pickup" hidden>
+        <p class="pickup-label">Pick up where you left off</p>
+        <p class="pickup-topic" id="home-pickup-topic"></p>
+        <div id="home-pickup-lines"></div>
+      </div>
+
       <div class="start card">
         <label for="home-topic">What will you study?</label>
         <input id="home-topic" type="text" maxlength="120" autocomplete="off" placeholder="For example: Project management course — managing risks">
@@ -123,6 +129,7 @@
     <section id="screen-focus" class="screen" hidden aria-label="Focus session">
       <h2 class="sr-only" tabindex="-1">Focus session</h2>
       <p class="focus-topic" id="focus-topic"></p>
+      <p class="focus-next" id="focus-next" hidden></p>
       <div class="countdown" id="focus-countdown" role="timer" aria-label="Time left">0:00</div>
       <p class="focus-rule" id="focus-rule" hidden></p>
       <button type="button" class="distracted" id="focus-distracted">Distracted</button>
@@ -132,6 +139,26 @@
         <button type="button" class="link" id="focus-note-skip">Skip</button>
       </div>
       <p class="focus-tally" id="focus-tally" aria-live="polite"></p>
+      <p class="focus-links"><button type="button" class="link" id="focus-end">End early</button></p>
+
+      <div class="end-panel" id="focus-end-panel" role="group" aria-labelledby="focus-end-title" hidden>
+        <p class="end-title" id="focus-end-title">Ending early?</p>
+        <div class="end-choices" id="focus-end-choices">
+          <button type="button" class="end-choice" id="focus-pulled">I was pulled away <small>a meeting, a call, an urgent task</small></button>
+          <button type="button" class="end-choice" id="focus-lost">I lost focus</button>
+          <button type="button" class="link" id="focus-keep">Keep going</button>
+        </div>
+        <form class="end-resume" id="focus-resume" novalidate hidden>
+          <label for="focus-where">Where I stopped</label>
+          <input id="focus-where" type="text" maxlength="160" autocomplete="off">
+          <label for="focus-next-step">My next step</label>
+          <input id="focus-next-step" type="text" maxlength="160" autocomplete="off">
+          <div class="actions left">
+            <button type="submit" class="end-save" id="focus-save">Save and end</button>
+            <button type="button" class="link" id="focus-keep-resume">Keep going</button>
+          </div>
+        </form>
+      </div>
     </section>
 
     <section id="screen-debrief" class="screen" hidden aria-label="Teach-back and debrief">
