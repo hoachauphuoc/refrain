@@ -343,7 +343,7 @@
       <ul class="plain">
         <li>Project name <strong>Refrain</strong> — “to refrain” from a distraction, and “a refrain” you repeat until you know it by heart.</li>
         <li>English interface — matches the English demo video and judges.</li>
-        <li>Audience is everyone who wants to retrain focus; the survey adapts the plan.</li>
+        <li>Audience is adults (18 and over) who want to retrain focus; the survey adapts the plan. Narrowed from “everyone” during <code>5-build</code> to follow Google Cloud's generative AI terms.</li>
         <li>Demo persona: a working adult like you — a junior manager whose focus is cut by meetings and urgent tasks.</li>
         <li>The four survey questions: age, training goal, minutes per day, maximum minutes per session.</li>
         <li>Memory training is a core goal alongside focus, to go deeper than Focusito.</li>
@@ -440,12 +440,12 @@
         layout: 'One screen, four fields in order: age; training goal (tap-to-fill examples such as “Study for a certification after work”, or your own words); minutes available per day; maximum minutes per session. Build my roadmap at the bottom.',
         criteria: [
           'Build my roadmap stays disabled until all four answers are filled in.',
-          'Age and minutes accept positive whole numbers; maximum minutes per session is 5–120 and never more than minutes per day.',
+          'Age is a whole number from 18 to 120 (Refrain is for adults); minutes accept positive whole numbers; maximum minutes per session is 5–120 and never more than minutes per day.',
           'Each invalid field says what it needs in plain words.',
           'The roadmap has 4–6 stages; the first is shorter than the maximum, the last equals it, and lengths never decrease.',
           'Each stage shows a length and a number of sessions per day whose total fits the daily minutes.',
           'The reason mentions at least one of the user\u2019s own answers and contains no statistics or medical claims.',
-          'A 16-year-old revising for an exam and a 35-year-old studying for a certification after work get reasons that refer to their different goals.'
+          'A 20-year-old university student revising for exams and a 35-year-old studying for a certification after work get reasons that refer to their different goals.'
         ],
         states: ['AI request fails — “The coach couldn\u2019t respond. Your work is saved.” with Try again; the answers stay filled in.']
       },

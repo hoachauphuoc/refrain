@@ -5,7 +5,7 @@ status: approved
 
 # Refrain — Product Requirements
 
-Refrain is an AI coach that trains focus and memory in one study loop, for school students, university students, and working adults who want to retrain how they study.
+Refrain is an AI coach that trains focus and memory in one study loop, for adults (18 and over) — university students and working adults — who want to retrain how they study.
 Demo persona (learner decision): a working adult like the learner — a junior manager who studies after work and whose focus keeps getting cut by meetings, chat pings, and urgent tasks.
 Source: `scope.md > The Unique Kernel`, `scope.md > The Core Loop`, `scope.md > Who It's For`, `scope.md > Why This Matters to the Learner`.
 
@@ -76,11 +76,11 @@ Develops `scope.md > The Core Loop` step 1.
 
 - As a busy learner who wants to focus longer, I want a plan that starts where I actually am so that my first sessions are wins.
   - [ ] On first visit the Welcome screen appears; after **Start**, the Survey shows the four questions in order.
-  - [ ] **Build my roadmap** stays disabled until all four answers are filled in; age and minutes accept positive whole numbers only; maximum minutes per session is between 5 and 120 and cannot exceed minutes per day. Each invalid field says what it needs in plain words.
+  - [ ] **Build my roadmap** stays disabled until all four answers are filled in; age is a whole number from 18 to 120 (Refrain is for adults); minutes accept positive whole numbers only; maximum minutes per session is between 5 and 120 and cannot exceed minutes per day. Each invalid field says what it needs in plain words.
   - [ ] The roadmap has 4–6 stages; the first stage is shorter than the maximum, the last stage equals the maximum, and lengths never decrease from one stage to the next.
   - [ ] Each stage shows a session length and a number of sessions per day whose total stays within the daily minutes.
   - [ ] The reason mentions at least one of the user's own survey answers and contains no statistics or medical claims.
-  - [ ] Two different surveys — for example a 16-year-old revising for an exam and a 35-year-old studying for a certification after work — produce reasons that refer to their different goals.
+  - [ ] Two different surveys — for example a 20-year-old university student revising for exams and a 35-year-old studying for a certification after work — produce reasons that refer to their different goals.
 
 ### Warm-up Recall
 Develops `scope.md > The Core Loop` step 2.
@@ -168,7 +168,7 @@ Develops `scope.md > The POC Boundary`.
 Learner decisions:
 - Project name: **Refrain** — "to refrain" from a distraction, and "a refrain" you repeat until you know it by heart. Chosen from a shortlist the agent researched and collision-checked at the learner's request.
 - English interface — matches the English demo video and judges.
-- Audience is everyone who wants to retrain focus — school students, university students, working adults; the survey adapts the plan to each.
+- Audience is adults who want to retrain focus — university students and working adults; the survey adapts the plan to each. (Originally also school students; narrowed to 18 and over during `5-build`, because Google Cloud's generative AI terms don't allow a site directed to, or likely used by, people under 18 — see `scope.md > How This Scope Was Shaped`.)
 - Demo persona is a working adult like the learner — a junior manager whose focus is cut by meetings and urgent tasks — instead of a student.
 - The four survey questions: age, training goal, minutes per day, maximum minutes per session.
 - Memory training is a core goal alongside focus, to go deeper than Focusito.

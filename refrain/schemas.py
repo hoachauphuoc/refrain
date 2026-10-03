@@ -3,8 +3,12 @@ from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, Field, StrictBool, StrictInt, StringConstraints, ValidationError
 
+# Refrain is for adults: Google Cloud's terms don't allow its generative AI services in a site
+# directed to, or likely used by, people under 18 (Service Specific Terms, Generative AI Services).
+MIN_AGE = 18
+
 SURVEY_MESSAGES = {
-    "age": "Enter a whole number from 1 to 120.",
+    "age": "Refrain is for adults. Enter your age as a whole number from 18 to 120.",
     "goal": "Write a goal of up to 200 characters, or tap one of the examples.",
     "minutesPerDay": "Enter a whole number from 5 to 1,440.",
     "maxMinutes": "Enter a whole number from 5 to 120.",
@@ -13,7 +17,7 @@ MAX_OVER_DAILY = "This can't be more than your minutes per day."
 
 
 class Survey(BaseModel):
-    age: Annotated[StrictInt, Field(ge=1, le=120)]
+    age: Annotated[StrictInt, Field(ge=MIN_AGE, le=120)]
     goal: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
     minutes_per_day: Annotated[StrictInt, Field(ge=5, le=1440, alias="minutesPerDay")]
     max_minutes: Annotated[StrictInt, Field(ge=5, le=120, alias="maxMinutes")]
@@ -76,7 +80,7 @@ class ResumeNote(BaseModel):
 
 
 class DebriefSurvey(BaseModel):
-    age: Annotated[StrictInt, Field(ge=1, le=120)]
+    age: Annotated[StrictInt, Field(ge=MIN_AGE, le=120)]
     goal: _text(200, min_length=1)
 
 

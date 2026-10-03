@@ -26,6 +26,7 @@ def test_roadmap_returns_stages_with_sessions_per_day(client, fake):
 
 @pytest.mark.parametrize("changes, field", [
     ({"age": 0}, "age"),
+    ({"age": 17}, "age"),
     ({"age": 121}, "age"),
     ({"age": "34"}, "age"),
     ({"age": 34.5}, "age"),
@@ -49,6 +50,18 @@ def test_maximum_above_daily_minutes_is_rejected_in_plain_words(client):
     response = post_roadmap(client, minutesPerDay=20, maxMinutes=30)
     assert response.status_code == 400
     assert response.get_json()["fields"] == {"maxMinutes": "This can't be more than your minutes per day."}
+
+
+def test_under_18_is_refused_before_any_ai_call(client, fake):
+    response = post_roadmap(client, age=17)
+    assert response.status_code == 400
+    assert response.get_json()["fields"] == {
+        "age": "Refrain is for adults. Enter your age as a whole number from 18 to 120."}
+    assert fake.calls == []
+
+
+def test_18_is_accepted(client):
+    assert post_roadmap(client, age=18).status_code == 200
 
 
 def test_missing_body_is_rejected(client):
@@ -289,6 +302,7 @@ def test_a_retry_returns_the_same_progression(client):
     ({"explanation": "x" * 1501}, "explanation"),
     ({"topic": ""}, "topic"),
     ({"topic": "x" * 121}, "topic"),
+    ({"survey": {"age": 17, "goal": "Revise for exams"}}, "survey"),
 ])
 def test_debrief_rejects_invalid_sessions(client, fake, changes, field):
     status, body = post(client, **changes)

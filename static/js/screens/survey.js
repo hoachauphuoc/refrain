@@ -5,7 +5,8 @@ import { $ } from "../dom.js";
 import { store } from "../store.js";
 
 const NUMBERS = {
-  age: { input: "#survey-age", min: 1, max: 120, message: "Enter a whole number from 1 to 120." },
+  // Adults only, as Google Cloud's generative AI terms require (the server checks the same range).
+  age: { input: "#survey-age", min: 18, max: 120, message: "Refrain is for adults. Enter your age as a whole number from 18 to 120." },
   minutesPerDay: { input: "#survey-daily", min: 5, max: 1440, message: "Enter a whole number from 5 to 1,440." },
   maxMinutes: { input: "#survey-max", min: 5, max: 120, message: "Enter a whole number from 5 to 120." },
 };

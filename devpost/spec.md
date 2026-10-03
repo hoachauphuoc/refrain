@@ -231,7 +231,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **What it does:**
   - Four fields in PRD order. The goal field has tap-to-fill examples: "Study for a certification after work", "Revise for exams", "Remember more of what I read".
   - Inline messages in plain words:
-    - age: a whole number from 1 to 120;
+    - age: a whole number from 18 to 120 (Refrain is for adults, as Google Cloud's generative AI terms require);
     - minutes per day: a whole number from 5 to 1,440;
     - maximum minutes per session: a whole number from 5 to 120;
     - maximum minutes per session can't be more than minutes per day.
@@ -334,7 +334,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   - Roadmap and check: validate the body with a pydantic model → check the rate limit → call the coach → return JSON.
   - Debrief: validate → compute the progression with `rules.py` → check the rate limit → call the coach → return both, so the progression is returned even when the coach is rate-limited or down.
 - **Limits** (the server's copy of the browser checks):
-  - age 1–120;
+  - age 18–120;
   - minutes per day 5–1440;
   - maximum minutes 5–120 and at most minutes per day;
   - goal up to 200 characters;
@@ -670,7 +670,7 @@ Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`
 ## Verification
 - **Fixed rules:** `pytest tests/test_rules.py`. It covers every row of the progression table, the allowance examples from the PRD (25 → 5, demo → 2), sessions per day within the daily minutes, `default_roadmap` passing `check_roadmap` with distinct stages for every maximum from 5 to 120, and the word lists in `outside_interruption`, `mentions_survey`, and `has_claim`.
 - **API with the simulated coach:** `pytest tests/test_api.py`. It covers survey validation (400 with field messages), empty warm-up answers marked missed without an AI call, 0 taps → previous rule kept (and a ready-to-resume rule when pulled away), skipped teach-back → only pattern, rule, and roadmap, a pattern that forgets the notes → the notes put in front, a reason that ignores the survey → retry then the default plan, pulled away → hold plus the not-a-lapse sentence, AI failure → progression still returned, and over the limit → 429.
-- **Live AI:** `scripts/smoke_gemini.py` confirms the SDK settings. Then the PRD's acceptance checklists are walked in the browser with real Gemini, including the two contrasting surveys (a 16-year-old revising for an exam vs. a 35-year-old certification learner) and a debrief whose rule quotes "Slack".
+- **Live AI:** `scripts/smoke_gemini.py` confirms the SDK settings. Then the PRD's acceptance checklists are walked in the browser with real Gemini, including the two contrasting surveys (a 20-year-old university student revising for exams vs. a 35-year-old certification learner) and a debrief whose rule quotes "Slack".
 - **Cost:** after the first five real sessions, compare the `gemini_call` log lines with the ≈ $0.02-per-session estimate at `medium`, note the latency, and record both in `checklist.md`.
 - **Public link:** deploy, walk the demo path once on the `run.app` URL, and confirm the security headers and the 429 response.
 
