@@ -29,7 +29,7 @@ PRD ref: `prd.md > The Core Journey`. Files are listed in **File Structure**.
 10. **Come back.** Home reads the sticky note: the new current stage, the new rule, the "Pick up where you left off" card when there is one, the history rows, and **Start with warm-up** when questions are waiting.
 
 ## Stack
-Learner decision (4-spec): "đồng ý" to the recommended stack below. Accepted tradeoffs: a one-time Google sign-in on the laptop for local AI calls, and plain JavaScript without a framework's structure.
+Learner decision (4-spec): "đồng ý" ("agreed") to the recommended stack below. Accepted tradeoffs: a one-time Google sign-in on the laptop for local AI calls, and plain JavaScript without a framework's structure.
 
 | Piece | Version | Why | Docs |
 |---|---|---|---|
@@ -77,7 +77,7 @@ Open http://localhost:8080. If PowerShell blocks `Activate.ps1`, run the same co
 2. Fill the survey as the junior-manager persona, with illustrative answers such as 34, "Study for a certification after work", 60, 30.
 3. Show the roadmap and its reason.
 4. Switch on **Demo length**, type a topic (for example "Project management course — managing risks"), and start.
-5. Tap **Distracted** twice with "Slack" and "email ping", and let the minute end.
+5. Tap **Distracted** twice with "team chat" and "email ping", and let the minute end. (Plain words rather than product names: the video must not show third-party trademarks.)
 6. Write a two-sentence teach-back, then show the debrief (gap, two questions, rule, roadmap moving).
 7. **Start with warm-up**: answer from memory, **Check**, **Start focusing**.
 8. **End early** → **I was pulled away**, fill both fields, **Save and end**.
@@ -85,7 +85,7 @@ Open http://localhost:8080. If PowerShell blocks `Activate.ps1`, run the same co
 
 Record locally or on the public link; warm the public link up first, because the first request after idle can take a few seconds while Cloud Run starts an instance.
 
-**Public link (optional; learner chose it: "có — tạo project mới, link công khai trên Cloud Run").**
+**Public link (optional; learner chose it: "có — tạo project mới, link công khai trên Cloud Run" — "yes, create a new project, with a public link on Cloud Run").**
 Every billable step below gets a final yes from the learner at the start of `5-build`. Every command passes `--project` explicitly; the learner's existing default gcloud project is never changed.
 
 1. Create the project:
@@ -488,7 +488,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Project:** a new project `refrain-coach-<suffix>`, separate from the learner's other projects, linked to "My Billing Account".
 - **Services:** Cloud Run, Vertex AI, Cloud Build, Artifact Registry, Billing Budgets.
 - **Budget:** a monthly alert of 260,000 VND (about $10; the billing account's currency is VND), counted before credits, at 50/90/100%.
-- Created on Oct 3, 2026 at the start of `5-build`, after the learner's go-ahead ("bạn cứ thực hiện hiện tại tôi còn credit 200 đô"): project `refrain-coach-fanr1s`.
+- Created on Oct 3, 2026 at the start of `5-build`, after the learner's go-ahead ("bạn cứ thực hiện hiện tại tôi còn credit 200 đô" — "go ahead, I have $200 of credit left"): project `refrain-coach-fanr1s`.
 - Docs: https://cloud.google.com/billing/docs/how-to/budgets · https://docs.cloud.google.com/sdk/gcloud/reference/billing/budgets/create
 
 ## Data Model
@@ -690,14 +690,14 @@ Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`
 ## Decisions and Open Issues
 
 ### Learner decisions
-- **Stack** (4-spec, "đồng ý"): Python/Flask server, plain HTML/CSS/JS, progress in `localStorage`, Gemini 3.8 Flash through Vertex AI with no API key. Tradeoffs accepted: a one-time `gcloud auth application-default login` locally, and no framework structure.
-- **Where it runs** (4-spec, "có — tạo project mới, link công khai trên Cloud Run"):
+- **Stack** (4-spec, "đồng ý" — "agreed"): Python/Flask server, plain HTML/CSS/JS, progress in `localStorage`, Gemini 3.8 Flash through Vertex AI with no API key. Tradeoffs accepted: a one-time `gcloud auth application-default login` locally, and no framework structure.
+- **Where it runs** (4-spec, "có — tạo project mới, link công khai trên Cloud Run" — "yes, create a new project, with a public link on Cloud Run"):
   - a new project `refrain-coach-<suffix>` in `us-central1`, on "My Billing Account", with a $10 budget alert;
   - created at the start of `5-build` after a final confirmation.
   - Tradeoff accepted: a public link costs money per use, hence the limits.
 - **Paid AI service and a separate new Google Cloud project** (3-prd).
 - **Data-notice wording:** updated in `prd.md` and `prd.html` from "not used to improve the provider's products" (the Gemini API paid-tier wording) to "Google does not use this content to train its models", which is Vertex AI's actual commitment. Same learner decision, accurate wording.
-- **Thinking level `medium`** (spec review: "looks good. Suy nghĩ mid"), instead of the proposed `low`. Tradeoff accepted: deeper feedback for roughly $0.02 instead of $0.012 per session, and slower replies. `low` is the fallback if latency or cost runs high in testing.
+- **Thinking level `medium`** (spec review: "looks good. Suy nghĩ mid" — "looks good. Thinking: medium"), instead of the proposed `low`. Tradeoff accepted: deeper feedback for roughly $0.02 instead of $0.012 per session, and slower replies. `low` is the fallback if latency or cost runs high in testing.
 
 Approved by the learner on Oct 3, 2026 ("looks good"), with thinking changed to `medium`.
 

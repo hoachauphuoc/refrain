@@ -7,7 +7,7 @@ status: approved
 
 Build mode: fast — switched from learn after slice 2 at the learner's instruction: "từ đây về sau hãy dùng talivy khảo sát rồi tự làm đừng hỏi lại tôi" (from here on, research with Tavily and decide; don't ask me again). Started in learn mode ("leam mode"); build order approved: "ok".
 
-Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing Account", services on, budget alert, and the service account `refrain-run` with `roles/aiplatform.user` — was created on Oct 3, 2026, before this plan was approved, at the learner's go-ahead ("bạn cứ thực hiện hiện tại tôi còn credit 200 đô").
+Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing Account", services on, budget alert, and the service account `refrain-run` with `roles/aiplatform.user` — was created on Oct 3, 2026, before this plan was approved, at the learner's go-ahead ("bạn cứ thực hiện hiện tại tôi còn credit 200 đô" — "go ahead, I have $200 of credit left").
 
 ## Slices
 
@@ -94,8 +94,8 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 ## Revisions
 
 - Budget alert set to 260,000 VND a month (about $10) and counted before credits; `spec.md` and `spec.html` updated — "My Billing Account" bills in VND and carries a $200 credit, and a budget counts spend after credits by default, so the planned 10 USD alert could not be created as written and would never fire while the credit lasts.
-- Slice 1 learner check answered by research — asked to try the roadmap, the learner replied "Tự dùng tavily khảo sát và quyết định"; Tavily (Edutopia focus reps 5–7 → 25–30 minutes; Freedom 10 → 25 minutes) supported starting near a third of the maximum, so the roadmap stayed as built.
-- Early hands-on checkpoint after slice 2 folded into the final review, and build mode switched to fast — at that checkpoint the learner chose not to try the app ("từ đây về sau hãy dùng talivy khảo sát rồi tự làm đừng hỏi lại tôi"); the agent ran three real demo sessions instead (with notes, skipped teach-back, server down then Try again) and checked the rule wording against research.
+- Slice 1 learner check answered by research — asked to try the roadmap, the learner replied "Tự dùng tavily khảo sát và quyết định" ("research it with Tavily yourself and decide"); Tavily (Edutopia focus reps 5–7 → 25–30 minutes; Freedom 10 → 25 minutes) supported starting near a third of the maximum, so the roadmap stayed as built.
+- Early hands-on checkpoint after slice 2 folded into the final review, and build mode switched to fast — at that checkpoint the learner chose not to try the app ("từ đây về sau hãy dùng talivy khảo sát rồi tự làm đừng hỏi lại tôi" — "from here on, research with Tavily and then do it; don't ask me again"); the agent ran three real demo sessions instead (with notes, skipped teach-back, server down then Try again) and checked the rule wording against research.
 - Debrief prompt now asks for a replacement action in the then-part — Tavily found that "if …, then not …" plans can strengthen the habit they target while replacement plans break it (Adriaanse et al. 2011); `spec.md > Coach: debrief writer` updated.
 - `progress()` takes the stage list instead of the stage count — the next session's minutes come from the list; `spec.md > Fixed rules` updated.
 - Debrief API tests live in `tests/test_api.py` as the file structure says; no new test file.

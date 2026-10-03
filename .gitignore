@@ -6,6 +6,9 @@
 .env.*
 !.env.example
 
+# Editor and agent workspace (plans and local settings)
+.snowflake/
+
 # Python
 .venv/
 __pycache__/

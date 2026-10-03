@@ -17,7 +17,7 @@ Develops `scope.md > The Core Loop` and `scope.md > What "Working" Looks Like`.
 3. **Roadmap.** The coach shows a roadmap of 4–6 stages, from a starting session length up to their maximum, with how many sessions fit in their day and a one- or two-sentence reason for the starting point that refers to their own answers.
 4. **Start a session.** On the home screen they type what they will study (for example "Project management course — managing risks") and press **Start session**. For the video, they can switch on **Demo length (1 minute)**.
 5. **Warm-up** (only when questions are waiting from a previous session). They answer two questions from memory, press **Check**, and see which they got, partly got, or missed, each with a one-line answer. Then they press **Start focusing**.
-6. **Focus.** The screen turns dark and quiet: a countdown, their current if-then rule, and one large **Distracted** button. Each time attention slips they tap it and may type a few words ("Slack", "email ping"), or skip the note. The timer keeps running.
+6. **Focus.** The screen turns dark and quiet: a countdown, their current if-then rule, and one large **Distracted** button. Each time attention slips they tap it and may type a few words ("team chat", "email ping"), or skip the note. The timer keeps running.
 7. **Session ends.** A soft chime plays when time is up. Or they press **End early** and say why:
    - **I was pulled away** (a meeting, a call, an urgent task) — they jot where they stopped and their next step, then leave. The roadmap holds.
    - **I lost focus** — the session ends and the roadmap eases back one stage.

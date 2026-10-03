@@ -17,7 +17,7 @@ The AI never summarizes the material for you: you do the remembering and the fil
 
 ## Who It's For
 The learner's audience is adults (18 and over) who want to retrain how they focus and how much they remember of what they study — university students and working adults — and the survey adapts the plan to each. (School students were in the original audience; see **How This Scope Was Shaped** for why they are out.)
-For the proof of concept, picture one person — a working adult like the learner: a junior manager who studies after work (for example a project management course), gets pulled into meetings and urgent tasks, drifts to Slack and email in between, and forgets much of what they studied by the next week. (The demo's survey answers are illustrative, not the learner's.)
+For the proof of concept, picture one person — a working adult like the learner: a junior manager who studies after work (for example a project management course), gets pulled into meetings and urgent tasks, drifts to team chat and email in between, and forgets much of what they studied by the next week. (The demo's survey answers are illustrative, not the learner's.)
 Today they block time on the calendar, set a Pomodoro timer, or install a blocker such as Forest, Opal, or Freedom, then re-read their notes. Blockers never learn why this person got distracted, streak apps turn one missed day into a reason to quit, a meeting that cuts a session short counts as a failure, and re-reading is one of the least effective ways to remember (Dunlosky et al. 2013).
 
 ## The Core Loop
@@ -48,7 +48,7 @@ Research that matches the story, for the pitch:
 - A one-minute "ready-to-resume" plan — where you stopped and what comes next — reduced attention residue and protected performance on the interrupting task (Leroy & Glomb 2018). https://www.washington.edu/news/2018/01/16/task-interrupted-a-plan-for-returning-helps-you-move-on
 
 ## What "Working" Looks Like
-In about two minutes on screen: answer the four survey questions → see a personal roadmap with a starting session length and the reason → run a demo-length session, tapping "Distracted" twice with notes like "Slack" and "email ping" → explain the core idea in two sentences → the debrief shows a gap in the explanation, two questions for next time, a personal if-then rule, and the roadmap moving → the next session opens with those two questions to answer from memory, and the rule on screen → a meeting cuts that session short: "I was pulled away", a one-line note of where they stopped, and the roadmap holds instead of easing back.
+In about two minutes on screen: answer the four survey questions → see a personal roadmap with a starting session length and the reason → run a demo-length session, tapping "Distracted" twice with notes like "team chat" and "email ping" → explain the core idea in two sentences → the debrief shows a gap in the explanation, two questions for next time, a personal if-then rule, and the roadmap moving → the next session opens with those two questions to answer from memory, and the rule on screen → a meeting cuts that session short: "I was pulled away", a one-line note of where they stopped, and the roadmap holds instead of easing back.
 
 The "oh, that's cool" beats: two-word notes come back as a rule written for this person, the next session asks them to recall exactly what they explained, and a meeting that cuts a session short doesn't count against them.
 
