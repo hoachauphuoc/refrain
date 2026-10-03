@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>Scope · Refrain — AI focus &amp; memory coach</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-10-03",
+    "intent": "Visual companion for the approved project scope (Devpost Learn: Build With AI Basics), revised to add memory training",
+    "dataSources": [{ "type": "file", "path": "devpost/scope.md", "note": "Canonical source. Regenerate this page after any scope revision." }],
+    "sections": [
+      { "id": "kernel", "title": "The Unique Kernel", "producerNotes": "From scope.md > The Unique Kernel." },
+      { "id": "loop", "title": "The Core Loop", "producerNotes": "Diagram and step text from scope.md > The Core Loop." },
+      { "id": "who", "title": "Who It's For", "producerNotes": "From scope.md > Who It's For." },
+      { "id": "working", "title": "What Working Looks Like", "producerNotes": "From scope.md > What \"Working\" Looks Like." },
+      { "id": "boundary", "title": "Now / Later / Cut", "producerNotes": "From scope.md > The POC Boundary, Later, Explicitly Cut." },
+      { "id": "identity", "title": "Inspiration & Identity", "producerNotes": "From scope.md > Inspiration & Identity." },
+      { "id": "why", "title": "Why This Matters", "producerNotes": "From scope.md > Why This Matters to the Learner." },
+      { "id": "research", "title": "Research Map", "producerNotes": "From scope.md > Research Map (Tavily, Oct 3 2026, checked against sources)." }
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#f7f8f6, #121614);
+      --card: light-dark(#ffffff, #1b211e);
+      --fg: light-dark(#1d2421, #e6ece8);
+      --muted: light-dark(#5b6762, #9fb0a8);
+      --line: light-dark(#d5ddd8, #34403a);
+      --accent: light-dark(#0f766e, #5eead4);
+      --accent-bg: light-dark(#e6f4f1, #133a35);
+      --warm: light-dark(#b45309, #fbbf24);
+      --warm-bg: light-dark(#fdf3e3, #3a2c12);
+      --cut: light-dark(#9f1239, #fda4af);
+      --cut-bg: light-dark(#fcebef, #3b1820);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif; line-height: 1.55;
+    }
+    main { max-width: 920px; width: 100%; margin: 0 auto; padding: clamp(16px, 4vw, 32px); }
+    h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0.2em 0 0.1em; line-height: 1.2; }
+    h2 { font-size: 1.15rem; margin: 0 0 0.6em; letter-spacing: 0.01em; }
+    h3 { font-size: 1rem; }
+    a { color: var(--accent); }
+    img, svg { max-width: 100%; height: auto; }
+    .eyebrow { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+    .badge { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+    .badge.ok { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .lede { font-size: 1.1rem; color: var(--muted); margin: 0.4em 0 0; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: clamp(16px, 3vw, 24px); margin: 18px 0; }
+    .kernel { border-left: 5px solid var(--accent); }
+    .kernel > p { font-size: 1.08rem; margin: 0 0 10px; }
+    .halves { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 12px 0; }
+    .half { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+    .half h3 { margin: 0 0 4px; }
+    .half p { margin: 0; color: var(--fg); }
+    .half .tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 700; }
+    .note { color: var(--muted); font-size: 0.95rem; margin: 6px 0 0; }
+    .demo-beat { margin-top: 12px; padding: 10px 14px; background: var(--warm-bg); border-radius: 10px; color: var(--fg); font-size: 0.98rem; }
+    .demo-beat strong { color: var(--warm); }
+
+    /* Loop diagram */
+    .diagram { width: 100%; overflow-x: auto; }
+    svg.loop { width: 100%; min-width: 600px; color: var(--muted); display: block; }
+    .node rect { fill: var(--card); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
+    .node text { fill: var(--fg); font-size: 14px; }
+    .node .t { font-weight: 700; font-size: 15px; }
+    .node .s { fill: var(--muted); font-size: 13px; }
+    .node.first rect { stroke-dasharray: 5 4; }
+    .node.step { cursor: pointer; }
+    .node.step:focus { outline: none; }
+    .node.step:focus rect, .node.step:hover rect { stroke: var(--accent); }
+    .node.active rect { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 3; }
+    .edge { stroke: currentColor; stroke-width: 1.8; fill: none; }
+    .elabel { fill: var(--muted); font-size: 12px; }
+    .lane { fill: var(--muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .star { fill: var(--warm); }
+    .stepper { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; margin-top: 14px; }
+    .stepper button {
+      font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--card); color: var(--fg); cursor: pointer;
+    }
+    .stepper button:hover:not(:disabled) { border-color: var(--accent); }
+    .stepper button:disabled { opacity: 0.4; cursor: default; }
+    .step-panel { min-height: 4.5em; }
+    .step-count { color: var(--muted); font-size: 0.8rem; }
+    .step-title { font-weight: 700; }
+
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+    .card h3 { margin: 0 0 6px; }
+    .muted { color: var(--muted); }
+    ol.story { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    ol.story li { counter-increment: s; display: grid; grid-template-columns: 2em 1fr; gap: 10px; align-items: start; }
+    ol.story li::before {
+      content: counter(s); width: 2em; height: 2em; border-radius: 50%; display: grid; place-items: center;
+      background: var(--accent-bg); color: var(--accent); font-weight: 700; font-size: 0.9rem;
+    }
+    ol.story li.beat::before { background: var(--warm-bg); color: var(--warm); content: "★"; }
+
+    .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .col { border-radius: 12px; padding: 14px; border: 1px solid var(--line); }
+    .col h3 { margin: 0 0 8px; }
+    .col.now { background: var(--accent-bg); border-color: var(--accent); }
+    .col.now h3 { color: var(--accent); }
+    .col.later h3 { color: var(--muted); }
+    .col.cut { background: var(--cut-bg); }
+    .col.cut h3 { color: var(--cut); }
+    .col ul { margin: 0; padding-left: 1.1em; }
+    .col li { margin: 4px 0; }
+    details { border-top: 1px solid var(--line); padding: 8px 0; }
+    details:first-of-type { border-top: none; }
+    summary { cursor: pointer; font-weight: 600; }
+    details p, details ul { margin: 6px 0 2px; color: var(--muted); font-size: 0.95rem; }
+    details ul { padding-left: 1.1em; }
+    .placeholder { border: 2px dashed var(--line); border-radius: 12px; padding: 14px; color: var(--muted); margin-top: 10px; }
+    blockquote { margin: 0; padding: 10px 14px; border-left: 4px solid var(--accent); background: var(--accent-bg); border-radius: 0 10px 10px 0; }
+    .research-group { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 14px 0 2px; font-weight: 700; }
+    footer { color: var(--muted); font-size: 0.88rem; margin: 24px 0 8px; }
+    footer ul { padding-left: 1.1em; }
+    code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.92em; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Devpost Learn · Build With AI: Basics · Scope</div>
+    <h1>Refrain</h1>
+    <div class="badges">
+      <span class="badge ok">Scope approved · revised Oct 3, 2026</span>
+      <span class="badge">AI focus &amp; memory coach</span>
+      <span class="badge">Canonical: devpost/scope.md</span>
+    </div>
+    <p class="lede">A short survey builds your training roadmap; during each study session your own distractions become personal rules, and after it you teach back the core idea so the coach can quiz you from memory next time.</p>
+  </header>
+
+  <section class="kernel" id="kernel">
+    <h2>The unique kernel</h2>
+    <p><strong>One loop trains both focus and memory — and it runs on your own words.</strong></p>
+    <div class="halves">
+      <div class="half">
+        <div class="tag">During a session · focus</div>
+        <p>Tap once each time you're pulled away and jot what pulled you. The coach turns those notes into one personal if-then rule.</p>
+      </div>
+      <div class="half">
+        <div class="tag">After a session · memory</div>
+        <p>Explain the core idea in two or three sentences. The coach shows what's missing and writes two questions you answer from memory next time.</p>
+      </div>
+      <div class="half">
+        <div class="tag">Roadmap · habit</div>
+        <p>The next session resizes to what you actually managed. No streak ever resets to zero.</p>
+      </div>
+    </div>
+    <p class="note">The AI never summarizes the material for you: you do the remembering and the filtering; the coach checks and guides.</p>
+    <div class="demo-beat"><strong>The “oh, that's cool” beats:</strong> two-word notes like “Slack” and “email ping” come back as a rule written for this person, the next session asks them to recall exactly what they explained — and a meeting that cuts a session short doesn't count against them.</div>
+  </section>
+
+  <section id="loop">
+    <h2>The core loop</h2>
+    <div class="diagram" role="group" aria-label="Core loop diagram">
+      <svg class="loop" viewBox="0 0 800 352">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+
+        <text class="lane" x="20" y="16">First visit</text>
+        <text class="lane" x="290" y="16">Every session</text>
+
+        <path class="edge" d="M240,74 L286,74" marker-end="url(#arrow)"></path>
+        <path class="edge" d="M510,74 L556,74" marker-end="url(#arrow)"></path>
+        <path class="edge" d="M670,120 L670,236" marker-end="url(#arrow)"></path>
+        <text class="elabel" x="678" y="182">session ends</text>
+        <path class="edge" d="M560,282 L514,282" marker-end="url(#arrow)"></path>
+        <path class="edge" d="M290,282 L244,282" marker-end="url(#arrow)"></path>
+        <path class="edge" d="M196,236 L342,124" marker-end="url(#arrow)"></path>
+        <text class="elabel" x="276" y="196">next session</text>
+
+        <g class="node step first" id="n1" role="button" aria-label="Step 1: Survey and roadmap">
+          <rect x="20" y="28" width="220" height="92" rx="12"></rect>
+          <text x="36" y="56" class="t">1 · Survey → roadmap</text>
+          <text x="36" y="78" class="s">age · goal · daily time</text>
+          <text x="36" y="98" class="s">· max minutes per session</text>
+        </g>
+        <g class="node step" id="n2" role="button" aria-label="Step 2: Warm-up">
+          <rect x="290" y="28" width="220" height="92" rx="12"></rect>
+          <text x="306" y="56" class="t">2 · Warm-up</text>
+          <text x="306" y="78" class="s">answer last time's two</text>
+          <text x="306" y="98" class="s">questions from memory</text>
+        </g>
+        <g class="node step" id="n3" role="button" aria-label="Step 3: Focus session">
+          <rect x="560" y="28" width="220" height="92" rx="12"></rect>
+          <text x="576" y="56" class="t">3 · Focus session</text>
+          <text x="576" y="78" class="s">rule on screen · tap</text>
+          <text x="576" y="98" class="s">“Distracted” + a few words</text>
+        </g>
+        <g class="node step" id="n4" role="button" aria-label="Step 4: Teach-back">
+          <rect x="560" y="236" width="220" height="92" rx="12"></rect>
+          <text x="576" y="264" class="t">4 · Teach-back</text>
+          <text x="576" y="286" class="s">explain the core idea</text>
+          <text x="576" y="306" class="s">in 2–3 sentences</text>
+        </g>
+        <g class="node step" id="n5" role="button" aria-label="Step 5: AI debrief">
+          <rect x="290" y="236" width="220" height="92" rx="12"></rect>
+          <text x="306" y="264" class="t">5 · AI debrief</text>
+          <text x="306" y="286" class="s">gaps · two questions</text>
+          <text x="306" y="306" class="s">· one if-then rule</text>
+          <path class="star" d="M496,240 l4,9 10,1 -7,6 2,10 -9,-5 -9,5 2,-10 -7,-6 10,-1z"></path>
+        </g>
+        <g class="node step" id="n6" role="button" aria-label="Step 6: Roadmap update">
+          <rect x="20" y="236" width="220" height="92" rx="12"></rect>
+          <text x="36" y="264" class="t">6 · Roadmap update</text>
+          <text x="36" y="286" class="s">up, hold, or ease back</text>
+          <text x="36" y="306" class="s">— never to zero</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="stepper">
+      <button type="button" id="prev" aria-label="Previous step">← Prev</button>
+      <div class="step-panel" aria-live="polite">
+        <div class="step-count" id="step-count">Step 1 of 6</div>
+        <div class="step-title" id="step-title"></div>
+        <div id="step-body"></div>
+      </div>
+      <button type="button" id="next" aria-label="Next step">Next →</button>
+    </div>
+    <p class="muted" style="margin:12px 0 0;font-size:0.92rem">Why they come back: the plan becomes more personal after every session, the warm-up shows them remembering more, session length grows from a level they can actually reach, and a bad day shrinks the next step instead of erasing progress.</p>
+  </section>
+
+  <section id="who">
+    <h2>Who it's for</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>Audience</h3>
+        <p style="margin:0">Everyone who wants to retrain how they focus and how much they remember of what they study — school students, university students, and working adults. The survey adapts the plan to each.</p>
+      </div>
+      <div class="card">
+        <h3>Demo persona</h3>
+        <p style="margin:0">A working adult like the learner: a junior manager who studies after work, gets pulled into meetings and urgent tasks, drifts to Slack and email in between, and forgets much of what they studied by the next week.</p>
+      </div>
+      <div class="card">
+        <h3>What they do today</h3>
+        <p style="margin:0">Block calendar time, set a Pomodoro timer or a blocker (Forest, Opal, Freedom), then re-read notes. Blockers never learn <em>why</em> they got distracted, streak apps punish one missed day, a meeting that cuts a session short counts as a failure, and re-reading is one of the least effective ways to remember.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="working">
+    <h2>What “working” looks like — the two-minute demo</h2>
+    <ol class="story">
+      <li><span>Answer the four survey questions.</span></li>
+      <li><span>See a personal roadmap with a starting session length and the reason for it.</span></li>
+      <li><span>Run a demo-length session, tapping “Distracted” twice with notes like “Slack” and “email ping”.</span></li>
+      <li><span>Explain the core idea in two sentences.</span></li>
+      <li class="beat"><span><strong>The debrief shows a gap in the explanation, two questions for next time, a personal if-then rule, and the roadmap moving.</strong></span></li>
+      <li class="beat"><span><strong>The next session opens with those two questions to answer from memory — and the rule on screen.</strong></span></li>
+      <li><span>A meeting cuts that session short: “I was pulled away”, a one-line note of where they stopped — and the roadmap holds instead of easing back.</span></li>
+    </ol>
+  </section>
+
+  <section id="boundary">
+    <h2>Proof-of-concept boundary</h2>
+    <div class="cols">
+      <div class="col now">
+        <h3>Now — in the PoC</h3>
+        <ul>
+          <li>Four-question survey and an AI-generated starting roadmap</li>
+          <li>Warm-up: recall of last session's two questions, checked by the AI</li>
+          <li>Session timer with one-tap distraction logging and an optional short note</li>
+          <li>End early: “pulled away” (roadmap holds, where-I-stopped note kept) vs. “lost focus”</li>
+          <li>Teach-back after each session</li>
+          <li>AI debrief: feedback on the explanation, two recall questions, the distraction pattern, one if-then rule</li>
+          <li>Roadmap view: current stage, active rule, how past sessions changed it</li>
+          <li>Progress kept on the same device, no accounts</li>
+          <li>Demo-length session option</li>
+        </ul>
+      </div>
+      <div class="col later">
+        <h3>Later</h3>
+        <ul>
+          <li>Memory drills: names &amp; faces, phone numbers, memory palace</li>
+          <li>Spaced review of older questions on a schedule</li>
+          <li>Weekly check-in: measured focus span vs. the survey estimate</li>
+          <li>Charts across the 66-day journey</li>
+          <li>Reminders and notifications</li>
+          <li>Accounts and sync across devices</li>
+          <li>AI sorting of “parked” thoughts</li>
+          <li>Goal-specific study tips via web search (e.g. Tavily)</li>
+        </ul>
+      </div>
+      <div class="col cut">
+        <h3>Explicitly cut — tap for the reason</h3>
+        <details>
+          <summary>Speed reading</summary>
+          <p>Reading speed trades off against comprehension; doubling or tripling it without losing understanding is unlikely (Rayner et al. 2016), and one-word-at-a-time apps impair comprehension. Kept instead: lose less reading time to distraction and remember more of what you read.</p>
+        </details>
+        <details>
+          <summary>AI summaries of the material</summary>
+          <p>Reading a summary is re-study; retrieval practice beats re-study (Roediger &amp; Karpicke 2006). The user explains; the coach checks.</p>
+        </details>
+        <details>
+          <summary>Streaks that reset to zero</summary>
+          <p>One missed day does not materially affect habit formation (Lally et al.), and streak guilt is a known complaint about apps such as Forest.</p>
+        </details>
+        <details>
+          <summary>Automatic distraction detection</summary>
+          <p>Needs device-level permissions; tapping it yourself proves the kernel and is itself the awareness practice.</p>
+        </details>
+        <details>
+          <summary>Website and app blocking</summary>
+          <p>Plenty of blockers exist; this project trains focus rather than building walls.</p>
+        </details>
+        <details>
+          <summary>Brain-training games</summary>
+          <p>Training happens during the user's real study or work.</p>
+        </details>
+        <details>
+          <summary>Medical or ADHD claims</summary>
+          <p>This is a study-habit coach, not a clinical tool.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section id="identity">
+    <h2>Inspiration &amp; identity</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>Couch to 5K — for focus</h3>
+        <p style="margin:0">Start small and build step by step. <a href="https://www.nhs.uk/better-health/get-active/get-running-with-couch-to-5k">NHS Couch to 5K</a></p>
+      </div>
+      <div class="card">
+        <h3>A kind coach, never guilt</h3>
+        <p style="margin:0">Unlike the dead-tree guilt Forest users describe. <a href="https://unstar.app/blog/opal-forest-freedom-one-sec-jomo-screen-time-apps-ranked-2026">unstar.app review</a></p>
+      </div>
+      <div class="card">
+        <h3>Calm design</h3>
+        <p style="margin:0">Clarity over cleverness, forgiveness over fear. <a href="https://www.uxmatters.com/mt/archives/2025/05/designing-calm-ux-principles-for-reducing-users-anxiety.php">UXmatters 2025</a> · Visual direction lives in <code>prd.md &gt; Look and Feel</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <h2>Why this matters to the learner</h2>
+    <blockquote>Besides increasing focus, also train memory — for example reading a book in a short time, remembering faces and phone numbers, or the brain automatically thinking to filter out the core knowledge to apply.<br><span class="muted" style="font-size:0.9rem">— the learner's goal, translated from Vietnamese</span></blockquote>
+    <div class="placeholder" style="border-style:solid"><strong style="color:var(--fg)">The learner's story</strong> (translated from Vietnamese): “I am a junior manager at a company. I often lose focus because I have to juggle many things at once; my thinking gets interrupted by meetings and by urgent priority tasks; and I lack prioritization in my work, so my effectiveness at work and in studying goes down.”</div>
+    <ul style="margin:12px 0 0;padding-left:1.1em;color:var(--muted);font-size:0.95rem">
+      <li>Interrupted every two minutes during core work hours — 275 times a day (<a href="https://www.microsoft.com/en-us/worklab/work-trend-index/breaking-down-infinite-workday">Microsoft Work Trend Index 2025</a>).</li>
+      <li>68% don't have enough uninterrupted focus time (<a href="https://news.microsoft.com/annual-wti-2023">Microsoft 2023</a>).</li>
+      <li>23 minutes 15 seconds on average to get back to interrupted work (<a href="https://news.gallup.com/businessjournal/23146/too-many-interruptions-work.aspx">Gloria Mark, Gallup</a>).</li>
+      <li>A one-minute “ready-to-resume” plan reduces attention residue (<a href="https://www.washington.edu/news/2018/01/16/task-interrupted-a-plan-for-returning-helps-you-move-on">Leroy &amp; Glomb 2018</a>) — the basis for “I was pulled away”.</li>
+    </ul>
+  </section>
+
+  <section id="research">
+    <h2>Research map</h2>
+    <p class="muted" style="margin-top:0">Gathered with Tavily on Oct 3, 2026 and checked against the source pages. Blog-only statistics without traceable citations were left out.</p>
+
+    <div class="research-group">Focus and habits</div>
+    <details>
+      <summary>Habit formation takes time — and one miss is fine</summary>
+      <p>Median 66 days to automaticity (range 18–254); missing one opportunity “did not materially affect the habit formation process.” <a href="https://onlinelibrary.wiley.com/doi/10.1002/ejsp.674">Lally et al. 2010</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11641623">2024 systematic review</a></p>
+    </details>
+    <details>
+      <summary>If-then plans work</summary>
+      <p>Medium-to-large effect on goal attainment, d = 0.65 across 94 tests (Gollwitzer &amp; Sheeran 2006). <a href="https://goalsandprogress.com/implementation-intentions-gollwitzer-how-to">Summary</a></p>
+    </details>
+    <details>
+      <summary>Attention on screens is short; focus can be trained step by step</summary>
+      <p>≈ 47 seconds on one screen (<a href="https://www.steelcase.com/research/articles/our-47-second-attention-span-with-gloria-mark-s5-ep3-transcript">Gloria Mark</a>). “Focus reps” lengthened from 5–7 to 25–30 minutes (<a href="https://www.edutopia.org/video/how-to-build-a-better-attention-span">Edutopia</a>); evidence still mixed (<a href="https://www.health.harvard.edu/mind-and-mood/tips-to-improve-concentration">Harvard Health</a>).</p>
+    </details>
+    <details>
+      <summary>Breaks and logging</summary>
+      <p>Fixed breaks gave better mood with the same task completion (<a href="https://cris.maastrichtuniversity.nl/en/publications/understanding-effort-regulation-comparing-pomodoro-breaks-and-sel">Maastricht</a>); a 2025 study found no overall difference (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12292963">PMC</a>). A self-monitoring log was part of an RCT that reduced smartphone distraction (<a href="https://www.mdpi.com/1660-4601/17/13/4842">Mind over Matter</a>).</p>
+    </details>
+
+    <div class="research-group">Memory and learning</div>
+    <details>
+      <summary>Which study techniques actually work</summary>
+      <p>Practice testing and distributed practice: high utility. Self-explanation: moderate. Summarization, highlighting, rereading, keyword mnemonics: low (<a href="https://journals.sagepub.com/doi/abs/10.1177/1529100612453266">Dunlosky et al. 2013</a>).</p>
+    </details>
+    <details>
+      <summary>Testing beats re-reading</summary>
+      <p>After one week: 61% of a passage recalled with repeated testing vs 40% with repeated study (<a href="http://psychnet.wustl.edu/memory/wp-content/uploads/2018/04/Roediger-Karpicke-2006_PPS.pdf">Roediger &amp; Karpicke 2006</a>).</p>
+    </details>
+    <details>
+      <summary>Speed reading doesn't hold up</summary>
+      <p>Speed–comprehension trade-off (<a href="https://journals.sagepub.com/doi/10.1177/1529100615623267">Rayner et al. 2016</a>); one-word-at-a-time apps do not foster comprehension (<a href="https://pubmed.ncbi.nlm.nih.gov/29461715">PubMed</a>, <a href="https://today.ucsd.edu/story/dont_believe_what_you_read_only_once_speed_reading_apps_may_impair_reading">UC San Diego</a>).</p>
+    </details>
+    <details>
+      <summary>For the Later memory drills</summary>
+      <p>Six weeks of method-of-loci training substantially improved word-list recall, still present months later (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7929507">Dresler et al. 2017</a>); face-name mnemonic (<a href="https://pubmed.ncbi.nlm.nih.gov/6734688">Yesavage 1984</a>); the major system for numbers, evidence mostly from practitioners (<a href="https://en.wikipedia.org/wiki/Mnemonic_major_system">overview</a>).</p>
+    </details>
+
+    <div class="research-group">Problem size and pitfalls</div>
+    <details>
+      <summary>The problem is real</summary>
+      <p>73% of UK students aged 18–22 spend 4+ hours a day on their phone; over 3 in 4 believe it hurts their grades (<a href="https://www.insidehighered.com/news/student-success/health-wellness/2025/12/18/how-excessive-phone-use-can-hinder-student-success">Inside Higher Ed</a>) · <a href="https://www.oecd.org/content/dam/oecd/en/publications/reports/2024/05/students-digital-devices-and-success_621829ff/9e4c0624-en.pdf">OECD 2024</a></p>
+    </details>
+    <details>
+      <summary>Don't cite “phone presence drains your brain”</summary>
+      <p>Ward et al. 2017 failed replication (<a href="https://forrt.org/flora-replication-atlas/doi/10.1086/691462">FORRT</a>), and a meta-analysis found limited support.</p>
+    </details>
+
+    <div class="research-group">Closest existing products</div>
+    <details>
+      <summary>What already exists — and how this differs</summary>
+      <ul>
+        <li><a href="https://play.google.com/store/apps/details?id=com.mghg.focusito">Focusito</a> — distraction tap + AI pattern coaching</li>
+        <li><a href="https://thawly.ai/blog/implementation-intentions-adhd">Thawly</a> — AI if-then chains for starting tasks</li>
+        <li><a href="https://achievewithfocus.com/features">FocusFlow</a> — focus timer + 5-question AI quiz from your PDF or notes</li>
+        <li><a href="https://apps.apple.com/us/app/workspacelm-ai-study-quiz/id6755428160">WorkspaceLM</a> — AI quizzes from uploaded content</li>
+        <li><a href="https://discyhabit.com/blog/best-habit-tracker-apps-with-ai-coaching">AI habit coaches</a> (Sortyd, MyOrbit) · <a href="https://www.reddit.com/r/ProductivityApps/comments/1qcum3p/made_an_app_that_trains_your_focus_like_a_muscle">indie “focus like a muscle” app</a></li>
+      </ul>
+      <p>Difference: one loop joins distraction-to-rule focus training with teach-back recall in the user's own words, on a no-reset roadmap.</p>
+    </details>
+  </section>
+
+  <footer>
+    <p><strong>How this scope was shaped</strong></p>
+    <ul>
+      <li><strong>Original:</strong> the learner set the theme, the audience, and the survey → AI roadmap flow with its four questions. At the learner's request, the agent researched with Tavily and proposed the daily loop and kernel; the learner approved.</li>
+      <li><strong>Revision (during <code>3-prd</code>):</strong> the learner added memory training and asked to go deeper than Focusito. The agent researched each example; the learner approved keeping teach-back and next-session recall in the PoC, moving memory drills to Later, and cutting speed reading.</li>
+      <li><strong>Decisions during <code>3-prd</code>:</strong> the learner shared their story as a junior manager, chose a working-adult demo persona like themselves, approved an End-early choice that separates being pulled away from losing focus, and chose the name <strong>Refrain</strong> from a researched, collision-checked shortlist.</li>
+    </ul>
+    <p>This page is a companion. <code>devpost/scope.md</code> is canonical.</p>
+  </footer>
+</main>
+
+<script>
+  (function () {
+    var steps = [
+      { id: 'n1', title: '1 · Survey → roadmap (first visit)', body: 'Four questions: age, training goal, time available per day, and maximum minutes per session. The AI builds a roadmap of stages from a starting length the user can reach up to that maximum, and says why it starts there.' },
+      { id: 'n2', title: '2 · Warm-up', body: 'From the second session on: answer the coach’s two questions from last time, from memory. The coach checks the answers.' },
+      { id: 'n3', title: '3 · Focus session', body: 'Start the timer for the current stage, with the active if-then rule on screen. Each time attention slips, tap “Distracted” and optionally type a few words, then keep going. If a meeting or urgent task pulls you away, end early with a one-line note of where you stopped and what’s next.' },
+      { id: 'n4', title: '4 · Teach-back', body: 'When the session ends, explain the core idea you just studied in two or three sentences. The AI never summarizes the material for you.' },
+      { id: 'n5', title: '5 · AI debrief ★', body: 'What the explanation got right and what is missing, two questions for next time, the pattern in the distraction notes, and one if-then rule. This is the demo beat.' },
+      { id: 'n6', title: '6 · Roadmap update', body: 'Up a stage, hold, or ease back to what the user actually managed — never back to zero. Being pulled away holds the stage; it is not a lapse. The next session starts again at the warm-up.' }
+    ];
+    var i = 0;
+    var title = document.getElementById('step-title');
+    var body = document.getElementById('step-body');
+    var count = document.getElementById('step-count');
+    var prev = document.getElementById('prev');
+    var next = document.getElementById('next');
+
+    function render() {
+      steps.forEach(function (s, k) {
+        var g = document.getElementById(s.id);
+        if (k === i) { g.classList.add('active'); } else { g.classList.remove('active'); }
+        g.setAttribute('aria-pressed', k === i ? 'true' : 'false');
+      });
+      title.textContent = steps[i].title;
+      body.textContent = steps[i].body;
+      count.textContent = 'Step ' + (i + 1) + ' of ' + steps.length;
+      prev.disabled = i === 0;
+      next.disabled = i === steps.length - 1;
+    }
+
+    prev.addEventListener('click', function () { if (i > 0) { i -= 1; render(); } });
+    next.addEventListener('click', function () { if (i < steps.length - 1) { i += 1; render(); } });
+
+    steps.forEach(function (s, k) {
+      var g = document.getElementById(s.id);
+      g.setAttribute('tabindex', '0');
+      g.addEventListener('click', function () { i = k; render(); });
+      g.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); i = k; render(); }
+      });
+    });
+
+    render();
+  })();
+</script>
+</body>
+</html>

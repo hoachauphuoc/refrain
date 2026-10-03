@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>Spec · Refrain — technical blueprint</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-10-03",
+    "intent": "Visual companion for the approved technical spec (Devpost Learn: Build With AI Basics)",
+    "dataSources": [{ "type": "file", "path": "devpost/spec.md", "note": "Canonical source. Regenerate this page after any spec revision." }],
+    "sections": [
+      { "id": "how", "title": "How it works", "producerNotes": "Architecture diagram and node details from spec.md > How This Works, In Plain Language and > Components." },
+      { "id": "journey", "title": "The journey through the system", "producerNotes": "Sequence diagrams per step from spec.md > The Core Journey Through the System." },
+      { "id": "rules", "title": "The fixed rules", "producerNotes": "Simulators mirror spec.md > Components > Fixed rules (rules.py): tap_allowance, progress, roadmap_sentence, default_roadmap, sessions_per_day." },
+      { "id": "data", "title": "Saved progress", "producerNotes": "From spec.md > Data Model and > Components > Teach-back and Debrief screen." },
+      { "id": "files", "title": "Components and files", "producerNotes": "From spec.md > File Structure and > Components." },
+      { "id": "services", "title": "Gemini, cost, and limits", "producerNotes": "From spec.md > External Services and Dependencies and > Components > Rate limits. Prices: Vertex AI pricing page, read Oct 3, 2026." },
+      { "id": "run", "title": "Where it runs", "producerNotes": "From spec.md > Where It Runs and How Someone Tries It." },
+      { "id": "look", "title": "Look and feel", "producerNotes": "From spec.md > Look and Feel; contrast ratios computed with the WCAG formula." },
+      { "id": "failures", "title": "Failure modes", "producerNotes": "From spec.md > Important Failure Modes." },
+      { "id": "decisions", "title": "Decisions and open issues", "producerNotes": "From spec.md > What Was Simplified and Why and > Decisions and Open Issues." }
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#f7f8f6, #121614);
+      --card: light-dark(#ffffff, #1b211e);
+      --fg: light-dark(#1d2421, #e6ece8);
+      --muted: light-dark(#5b6762, #9fb0a8);
+      --line: light-dark(#d5ddd8, #34403a);
+      --accent: light-dark(#0f766e, #5eead4);
+      --accent-bg: light-dark(#e6f4f1, #133a35);
+      --warm: light-dark(#b45309, #fbbf24);
+      --warm-bg: light-dark(#fdf3e3, #3a2c12);
+      --soft: light-dark(#f1f4f2, #222a26);
+      --code-bg: light-dark(#f3f5f4, #151a18);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, "Segoe UI", system-ui, sans-serif; line-height: 1.55; }
+    main { max-width: 980px; width: 100%; margin: 0 auto; padding: clamp(16px, 4vw, 32px); }
+    h1 { font-size: clamp(1.8rem, 4.5vw, 2.5rem); margin: 0.2em 0 0.1em; line-height: 1.15; font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; }
+    h2 { font-size: 1.15rem; margin: 0 0 0.6em; }
+    h3 { font-size: 1rem; margin: 0 0 6px; }
+    a { color: var(--accent); }
+    img, svg { max-width: 100%; height: auto; }
+    code, pre, .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
+    pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; overflow-x: auto; margin: 8px 0; line-height: 1.45; }
+    .eyebrow { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+    .badge { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+    .badge.draft { border-color: var(--warm); color: var(--warm); background: var(--warm-bg); }
+    .badge.ok { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .lede { font-size: 1.08rem; color: var(--muted); margin: 0.4em 0 0; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: clamp(16px, 3vw, 24px); margin: 18px 0; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.86rem; }
+    ul.plain { margin: 0; padding-left: 1.1em; }
+    ul.plain li { margin: 4px 0; }
+    .scroll { width: 100%; overflow-x: auto; }
+    .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+    .card { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+    .card h3 { display: flex; gap: 8px; align-items: baseline; }
+    .num { display: inline-grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 50%; background: var(--accent-bg); color: var(--accent); font-weight: 700; font-size: 0.85rem; flex: none; }
+    .ref { font-size: 0.82rem; color: var(--muted); }
+    .pill { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; vertical-align: middle; }
+    .pill.learner { background: var(--accent-bg); color: var(--accent); }
+    .pill.agent { background: var(--soft); color: var(--muted); border: 1px solid var(--line); }
+    .pill.verify { background: var(--warm-bg); color: var(--warm); }
+    .pill.bill { background: var(--warm-bg); color: var(--warm); }
+    .pill.free { background: var(--accent-bg); color: var(--accent); }
+    .table-wrap { overflow-x: auto; margin: 10px 0; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+    th, td { border-bottom: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+    th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; }
+
+    /* architecture */
+    svg.arch { width: 100%; min-width: 760px; display: block; color: var(--muted); }
+    .zone { fill: var(--soft); stroke: var(--line); stroke-width: 1.5; }
+    .zone.dash { fill: none; stroke-dasharray: 6 5; }
+    .zt { fill: var(--fg); font-weight: 700; font-size: 15px; }
+    .zs { fill: var(--muted); font-size: 12px; }
+    .node rect { fill: var(--card); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
+    .node .t { fill: var(--fg); font-weight: 700; font-size: 13.5px; }
+    .node .s { fill: var(--muted); font-size: 11.5px; }
+    .node { cursor: pointer; }
+    .node:focus { outline: none; }
+    .node:hover rect, .node:focus rect { stroke: var(--accent); }
+    .node.active rect { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 2.5; }
+    .edge { stroke: currentColor; stroke-width: 1.8; fill: none; }
+    .edge.dash { stroke-dasharray: 6 5; }
+    .elabel { fill: var(--muted); font-size: 11.5px; }
+    .detail { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-top: 12px; }
+    .detail h3 { margin-bottom: 4px; }
+    .detail .where { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.84rem; color: var(--accent); margin: 0 0 6px; }
+    .detail p { margin: 0 0 6px; }
+
+    /* journey */
+    .stepper { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; align-items: center; }
+    .stepper button, .btn { font: inherit; font-size: 0.88rem; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+    .stepper button[aria-selected="true"] { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    .stepper .nav { margin-left: auto; display: flex; gap: 6px; }
+    .btn:hover, .stepper button:hover { border-color: var(--accent); }
+    svg.seq { width: 100%; min-width: 760px; display: block; color: var(--muted); }
+    .lane-box { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+    .lane-t { fill: var(--fg); font-weight: 700; font-size: 13px; }
+    .lane-s { fill: var(--muted); font-size: 11px; }
+    .life { stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .msg { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+    .msg.back { stroke: var(--muted); stroke-dasharray: 5 4; }
+    .mlabel { fill: var(--fg); font-size: 12px; }
+    .selfbox { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 1; }
+    .selft { fill: var(--fg); font-size: 11.5px; }
+    .notebox { fill: var(--warm-bg); stroke: var(--warm); stroke-width: 1; stroke-dasharray: 4 3; }
+    .notet { fill: var(--fg); font-size: 12px; }
+    .jpanel { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; margin-top: 12px; }
+    .jpanel h3 { font-size: 1.05rem; }
+    .kv { margin: 0 0 8px; }
+    .kv b { display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    @media (max-width: 680px) { .jpanel { grid-template-columns: 1fr; } }
+
+    /* rules sims */
+    .sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+    @media (max-width: 720px) { .sim { grid-template-columns: 1fr; } }
+    .ctrl { margin: 0 0 12px; }
+    .ctrl > label, .ctrl > .lbl { display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+    .stages { display: flex; gap: 6px; flex-wrap: wrap; }
+    .stage { font: inherit; font-size: 0.9rem; min-width: 64px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; text-align: center; }
+    .stage[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    .stage.next { box-shadow: 0 0 0 3px var(--warm-bg); border-color: var(--warm); }
+    .seg { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+    .seg button { font: inherit; font-size: 0.88rem; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    .stepperbox { display: inline-flex; align-items: center; gap: 8px; }
+    .stepperbox button { font: inherit; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; font-size: 1.1rem; line-height: 1; }
+    .stepperbox output { min-width: 2.2em; text-align: center; font-weight: 700; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.92rem; }
+    .result { border-radius: 12px; padding: 14px 16px; background: var(--soft); border: 1px solid var(--line); }
+    .result .big { font-size: 1.35rem; font-weight: 700; margin: 2px 0 8px; }
+    .result .say { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 1.05rem; margin: 10px 0 0; padding-left: 12px; border-left: 3px solid var(--warm); }
+    .chg-up { color: var(--accent); }
+    .chg-hold { color: var(--fg); }
+    .chg-ease_back { color: var(--muted); }
+    .bars { display: grid; gap: 6px; margin-top: 6px; }
+    .bar { display: grid; grid-template-columns: 70px minmax(0, 1fr) 92px; gap: 8px; align-items: center; font-size: 0.88rem; }
+    .bar .fill { height: 18px; border-radius: 6px; background: var(--accent); opacity: 0.85; min-width: 4px; }
+    .bar .k { color: var(--muted); }
+    .checks { list-style: none; padding: 0; margin: 10px 0 0; font-size: 0.9rem; }
+    .checks li::before { content: "✓ "; color: var(--accent); font-weight: 700; }
+    .checks li.bad::before { content: "✗ "; color: var(--warm); }
+    input[type="number"], input[type="range"] { font: inherit; }
+    input[type="number"] { width: 6.5em; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--fg); }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .warnline { color: var(--warm); font-size: 0.9rem; margin: 6px 0 0; }
+
+    /* data lifecycle */
+    svg.life-svg { width: 100%; min-width: 760px; display: block; color: var(--muted); }
+    .st rect { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+    .st.ok rect { fill: var(--accent-bg); stroke: var(--accent); }
+    .st.gone rect { fill: var(--soft); stroke-dasharray: 5 4; }
+    .st .t { fill: var(--fg); font-weight: 700; font-size: 13px; }
+    .st .s { fill: var(--muted); font-size: 11.5px; }
+
+    /* files */
+    .files { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; }
+    @media (max-width: 720px) { .files { grid-template-columns: 1fr; } }
+    .tree { border: 1px solid var(--line); border-radius: 12px; padding: 8px; background: var(--code-bg); }
+    .tree button { display: block; width: 100%; text-align: left; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.84rem; padding: 3px 8px; border: none; border-radius: 6px; background: none; color: var(--fg); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tree button.dir { color: var(--muted); cursor: default; }
+    .tree button.file:hover { background: var(--accent-bg); }
+    .tree button[aria-current="true"] { background: var(--accent-bg); color: var(--accent); font-weight: 700; }
+    .tree .group { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; padding: 8px 8px 2px; }
+
+    /* cost */
+    .cost { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .metric { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+    .metric .v { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .metric .l { font-size: 0.82rem; color: var(--muted); }
+
+    /* deploy */
+    ol.deploy { margin: 0; padding-left: 1.3em; }
+    ol.deploy > li { margin: 0 0 12px; }
+    ol.deploy .head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-weight: 600; }
+
+    /* look */
+    .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0 14px; }
+    .swatch { border-radius: 12px; border: 1px solid var(--line); overflow: hidden; }
+    .swatch .chip-color { height: 52px; }
+    .swatch .lbl { padding: 8px 10px; font-size: 0.85rem; }
+    .swatch .lbl span { display: block; color: var(--muted); font-size: 0.76rem; }
+    .focus-mock { background: #0f1513; color: #dfe8e3; border-radius: 14px; padding: 22px 18px; text-align: center; border: 1px solid #22302b; }
+    .focus-mock .topic { font-size: 0.8rem; color: #8fa39b; letter-spacing: 0.04em; }
+    .focus-mock .clock { font-size: 3.2rem; font-weight: 300; letter-spacing: 0.04em; margin: 4px 0 6px; font-variant-numeric: tabular-nums; }
+    .focus-mock .rule { font-size: 0.92rem; color: #fbbf24; margin: 0 auto 14px; max-width: 30em; }
+    .focus-mock .big { display: inline-block; font-size: 1.05rem; padding: 12px 26px; border-radius: 999px; border: 1px solid #2f6f66; background: #133a35; color: #e6fffa; }
+    .focus-mock .tally { font-size: 0.85rem; color: #8fa39b; margin-top: 10px; }
+    .paper-mock { background: #f6f1e7; color: #1f2a28; border-radius: 14px; padding: 18px; border: 1px solid #e4dccd; }
+    .paper-mock h4 { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 1.35rem; margin: 0 0 6px; font-weight: 600; }
+    .paper-mock p { margin: 0 0 10px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #5f6b66; }
+    .paper-mock .rulecard { background: #fdf3e3; border-left: 4px solid #d97706; border-radius: 10px; padding: 10px 12px; color: #92400e; font-weight: 600; }
+    .paper-mock .go { display: inline-block; margin-top: 10px; background: #0f766e; color: #ffffff; border-radius: 999px; padding: 8px 18px; font-weight: 600; }
+
+    details { border-top: 1px solid var(--line); padding: 7px 0; }
+    details:first-of-type { border-top: none; }
+    summary { cursor: pointer; font-weight: 600; }
+    details p, details ul { margin: 6px 0 2px; color: var(--muted); font-size: 0.95rem; }
+    .callout { border-radius: 12px; padding: 12px 14px; background: var(--warm-bg); border: 1px solid var(--warm); }
+    .callout h3 { color: var(--warm); }
+    footer { color: var(--muted); font-size: 0.88rem; margin: 24px 0 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Devpost Learn · Build With AI: Basics · Technical spec</div>
+    <h1>Refrain — technical blueprint</h1>
+    <div class="badges">
+      <span class="badge ok">Spec approved · Oct 3, 2026</span>
+      <span class="badge">Python 3.13 · Flask 3.1.3</span>
+      <span class="badge">Plain HTML/CSS/JS · localStorage</span>
+      <span class="badge">Gemini 3.8 Flash · Vertex AI</span>
+      <span class="badge">Cloud Run · us-central1</span>
+      <span class="badge">Canonical: devpost/spec.md</span>
+    </div>
+    <p class="lede">How the approved PRD gets built: a page in your browser that keeps your progress, a small Python server that holds the fixed rules and is the only part that talks to the AI, and Gemini, which writes the words but never decides the numbers.</p>
+  </header>
+
+  <section id="how">
+    <h2>How it works — tap a part</h2>
+    <div class="scroll">
+      <svg class="arch" viewBox="0 0 940 380" role="group" aria-label="Architecture diagram">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <rect class="zone" x="16" y="20" width="250" height="284" rx="16"></rect>
+        <text class="zt" x="34" y="48">Your browser</text>
+        <text class="zs" x="34" y="66">no account · progress stays here</text>
+
+        <rect class="zone" x="352" y="20" width="270" height="284" rx="16"></rect>
+        <text class="zt" x="370" y="48">Cloud Run · Flask server</text>
+        <text class="zs" x="370" y="66">signs in as refrain-run · no API key</text>
+
+        <rect class="zone" x="712" y="98" width="212" height="128" rx="16"></rect>
+
+        <path class="edge" d="M266,128 L352,128" marker-end="url(#ar)"></path>
+        <text class="elabel" x="309" y="112" text-anchor="middle">POST /api/…</text>
+        <text class="elabel" x="309" y="146" text-anchor="middle">JSON</text>
+        <path class="edge" d="M352,214 L266,214" marker-end="url(#ar)"></path>
+        <text class="elabel" x="309" y="198" text-anchor="middle">progression</text>
+        <text class="elabel" x="309" y="232" text-anchor="middle">+ coaching</text>
+        <path class="edge" d="M622,140 L712,140" marker-end="url(#ar)"></path>
+        <text class="elabel" x="667" y="126" text-anchor="middle">prompt +</text>
+        <text class="elabel" x="667" y="158" text-anchor="middle">JSON schema</text>
+        <path class="edge dash" d="M712,190 L622,190" marker-end="url(#ar)"></path>
+        <text class="elabel" x="667" y="208" text-anchor="middle">words (JSON)</text>
+
+        <g class="node" data-node="screens" tabindex="0" role="button" aria-label="Seven screens">
+          <rect x="32" y="82" width="218" height="60" rx="11"></rect>
+          <text class="t" x="46" y="106">Seven screens</text><text class="s" x="46" y="126">index.html · screens/*.js</text>
+        </g>
+        <g class="node" data-node="storage" tabindex="0" role="button" aria-label="localStorage">
+          <rect x="32" y="152" width="218" height="60" rx="11"></rect>
+          <text class="t" x="46" y="176">localStorage · refrain.v1</text><text class="s" x="46" y="196">the sticky note: your progress</text>
+        </g>
+        <g class="node" data-node="timer" tabindex="0" role="button" aria-label="Timer and chime">
+          <rect x="32" y="222" width="218" height="60" rx="11"></rect>
+          <text class="t" x="46" y="246">Timer + chime</text><text class="s" x="46" y="266">Date.now() · Web Audio</text>
+        </g>
+
+        <g class="node" data-node="routes" tabindex="0" role="button" aria-label="API routes">
+          <rect x="368" y="80" width="238" height="46" rx="11"></rect>
+          <text class="t" x="382" y="100">API routes</text><text class="s" x="382" y="117">validate · security headers</text>
+        </g>
+        <g class="node" data-node="rules" tabindex="0" role="button" aria-label="Fixed rules">
+          <rect x="368" y="134" width="238" height="46" rx="11"></rect>
+          <text class="t" x="382" y="154">rules.py — fixed rules</text><text class="s" x="382" y="171">up / hold / ease back · tested</text>
+        </g>
+        <g class="node" data-node="coach" tabindex="0" role="button" aria-label="Coach and Gemini client">
+          <rect x="368" y="188" width="238" height="46" rx="11"></rect>
+          <text class="t" x="382" y="208">coach.py + gemini.py</text><text class="s" x="382" y="225">prompts · checks · one retry</text>
+        </g>
+        <g class="node" data-node="limits" tabindex="0" role="button" aria-label="Rate limits">
+          <rect x="368" y="242" width="238" height="46" rx="11"></rect>
+          <text class="t" x="382" y="262">ratelimit.py</text><text class="s" x="382" y="279">30/hour per IP · 360/day</text>
+        </g>
+
+        <g class="node" data-node="gemini" tabindex="0" role="button" aria-label="Gemini on Vertex AI">
+          <rect x="726" y="112" width="184" height="100" rx="11"></rect>
+          <text class="t" x="740" y="138">Gemini 3.8 Flash</text>
+          <text class="s" x="740" y="158">Vertex AI · global</text>
+          <text class="s" x="740" y="176">thinking: medium</text>
+          <text class="s" x="740" y="194">writes words only</text>
+        </g>
+
+        <g class="node" data-node="laptop" tabindex="0" role="button" aria-label="Your laptop for local development">
+          <rect x="16" y="322" width="908" height="44" rx="12" style="stroke-dasharray: 6 5"></rect>
+          <text class="t" x="34" y="349">Your laptop (local)</text>
+          <text class="s" x="180" y="349">flask --app main run · localhost:8080 · same code · Google sign-in (ADC) · REFRAIN_FAKE_AI=1 → labelled simulated coach</text>
+        </g>
+      </svg>
+    </div>
+    <div class="detail" id="arch-detail" aria-live="polite"></div>
+
+    <div class="grid3" style="margin-top:14px">
+      <div class="card"><h3><span class="num">1</span>The page in your browser</h3><p class="small">Shows the seven screens, runs the countdown and the chime, and keeps all your progress in <code>localStorage</code> — a sticky note the browser keeps for this one site. No accounts, no database.</p></div>
+      <div class="card"><h3><span class="num">2</span>A small Python server</h3><p class="small">Flask on Cloud Run hands the page out and is the only part that talks to the AI. It holds the fixed rules: tap allowance, up / hold / ease back, and whether a roadmap obeys your survey.</p></div>
+      <div class="card"><h3><span class="num">3</span>Gemini on Google Cloud</h3><p class="small">Writes the words — the roadmap reason, warm-up marks, feedback, two questions, your pattern, your rule. It never decides the numbers that move your roadmap.</p></div>
+    </div>
+  </section>
+
+  <section id="journey">
+    <h2>The journey through the system</h2>
+    <p class="muted small" style="margin-top:-4px">Each step of <code>prd.md &gt; The Core Journey</code>, traced through the parts above. Solid arrows are requests; dashed arrows are replies.</p>
+    <div class="stepper" role="tablist" aria-label="Journey steps" id="stepper"></div>
+    <div class="scroll"><svg class="seq" id="seq" viewBox="0 0 800 320" role="img" aria-label="Sequence diagram for the selected step"></svg></div>
+    <div class="jpanel" id="jpanel" aria-live="polite"></div>
+  </section>
+
+  <section id="rules">
+    <h2>The fixed rules — try them</h2>
+    <p class="muted small" style="margin-top:-4px">These mirror <code>refrain/rules.py</code> exactly. The AI never changes these numbers.</p>
+    <h3>Up, hold, or ease back</h3>
+    <div class="sim">
+      <div>
+        <div class="ctrl"><span class="lbl">Example roadmap · tap the current stage</span><div class="stages" id="p-stages"></div></div>
+        <div class="ctrl"><label class="toggle"><input type="checkbox" id="p-demo" /> Demo length (1 minute)</label></div>
+        <div class="ctrl"><span class="lbl">Distraction taps</span>
+          <div class="stepperbox"><button type="button" id="p-minus" aria-label="One fewer tap">−</button><output id="p-taps">2</output><button type="button" id="p-plus" aria-label="One more tap">+</button></div>
+        </div>
+        <div class="ctrl"><span class="lbl">How the session ended</span>
+          <div class="seg" id="p-outcome">
+            <button type="button" data-o="completed" aria-pressed="true">Completed</button>
+            <button type="button" data-o="pulled_away" aria-pressed="false">I was pulled away</button>
+            <button type="button" data-o="lost_focus" aria-pressed="false">I lost focus</button>
+          </div>
+        </div>
+      </div>
+      <div class="result" id="p-result" aria-live="polite"></div>
+    </div>
+
+    <h3 style="margin-top:20px">The built-in default plan</h3>
+    <p class="muted small" style="margin-top:0">Gemini proposes the roadmap first. If its answer breaks the limits twice, this plan is used and labelled “Default plan”.</p>
+    <div class="sim">
+      <div>
+        <div class="ctrl"><label for="r-max">Maximum minutes per session: <b id="r-max-v">30</b></label><input type="range" id="r-max" min="5" max="120" value="30" /></div>
+        <div class="ctrl"><label for="r-daily">Minutes available per day</label><input type="number" id="r-daily" min="5" max="1440" value="60" /></div>
+        <p class="warnline" id="r-warn" hidden></p>
+      </div>
+      <div class="result" id="r-result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="data">
+    <h2>Saved progress — the sticky note</h2>
+    <p class="muted small" style="margin-top:-4px">Everything lives in the browser under one key, <code>refrain.v1</code>. The server stores nothing. The trickiest piece is a finished session waiting for its debrief:</p>
+    <div class="scroll">
+      <svg class="life-svg" viewBox="0 0 940 300" role="img" aria-label="Lifecycle of a finished session waiting for its debrief">
+        <defs>
+          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <g class="st"><rect x="16" y="62" width="160" height="62" rx="12"></rect><text class="t" x="30" y="88">Running</text><text class="s" x="30" y="108">memory only</text></g>
+        <g class="st"><rect x="248" y="62" width="182" height="62" rx="12"></rect><text class="t" x="262" y="88">pending</text><text class="s" x="262" y="108">submitted: false</text></g>
+        <g class="st"><rect x="502" y="62" width="182" height="62" rx="12"></rect><text class="t" x="516" y="88">pending</text><text class="s" x="516" y="108">submitted: true</text></g>
+        <g class="st ok"><rect x="756" y="62" width="168" height="62" rx="12"></rect><text class="t" x="770" y="88">Progression</text><text class="s" x="770" y="108">stage + history saved</text></g>
+        <g class="st ok"><rect x="756" y="214" width="168" height="62" rx="12"></rect><text class="t" x="770" y="240">Cleared → Home</text><text class="s" x="770" y="260">rule + warm-up saved</text></g>
+        <g class="st gone"><rect x="16" y="214" width="160" height="62" rx="12"></rect><text class="t" x="30" y="240">Discarded</text><text class="s" x="30" y="260">roadmap unchanged</text></g>
+        <g class="st gone"><rect x="502" y="214" width="182" height="62" rx="12"></rect><text class="t" x="516" y="240">Cleared, not counted</text><text class="s" x="516" y="260">you chose to leave</text></g>
+
+        <path class="edge" d="M176,93 L248,93" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="212" y="80" text-anchor="middle">time's up /</text>
+        <text class="elabel" x="212" y="142" text-anchor="middle">end early</text>
+        <path class="edge" d="M430,93 L502,93" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="466" y="80" text-anchor="middle">Get feedback</text>
+        <text class="elabel" x="466" y="142" text-anchor="middle">or Skip</text>
+        <path class="edge" d="M684,93 L756,93" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="720" y="80" text-anchor="middle">server</text>
+        <text class="elabel" x="720" y="142" text-anchor="middle">reached</text>
+        <path class="edge" d="M840,124 L840,214" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="832" y="164" text-anchor="end">coaching arrives,</text>
+        <text class="elabel" x="832" y="180" text-anchor="end">or Back to roadmap</text>
+        <path class="edge dash" d="M96,124 L96,214" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="106" y="172">page closed</text>
+        <path class="edge dash" d="M593,124 L593,214" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="603" y="164">unreachable:</text>
+        <text class="elabel" x="603" y="180">leave (confirm)</text>
+        <path class="edge dash" d="M300,62 C300,22 378,22 378,58" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="339" y="18" text-anchor="middle">reopen → Teach-back</text>
+        <path class="edge dash" d="M554,62 C554,22 632,22 632,58" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="593" y="18" text-anchor="middle">reopen → Try again</text>
+        <path class="edge dash" d="M808,62 C808,22 886,22 886,58" marker-end="url(#ar2)"></path>
+        <text class="elabel" x="847" y="18" text-anchor="middle">coach failed → Try again</text>
+      </svg>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Data</th><th>Key</th><th>Updated when</th><th>Leave and come back</th></tr></thead>
+        <tbody>
+          <tr><td>Survey, roadmap</td><td><code>survey</code>, <code>roadmap</code></td><td>After <b>Build my roadmap</b> succeeds</td><td>Kept; Home opens</td></tr>
+          <tr><td>Current stage</td><td><code>stageIndex</code></td><td>When the debrief's progression is applied — once per session</td><td>Kept</td></tr>
+          <tr><td>Active rule</td><td><code>rule</code></td><td>Debrief with a new rule; unchanged when there were no taps (unless pulled away)</td><td>Kept; on Home and Focus</td></tr>
+          <tr><td>Waiting questions</td><td><code>warmup</code></td><td>Set by a debrief with an explanation; cleared at <b>Start focusing</b></td><td>Kept until then</td></tr>
+          <tr><td>"Pick up" note</td><td><code>resume</code></td><td>Replaced or cleared at every session end</td><td>Kept until the next session ends</td></tr>
+          <tr><td>Session awaiting debrief</td><td><code>pending</code></td><td>See the diagram above</td><td>Reopens Teach-back or the retry state</td></tr>
+          <tr><td>History</td><td><code>history</code></td><td>One row when the progression is applied</td><td>Kept</td></tr>
+          <tr><td>Demo switch</td><td><code>settings.demoLength</code></td><td>When toggled</td><td>Kept</td></tr>
+          <tr><td>Running session</td><td>memory only</td><td>During Focus</td><td>Discarded; roadmap unchanged</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">An unreadable value or an unknown <code>version</code> starts fresh. <b>Reset everything</b> deletes the key and shows Welcome.</p>
+  </section>
+
+  <section id="files">
+    <h2>Components and files — tap a file</h2>
+    <div class="files">
+      <div class="tree" id="tree" aria-label="Planned file tree"></div>
+      <div class="detail" id="file-detail" style="margin-top:0" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="services">
+    <h2>Gemini, cost, and limits</h2>
+    <div class="grid3">
+      <div class="card">
+        <h3>One stateless call per job</h3>
+        <p class="small">Three jobs — roadmap, warm-up check, debrief — each one <code>generate_content</code> call with a JSON schema and thinking level <code>medium</code> (your choice at review). Nothing is stored for a later turn.</p>
+      </div>
+      <div class="card">
+        <h3>No API key</h3>
+        <p class="small">Locally: your Google sign-in. On Cloud Run: service account <code>refrain-run</code> with only <code>roles/aiplatform.user</code>.</p>
+      </div>
+      <div class="card">
+        <h3>Your data</h3>
+        <p class="small">Google won't use it to train or fine-tune models without permission. Prompts may be logged for abuse monitoring; request-response logging stays off.</p>
+      </div>
+    </div>
+    <pre>client = genai.Client(enterprise=True, project=PROJECT, location="global",
+                      http_options=types.HttpOptions(timeout=25_000))
+response = client.models.generate_content(
+    model="gemini-3.8-flash", contents=user_prompt,
+    config=types.GenerateContentConfig(
+        system_instruction=SYSTEM,
+        response_mime_type="application/json",
+        response_json_schema=schema,
+        thinking_config=types.ThinkingConfig(thinking_level="medium")))   # checked in build step 1</pre>
+
+    <h3 style="margin-top:16px">What would it cost? <span class="pill verify">estimate · checked during the build</span></h3>
+    <div class="sim">
+      <div>
+        <div class="ctrl"><label for="c-sessions">Full sessions (warm-up check + debrief): <b id="c-sessions-v">300</b></label><input type="range" id="c-sessions" min="10" max="2000" step="10" value="300" /></div>
+        <div class="ctrl"><label for="c-users">New roadmaps (one per person): <b id="c-users-v">75</b></label><input type="range" id="c-users" min="1" max="500" value="75" /></div>
+        <div class="ctrl"><span class="lbl">Price period</span>
+          <div class="seg" id="c-year">
+            <button type="button" data-y="2026" aria-pressed="true">Through Dec 31, 2026</button>
+            <button type="button" data-y="2027" aria-pressed="false">From Jan 1, 2027 (×2)</button>
+          </div>
+        </div>
+      </div>
+      <div class="cost" id="c-result" aria-live="polite"></div>
+    </div>
+    <p class="small muted">Assumptions at thinking <code>medium</code>: about 2,000 input + 5,000 output tokens per session (≈ $0.02) and 800 + 1,800 per roadmap (≈ $0.007), at $0.75 / $3.75 per million tokens. How much <code>medium</code> thinks is unverified — the build measures it. The earlier ≈ $0.012 figure assumed lighter thinking; <code>low</code> is the fallback. Cloud Run hosting stays inside its monthly free tier (2 million requests, 180,000 vCPU-seconds, 360,000 GiB-seconds).</p>
+
+    <h3 style="margin-top:16px">Guards on the public link</h3>
+    <div class="grid3">
+      <div class="card"><h3>30 / hour per visitor</h3><p class="small">Per IP, before any AI call. Over it: “The coach needs a short break.”</p></div>
+      <div class="card"><h3>360 Gemini calls / day</h3><p class="small">Whole service, retries included — about $3.60 at most per day at <code>medium</code>.</p></div>
+      <div class="card"><h3>1 instance · $10 alert</h3><p class="small">Counters live in memory, so they stop bursts, not slow abuse. The budget alert emails you; deleting the service is the hard stop.</p></div>
+    </div>
+  </section>
+
+  <section id="run">
+    <h2>Where it runs</h2>
+    <div class="grid3">
+      <div class="card">
+        <h3>Locally — for building and recording</h3>
+<pre>py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt -r requirements-dev.txt
+Copy-Item .env.example .env
+flask --app main run --debug --port 8080</pre>
+        <p class="small muted">Open http://localhost:8080 · tests: <code>pytest</code> · simulated coach: <code>REFRAIN_FAKE_AI=1</code> (always labelled).</p>
+      </div>
+      <div class="card">
+        <h3>Demo path for the video</h3>
+        <ul class="plain small">
+          <li>Reset → survey as the junior manager → roadmap and reason.</li>
+          <li>Demo length → tap Distracted with “Slack” and “email ping”.</li>
+          <li>Teach-back → debrief: gap, two questions, rule, roadmap moves.</li>
+          <li>Warm-up from memory → End early → I was pulled away → stage holds → Pick up where you left off.</li>
+        </ul>
+      </div>
+    </div>
+    <h3 style="margin-top:16px">Public link on Cloud Run — every billable step gets your final yes at the start of <code>5-build</code></h3>
+    <ol class="deploy">
+      <li><div class="head">Create the project <code>refrain-coach-&lt;suffix&gt;</code> <span class="pill free">free</span></div><pre>gcloud projects create refrain-coach-&lt;suffix&gt; --name="Refrain"</pre></li>
+      <li><div class="head">Link “My Billing Account” <span class="pill bill">enables billing</span></div><pre>gcloud billing projects link refrain-coach-&lt;suffix&gt; --billing-account=&lt;ID&gt;</pre></li>
+      <li><div class="head">Turn on Cloud Run, Vertex AI, Cloud Build, Artifact Registry, Billing Budgets <span class="pill free">free to enable</span></div></li>
+      <li><div class="head">Add the budget alert — 260,000 VND (about $10, the account's currency) a month, counted before credits (50 / 90 / 100%) <span class="pill free">notifies only</span></div></li>
+      <li><div class="head">Create service account <code>refrain-run</code> with only <code>roles/aiplatform.user</code> <span class="pill free">free</span></div></li>
+      <li><div class="head">Deploy from source — max 1 instance, public URL <span class="pill bill">pay per use</span></div><pre>gcloud run deploy refrain --source . --region us-central1 --project refrain-coach-&lt;suffix&gt; ...</pre></li>
+      <li><div class="head">Walk the demo path on the <code>run.app</code> URL; delete the service after judging to stop all spending</div></li>
+    </ol>
+    <p class="small muted">Every command passes <code>--project</code>; your default gcloud project is never changed. The demo video and public GitHub repo come from <code>6-ship</code> — the link is extra.</p>
+  </section>
+
+  <section id="look">
+    <h2>Look and feel — exact tokens</h2>
+    <div class="swatches">
+      <div class="swatch"><div class="chip-color" style="background:#f6f1e7"></div><div class="lbl">Paper #f6f1e7<span>page background</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#1f2a28"></div><div class="lbl">Ink #1f2a28<span>text · 13.1:1 on paper</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#5f6b66"></div><div class="lbl">Muted #5f6b66<span>missed · ease back · 4.9:1</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#0f766e"></div><div class="lbl">Teal #0f766e<span>actions · progress · 5.5:1 white</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#d97706"></div><div class="lbl">Amber #d97706<span>accent bars only</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#92400e"></div><div class="lbl">Amber ink #92400e<span>rule · got it · 6.3:1</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#0f1513"></div><div class="lbl">Night #0f1513<span>focus screen</span></div></div>
+    </div>
+    <div class="grid3">
+      <div class="paper-mock">
+        <h4>Study for a certification after work</h4>
+        <p>Stage 2 of 5 · 15 minutes · 4 a day</p>
+        <div class="rulecard">If Slack pings, then I'll note it and reply at the break.</div>
+        <span class="go">Start with warm-up</span>
+      </div>
+      <div class="focus-mock">
+        <div class="topic">Project management course — managing risks</div>
+        <div class="clock">14:32</div>
+        <div class="rule">If Slack pings, then I'll note it and reply at the break.</div>
+        <span class="big">Distracted</span>
+        <div class="tally">2 noted · End early</div>
+      </div>
+    </div>
+    <p class="small muted" style="margin-top:10px">Headings in Georgia (bookish serif), body in the system sans at 17 px, countdown at weight 300 with tabular digits. System fonts only; the chime is two soft Web Audio tones. No red anywhere; no gradients, sparkles, chat bubbles, badges, confetti, or streaks.</p>
+  </section>
+
+  <section id="failures">
+    <h2>Where it will realistically break</h2>
+    <div class="grid3">
+      <div class="card"><h3>Gemini slow or down</h3><p class="small">“The coach is thinking…”, one retry, then “The coach couldn't respond. Your work is saved.” with <b>Try again</b>. The roadmap change is already saved; the warm-up never blocks studying.</p></div>
+      <div class="card"><h3>An answer breaks a rule</h3><p class="small">JSON-schema limits make it rare; code checks catch the rest and retry once. A roadmap falls back to the labelled default plan; a debrief shows <b>Try again</b>.</p></div>
+      <div class="card"><h3>The public link gets hammered</h3><p class="small">Per-IP and daily caps answer “needs a short break”; one instance at most; the $10 alert emails you; one command switches it off.</p></div>
+      <div class="card"><h3>Local sign-in expired</h3><p class="small">AI endpoints return 503 and the log says to run <code>gcloud auth application-default login</code>; the simulated coach keeps UI work going.</p></div>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <h2>Decisions and open issues</h2>
+    <details open>
+      <summary><span class="pill learner">Learner</span> Your decisions</summary>
+      <ul class="plain">
+        <li>Stack: Python/Flask, plain HTML/CSS/JS, progress in <code>localStorage</code>, Gemini 3.8 Flash via Vertex AI with no API key — “đồng ý”.</li>
+        <li>Public link on Cloud Run in a new project <code>refrain-coach-…</code>, us-central1, “My Billing Account”, $10 alert — “có — tạo project mới, link công khai trên Cloud Run”.</li>
+        <li>Thinking level <code>medium</code> instead of the proposed <code>low</code> — “looks good. Suy nghĩ mid”. Deeper feedback for about $0.02 instead of $0.012 per session; <code>low</code> is the fallback.</li>
+        <li>Paid AI service and a separate new Google Cloud project (from 3-prd). The PRD's data notice now uses Vertex AI's real commitment: not used to train Google's models.</li>
+      </ul>
+    </details>
+    <details>
+      <summary><span class="pill agent">Agent proposal</span> Details that follow from your choices — accepted with the spec</summary>
+      <ul class="plain">
+        <li>One model for all three jobs.</li>
+        <li>The roadmap change is applied when the debrief reaches the server, even if the AI fails.</li>
+        <li>Sessions per day = whole sessions that fit the daily minutes, capped at 6; shortest stage 2 minutes.</li>
+        <li>Pulled away with zero taps still gets a ready-to-resume rule — the end reason is a real event, not an invented pattern.</li>
+        <li>If the countdown hits zero while the End-early panel is open, the session counts as completed.</li>
+        <li>Limits: 30/hour per IP, 360 Gemini calls/day (lowered from 600 with <code>medium</code>, so a day still costs at most ≈ $3.60), 32 KB per request; one gunicorn worker; least-privilege service account.</li>
+        <li>Light theme only, with the dark focus screen as the exception. Open-source license chosen by you in <code>6-ship</code>.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>What was simplified and why</summary>
+      <ul class="plain">
+        <li><b>localStorage on one device</b> instead of accounts and a database — the PRD keeps progress on this device.</li>
+        <li><b>Plain JavaScript, one page of hidden sections</b> instead of a framework with routes — seven screens, no build step.</li>
+        <li><b>Fixed rules in Python; AI writes words only</b> — progression must be exactly right and testable.</li>
+        <li><b>Templated roadmap sentence and edge-case lines</b> — numbers and “not a focus lapse” can never be wrong.</li>
+        <li><b>In-memory rate limits on one instance</b> instead of Redis or an API gateway.</li>
+        <li><b>Stateless AI calls, system fonts, synthesized chime, a labelled simulated coach</b> for tests — never in the demo.</li>
+      </ul>
+    </details>
+    <div class="callout" style="margin:12px 0">
+      <h3>The useful unknown</h3>
+      <p class="small" style="margin:0">You asked which AI model Refrain uses, what it does, how many there are, and what it costs. Answer: one model doing three jobs, ≈ $0.012 per session at first, ≈ $0.02 now that you chose <code>medium</code> thinking. <b>Check during the build:</b> the server logs tokens for every call; after the first five real sessions we compare actual cost with the estimate and record it in <code>checklist.md</code>.</p>
+    </div>
+    <details>
+      <summary><span class="pill verify">Verify early</span> Nine things build step 1 checks first</summary>
+      <ul class="plain">
+        <li><code>enterprise=True</code> with <code>location="global"</code> reaches <code>gemini-3.8-flash</code> (fallback: <code>us-central1</code>); timeout is in milliseconds.</li>
+        <li><code>ThinkingConfig(thinking_level="medium")</code> for <code>generate_content</code>, and a debrief at <code>medium</code> answers well inside the 25-second timeout.</li>
+        <li><code>response_json_schema</code> limits and <code>response.parsed</code> on Vertex.</li>
+        <li>Token field names on Vertex.</li>
+        <li><code>gcloud billing budgets create</code> flags — <i>checked and run on Oct 3, 2026.</i></li>
+        <li>Cloud Build permissions on a brand-new project.</li>
+        <li><code>GOOGLE_CLOUD_QUOTA_PROJECT</code> overrides the quota project from your sign-in.</li>
+        <li>Which <code>X-Forwarded-For</code> entry is the real client IP on Cloud Run.</li>
+        <li>The chime plays on time in a background tab.</li>
+      </ul>
+      <p class="small muted" style="margin:8px 0 0">A direct REST call on Oct 3, 2026 settled the API side of the first four: <code>global</code> works, thinking <code>MEDIUM</code> is accepted, the schema limits hold, and usage reports prompt, candidates, thoughts, and total tokens. One roadmap: 5.6 s, about $0.003. The SDK spellings are still checked by <code>scripts/smoke_gemini.py</code>.</p>
+    </details>
+    <p class="small muted" style="margin-top:10px">Still open: none blocking <code>5-build</code>.</p>
+  </section>
+
+  <footer>This page is a companion. <code>devpost/spec.md</code> is canonical.</footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function $(id) { return document.getElementById(id); }
+  function h(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function s(tag, attrs, text) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+  function activateOnKey(node, fn) {
+    node.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); }
+    });
+  }
+
+  /* ---------- architecture ---------- */
+  var NODES = {
+    screens: { title: 'Seven screens', where: 'static/index.html · static/js/screens/*.js · static/css/styles.css', what: 'Welcome, Survey, Home, Warm-up, Focus, and Teach-back/Debrief live in one page; one section shows at a time. Every piece of user or AI text is set with textContent, never innerHTML, so nothing typed or generated can run as code.', prd: 'prd.md > Screens and Layout' },
+    storage: { title: 'localStorage · refrain.v1', where: 'static/js/store.js', what: 'The sticky note the browser keeps for this site: survey, roadmap, current stage, rule, waiting questions, the pick-up note, a session waiting for its debrief, history, and the demo switch. Saved on every change; Reset everything deletes it.', prd: 'prd.md > Progress on This Device' },
+    timer: { title: 'Timer and chime', where: 'static/js/timer.js · static/js/screens/focus.js', what: 'The countdown is redrawn every 250 ms from the session end time, so it stays right in a background tab. The chime is two soft Web Audio tones scheduled when the session starts. The running session lives in memory only.', prd: 'prd.md > Focus Session and Distraction Logging' },
+    routes: { title: 'API routes', where: 'refrain/routes.py · refrain/schemas.py · refrain/__init__.py', what: 'POST /api/roadmap, /api/check, /api/debrief. Each validates the body with pydantic, checks the limits, and calls the coach. The debrief computes the progression before anything else, so it comes back even when the coach is down. Security headers on every response.', prd: 'prd.md > Survey and Roadmap (validation) · prd.md > States and Boundaries' },
+    rules: { title: 'Fixed rules', where: 'refrain/rules.py · tests/test_rules.py', what: 'Tap allowance (one per 5 minutes, at least 2), up / hold / ease back, sessions per day, roadmap checks, the default plan, the roadmap sentence, and text checks. Pure Python with no AI — exactly right every time. Try them in “The fixed rules”.', prd: 'prd.md > Roadmap Progression · prd.md > Survey and Roadmap' },
+    coach: { title: 'Coach and Gemini client', where: 'refrain/coach.py · refrain/gemini.py', what: 'Three AI jobs with JSON schemas. Each answer is checked; one retry for an error or a broken check. Code enforces the edge cases: no taps → no invented rule, blank warm-up answers → missed, the rule must read “If …, then I’ll …”, the pattern must quote a note. Logs token counts and estimated cost per call — never your text.', prd: 'prd.md > AI Debrief · prd.md > Warm-up Recall · prd.md > Teach-back' },
+    limits: { title: 'Rate limits', where: 'refrain/ratelimit.py', what: '30 AI requests per IP per hour and 360 Gemini calls per day (about $3.60 at medium thinking), checked before any AI call. Kept in memory on one instance, so they stop bursts; the $10 budget alert and switching the service off are the backstops.', prd: 'Protects the public link' },
+    gemini: { title: 'Gemini 3.8 Flash on Vertex AI', where: 'Google Cloud · model gemini-3.8-flash · location global · thinking medium', what: 'Writes the roadmap reason, warm-up marks, feedback on your explanation, two questions, your pattern, and your rule. One stateless call per job. Google won’t use the data to train its models.', prd: 'prd.md > AI Debrief · prd.md > States and Boundaries (data boundary)' },
+    laptop: { title: 'Your laptop (local)', where: 'flask --app main run --debug --port 8080', what: 'Same code as Cloud Run. Uses your Google sign-in (Application Default Credentials); GOOGLE_CLOUD_QUOTA_PROJECT in .env points AI calls at the new project without changing your global settings. REFRAIN_FAKE_AI=1 runs the simulated coach for tests, always labelled on screen.', prd: 'spec.md > Where It Runs and How Someone Tries It' }
+  };
+  var archNodes = document.querySelectorAll('svg.arch .node');
+  function showNode(key) {
+    for (var i = 0; i < archNodes.length; i++) archNodes[i].classList.toggle('active', archNodes[i].getAttribute('data-node') === key);
+    var n = NODES[key], d = $('arch-detail');
+    clear(d);
+    d.appendChild(h('h3', null, n.title));
+    d.appendChild(h('p', 'where', n.where));
+    d.appendChild(h('p', null, n.what));
+    d.appendChild(h('p', 'ref', n.prd));
+  }
+  for (var ai = 0; ai < archNodes.length; ai++) {
+    (function (g) {
+      var key = g.getAttribute('data-node');
+      g.addEventListener('click', function () { showNode(key); });
+      activateOnKey(g, function () { showNode(key); });
+    })(archNodes[ai]);
+  }
+  showNode('rules');
+
+  /* ---------- journey ---------- */
+  var LANES = [
+    { key: 'B', t: 'Browser', s: 'screens + timer', x: 110 },
+    { key: 'L', t: 'localStorage', s: 'refrain.v1', x: 300 },
+    { key: 'S', t: 'Server', s: 'Flask · rules · coach', x: 500 },
+    { key: 'G', t: 'Gemini', s: 'Vertex AI', x: 690 }
+  ];
+  var LX = {}; LANES.forEach(function (l) { LX[l.key] = l.x; });
+  var STEPS = [
+    { n: 1, title: 'Arrive', msgs: [['B', 'S', 'GET /'], ['S', 'B', 'index.html, CSS, JS', 1], ['B', 'L', 'load refrain.v1'], ['L', 'B', 'nothing saved → Welcome', 1]],
+      what: 'Flask serves the page; main.js reads the sticky note. Nothing saved → Welcome with the data notice, then Start opens the Survey. A returning visitor goes to Home, or back to an unfinished teach-back or debrief.',
+      files: 'main.js · store.js · screens/welcome.js', saved: 'Nothing yet', prd: 'prd.md > The Core Journey step 1 · > Screens and Layout > Welcome' },
+    { n: 2, title: 'Survey', msgs: [['B', 'S', 'POST /api/roadmap (4 answers)'], ['S', 'S', 'validate · rate limit'], ['S', 'G', 'stage lengths + reason?'], ['G', 'S', 'JSON {stages, reason}', 1], ['S', 'S', 'check_roadmap · sessions/day'], ['S', 'B', 'roadmap (ai or default)', 1]],
+      what: 'Fields are checked as you type and again on the server. Gemini proposes 4–6 stage lengths and a reason; rules.py checks them (never shorter, first below the maximum, last equal to it) and that the reason mentions your answers. One retry, then the labelled default plan.',
+      files: 'screens/survey.js · routes.py · coach.py · rules.py', saved: 'Nothing until the reply arrives', prd: 'prd.md > Survey and Roadmap' },
+    { n: 3, title: 'Roadmap', msgs: [['B', 'L', 'save survey, roadmap, stage 1'], ['B', 'B', 'Home: stage cards, empty history']],
+      what: 'The browser saves the survey, roadmap, and stage 1. Home shows the stage cards with stage 1 highlighted, “Your first rule will come from your first session”, and “Your first session is ready”.',
+      files: 'store.js · screens/home.js', saved: 'survey · roadmap · stageIndex', prd: 'prd.md > Screens and Layout > Home (Roadmap)' },
+    { n: 4, title: 'Start a session', msgs: [['B', 'B', 'topic, demo switch, sound on'], ['B', 'L', 'save settings.demoLength']],
+      what: 'You type what you will study. The Demo length switch is remembered. The same click unlocks sound for the end chime, because browsers only allow sound after a click.',
+      files: 'screens/home.js · timer.js', saved: 'settings.demoLength', prd: 'prd.md > The Core Journey step 4' },
+    { n: 5, title: 'Warm-up', msgs: [['L', 'B', '2 saved questions', 1], ['B', 'S', 'POST /api/check (answers)'], ['S', 'S', 'blank → missed, no AI'], ['S', 'G', 'mark the rest?'], ['G', 'S', 'got / partly / missed', 1], ['S', 'B', 'verdicts', 1], ['B', 'L', 'Start focusing → clear warmup']],
+      what: 'Blank answers are marked missed by code, without calling the AI. Gemini marks the rest, and each question shows its saved one-line answer. Start focusing clears the questions, and still works if the coach is down.',
+      files: 'screens/warmup.js · routes.py · coach.py', saved: 'warmup cleared', prd: 'prd.md > Warm-up Recall' },
+    { n: 6, title: 'Focus', msgs: [['L', 'B', 'rule · next-step note', 1], ['B', 'B', 'session in memory only'], ['B', 'B', 'countdown from Date.now()'], ['B', 'B', 'tap → {atSec, note}']],
+      what: 'The running session lives in memory only. Each Distracted tap records the second it happened and bumps the tally at once; a note is optional, and nothing pauses the countdown.',
+      files: 'screens/focus.js · timer.js', saved: 'Nothing — memory only', prd: 'prd.md > Focus Session and Distraction Logging' },
+    { n: 7, title: 'Session ends', msgs: [['B', 'B', 'chime, or End early → why'], ['B', 'L', 'pending (submitted: false)'], ['B', 'L', 'resume note: replace or clear'], ['note', 'Page closed before this point → the session is discarded and the roadmap is unchanged']],
+      what: 'Time’s up → chime. End early asks why while the countdown keeps running behind the panel. endSession writes the finished session as pending and replaces or clears the Pick up where you left off note.',
+      files: 'screens/focus.js · store.js', saved: 'pending · resume', prd: 'prd.md > Ending Early and Pulled Away' },
+    { n: 8, title: 'Teach-back', msgs: [['B', 'L', 'explanation · submitted: true'], ['B', 'S', 'POST /api/debrief']],
+      what: 'Get feedback (disabled while the box is empty) or Skip marks the pending session as sent, then posts it with your notes, outcome, and stage.',
+      files: 'screens/debrief.js · api.js', saved: 'pending.explanation · pending.submitted', prd: 'prd.md > Teach-back' },
+    { n: 9, title: 'Debrief', msgs: [['S', 'S', 'rules.py: up / hold / ease back'], ['S', 'G', 'words for the debrief?'], ['G', 'S', 'JSON words', 1], ['S', 'S', 'checks: rule form, quotes a note'], ['S', 'B', 'progression + coaching', 1], ['B', 'L', 'stage, history, rule, warm-up']],
+      what: 'Rules first: allowance → up / hold / ease back → the roadmap sentence. Then Gemini writes what you got, what’s missing, two questions, your pattern, and your rule; code enforces the edge cases. If the coach fails, the progression still comes back and is saved, with Try again for the words.',
+      files: 'routes.py · rules.py · coach.py · screens/debrief.js', saved: 'stageIndex · history · rule · warmup; pending cleared', prd: 'prd.md > AI Debrief · > Roadmap Progression' },
+    { n: 10, title: 'Come back', msgs: [['B', 'L', 'load refrain.v1'], ['L', 'B', 'stage, rule, pick-up, history', 1], ['B', 'B', 'Start with warm-up (2 Qs)']],
+      what: 'Home reads the sticky note: the new current stage, the new rule, Pick up where you left off when you were pulled away, the history rows — and Start with warm-up with the two saved questions.',
+      files: 'main.js · screens/home.js', saved: 'Nothing new', prd: 'prd.md > The Core Journey step 10 · > Progress on This Device' }
+  ];
+  var current = 0;
+  var stepper = $('stepper');
+  var stepButtons = [];
+  STEPS.forEach(function (st, i) {
+    var b = h('button', null, st.n + ' ' + st.title);
+    b.type = 'button';
+    b.setAttribute('role', 'tab');
+    b.addEventListener('click', function () { showStep(i); });
+    stepper.appendChild(b);
+    stepButtons.push(b);
+  });
+  var nav = h('span', 'nav');
+  var prev = h('button', 'btn', '← Prev'); prev.type = 'button';
+  var next = h('button', 'btn', 'Next →'); next.type = 'button';
+  prev.addEventListener('click', function () { showStep(Math.max(0, current - 1)); });
+  next.addEventListener('click', function () { showStep(Math.min(STEPS.length - 1, current + 1)); });
+  nav.appendChild(prev); nav.appendChild(next); stepper.appendChild(nav);
+
+  function drawSeq(st) {
+    var svgEl = $('seq');
+    clear(svgEl);
+    var defs = s('defs', {});
+    var mk = s('marker', { id: 'sq', viewBox: '0 0 10 10', refX: '9', refY: '5', markerWidth: '8', markerHeight: '8', orient: 'auto-start-reverse' });
+    mk.appendChild(s('path', { d: 'M0,0 L10,5 L0,10 z', fill: 'currentColor' }));
+    defs.appendChild(mk); svgEl.appendChild(defs);
+    var top = 12, rowH = 40, y0 = 84;
+    var height = y0 + st.msgs.length * rowH + 10;
+    svgEl.setAttribute('viewBox', '0 0 800 ' + height);
+    LANES.forEach(function (l) {
+      svgEl.appendChild(s('line', { 'class': 'life', x1: l.x, y1: top + 44, x2: l.x, y2: height - 6 }));
+      svgEl.appendChild(s('rect', { 'class': 'lane-box', x: l.x - 80, y: top, width: 160, height: 44, rx: 10 }));
+      svgEl.appendChild(s('text', { 'class': 'lane-t', x: l.x, y: top + 19, 'text-anchor': 'middle' }, l.t));
+      svgEl.appendChild(s('text', { 'class': 'lane-s', x: l.x, y: top + 35, 'text-anchor': 'middle' }, l.s));
+    });
+    st.msgs.forEach(function (m, i) {
+      var y = y0 + i * rowH;
+      if (m[0] === 'note') {
+        var nt = s('text', { 'class': 'notet', x: 400, y: y + 4, 'text-anchor': 'middle' }, m[1]);
+        svgEl.appendChild(nt);
+        var bb = nt.getBBox();
+        svgEl.insertBefore(s('rect', { 'class': 'notebox', x: bb.x - 12, y: bb.y - 7, width: bb.width + 24, height: bb.height + 14, rx: 8 }), nt);
+        return;
+      }
+      var from = m[0], to = m[1], label = m[2], back = m[3] === 1;
+      if (from === to) {
+        var t = s('text', { 'class': 'selft', x: LX[from], y: y + 4, 'text-anchor': 'middle' }, label);
+        svgEl.appendChild(t);
+        var b2 = t.getBBox();
+        svgEl.insertBefore(s('rect', { 'class': 'selfbox', x: b2.x - 10, y: b2.y - 6, width: b2.width + 20, height: b2.height + 12, rx: 7 }), t);
+        return;
+      }
+      var x1 = LX[from], x2 = LX[to];
+      var dir = x2 > x1 ? 1 : -1;
+      svgEl.appendChild(s('line', { 'class': back ? 'msg back' : 'msg', x1: x1 + dir * 4, y1: y + 6, x2: x2 - dir * 6, y2: y + 6, 'marker-end': 'url(#sq)', style: 'color: ' + (back ? 'var(--muted)' : 'var(--accent)') }));
+      svgEl.appendChild(s('text', { 'class': 'mlabel', x: (x1 + x2) / 2, y: y, 'text-anchor': 'middle' }, label));
+    });
+  }
+  function kv(label, value, mono) {
+    var p = h('p', 'kv');
+    p.appendChild(h('b', null, label));
+    var v = h(mono ? 'code' : 'span', null, value);
+    p.appendChild(v);
+    return p;
+  }
+  function showStep(i) {
+    current = i;
+    stepButtons.forEach(function (b, j) { b.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+    prev.disabled = i === 0; next.disabled = i === STEPS.length - 1;
+    var st = STEPS[i];
+    drawSeq(st);
+    var p = $('jpanel'); clear(p);
+    var left = h('div');
+    left.appendChild(h('h3', null, st.n + '. ' + st.title));
+    left.appendChild(h('p', null, st.what));
+    left.appendChild(h('p', 'ref', st.prd));
+    var right = h('div', 'card');
+    right.appendChild(kv('Files', st.files, true));
+    right.appendChild(kv('Saved in the sticky note', st.saved, false));
+    p.appendChild(left); p.appendChild(right);
+  }
+  showStep(0);
+
+  /* ---------- rules: progression ---------- */
+  var ROAD = [10, 15, 20, 25, 30];
+  var pState = { idx: 1, taps: 2, outcome: 'completed', demo: false };
+  function allowance(minutes) { return Math.max(2, Math.floor(minutes / 5)); }
+  function progress(idx, count, outcome, taps, minutes) {
+    var a = allowance(minutes);
+    if (outcome === 'completed') {
+      if (taps <= a) return idx < count - 1 ? { change: 'up', ni: idx + 1, a: a, code: 'within' } : { change: 'hold', ni: idx, a: a, code: 'at_top' };
+      return { change: 'hold', ni: idx, a: a, code: 'over' };
+    }
+    if (outcome === 'pulled_away') return { change: 'hold', ni: idx, a: a, code: 'pulled_away' };
+    return idx > 0 ? { change: 'ease_back', ni: idx - 1, a: a, code: 'lost_focus' } : { change: 'hold', ni: idx, a: a, code: 'lost_focus_first' };
+  }
+  function sentence(r, nextMin, taps) {
+    switch (r.code) {
+      case 'within': return 'Up a stage to ' + nextMin + ' minutes: you stayed within the ' + r.a + ' distractions this session allows.';
+      case 'at_top': return 'Holding at ' + nextMin + ' minutes, the top of your roadmap, because you stayed within the ' + r.a + ' distractions this session allows.';
+      case 'over': return 'Holding at ' + nextMin + ' minutes: you noticed ' + taps + ' distractions and this session allows ' + r.a + ', and every one was a rep of coming back.';
+      case 'pulled_away': return 'Holding at ' + nextMin + ' minutes, because being pulled away is not a focus lapse.';
+      case 'lost_focus': return 'Easing back to ' + nextMin + ' minutes, a length you\u2019ve already reached, so the next session is one you can finish.';
+      default: return 'Staying at ' + nextMin + ' minutes, your first stage, so the next session is one you can finish.';
+    }
+  }
+  var stageWrap = $('p-stages');
+  var stageBtns = ROAD.map(function (m, i) {
+    var b = h('button', 'stage', m + ' min');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Stage ' + (i + 1) + ', ' + m + ' minutes');
+    b.addEventListener('click', function () { pState.idx = i; renderP(); });
+    stageWrap.appendChild(b);
+    return b;
+  });
+  $('p-demo').addEventListener('change', function (e) { pState.demo = e.target.checked; renderP(); });
+  $('p-minus').addEventListener('click', function () { pState.taps = Math.max(0, pState.taps - 1); renderP(); });
+  $('p-plus').addEventListener('click', function () { pState.taps = Math.min(30, pState.taps + 1); renderP(); });
+  var outBtns = document.querySelectorAll('#p-outcome button');
+  for (var oi = 0; oi < outBtns.length; oi++) {
+    outBtns[oi].addEventListener('click', function (e) { pState.outcome = e.currentTarget.getAttribute('data-o'); renderP(); });
+  }
+  function renderP() {
+    var planned = pState.demo ? 1 : ROAD[pState.idx];
+    var r = progress(pState.idx, ROAD.length, pState.outcome, pState.taps, planned);
+    stageBtns.forEach(function (b, i) {
+      b.setAttribute('aria-pressed', i === pState.idx ? 'true' : 'false');
+      b.classList.toggle('next', i === r.ni && r.ni !== pState.idx);
+    });
+    for (var i = 0; i < outBtns.length; i++) outBtns[i].setAttribute('aria-pressed', outBtns[i].getAttribute('data-o') === pState.outcome ? 'true' : 'false');
+    $('p-taps').textContent = String(pState.taps);
+    var box = $('p-result'); clear(box);
+    box.appendChild(h('div', 'small muted', 'Session: ' + (pState.demo ? '1-minute demo' : planned + ' minutes') + ' · allowance max(2, ' + planned + ' ÷ 5) = ' + r.a + ' taps'));
+    var label = r.change === 'up' ? 'Up a stage' : r.change === 'hold' ? 'Hold' : 'Ease back';
+    box.appendChild(h('div', 'big chg-' + r.change, label + ' → ' + ROAD[r.ni] + ' minutes (stage ' + (r.ni + 1) + ')'));
+    box.appendChild(h('div', 'small muted', 'Reason code: ' + r.code + (pState.outcome !== 'completed' ? ' · taps never ease you back' : '')));
+    box.appendChild(h('p', 'say', sentence(r, ROAD[r.ni], pState.taps)));
+  }
+  renderP();
+
+  /* ---------- rules: default roadmap ---------- */
+  function halfUp(x) { return Math.floor(x + 0.5); }
+  function defaultRoadmap(mx) {
+    var n = mx < 10 ? 4 : 5, start = Math.max(2, halfUp(0.3 * mx)), out = [];
+    for (var i = 0; i < n; i++) {
+      var v = start + (mx - start) * i / (n - 1);
+      out.push(mx >= 30 ? 5 * halfUp(v / 5) : halfUp(v));
+    }
+    out[n - 1] = mx;
+    return out;
+  }
+  function checkRoadmap(st, mx) {
+    var nondec = true;
+    for (var i = 1; i < st.length; i++) if (st[i] < st[i - 1]) nondec = false;
+    return [
+      ['4–6 stages', st.length >= 4 && st.length <= 6],
+      ['every stage at least 2 minutes', st.every(function (v) { return v >= 2; })],
+      ['never gets shorter', nondec],
+      ['first stage below the maximum', st[0] < mx],
+      ['last stage equals the maximum', st[st.length - 1] === mx]
+    ];
+  }
+  function renderR() {
+    var mx = parseInt($('r-max').value, 10);
+    var dailyRaw = $('r-daily').value;
+    var daily = parseInt(dailyRaw, 10);
+    $('r-max-v').textContent = String(mx);
+    var warn = $('r-warn'), box = $('r-result');
+    clear(box);
+    if (!/^\d+$/.test(dailyRaw) || daily < 5 || daily > 1440) {
+      warn.hidden = false; warn.textContent = 'Minutes per day: a whole number from 5 to 1,440.';
+      return;
+    }
+    if (mx > daily) {
+      warn.hidden = false; warn.textContent = 'Maximum minutes per session can\u2019t be more than minutes per day.';
+      return;
+    }
+    warn.hidden = true;
+    var st = defaultRoadmap(mx);
+    var bars = h('div', 'bars');
+    st.forEach(function (m, i) {
+      var row = h('div', 'bar');
+      row.appendChild(h('span', 'k', 'Stage ' + (i + 1)));
+      var track = h('div');
+      var fill = h('div', 'fill');
+      fill.style.width = Math.max(4, Math.round(m / mx * 100)) + '%';
+      track.appendChild(fill);
+      row.appendChild(track);
+      row.appendChild(h('span', null, m + ' min · ' + Math.min(6, Math.floor(daily / m)) + '/day'));
+      bars.appendChild(row);
+    });
+    box.appendChild(bars);
+    var ul = h('ul', 'checks');
+    checkRoadmap(st, mx).forEach(function (c) { var li = h('li', c[1] ? null : 'bad', c[0]); ul.appendChild(li); });
+    box.appendChild(ul);
+    box.appendChild(h('p', 'say', 'For your goal, \u201cStudy for a certification after work\u201d, you can give ' + daily + ' minutes a day and up to ' + mx + ' per session, so this plan starts at ' + st[0] + ' minutes and builds to ' + mx + ' in ' + st.length + ' stages.'));
+  }
+  $('r-max').addEventListener('input', renderR);
+  $('r-daily').addEventListener('input', renderR);
+  renderR();
+
+  /* ---------- files ---------- */
+  var COMP = {
+    main: { t: 'App entry', what: 'app = create_app() — the name the Cloud Run buildpack and flask --app main look for.', prd: 'spec.md > Components > App setup and security headers' },
+    init: { t: 'App setup and security headers', what: 'Reads settings from environment variables, serves the page and static files, registers the routes, caps requests at 32 KB, and adds Content-Security-Policy, nosniff, and no-referrer headers.', prd: 'prd.md > States and Boundaries (data boundary)' },
+    routes: { t: 'API routes and input checks', what: 'Three endpoints. Roadmap and check: validate → rate limit → coach. Debrief: validate → progression → rate limit → coach, so the progression always comes back. Errors: 400 invalid_input, 429 rate_limited, 503 coach_unavailable.', prd: 'prd.md > Survey and Roadmap · > States and Boundaries' },
+    schemas: { t: 'Request models and AI answer shapes', what: 'Pydantic models with the field caps (topic 120, explanation 1,500, notes 60, up to 200 taps…) and the per-job JSON schemas sent to Gemini.', prd: 'prd.md > Survey and Roadmap (validation)' },
+    rules: { t: 'Fixed rules', what: 'tap_allowance, progress, sessions_per_day, check_roadmap, default_roadmap, default_reason, roadmap_sentence, outside_interruption, mentions_survey, has_claim. Pure functions, fully tested.', prd: 'prd.md > Roadmap Progression · > Survey and Roadmap · > AI Debrief' },
+    coach: { t: 'Coach — the three AI jobs', what: 'Roadmap builder, warm-up checker, debrief writer. Shared system instruction (kind coach, own words, no claims, never summarize the material, user text is data). Code-enforced edge cases and one retry.', prd: 'prd.md > AI Debrief · > Warm-up Recall · > Teach-back' },
+    gemini: { t: 'Gemini client and simulated coach', what: 'One generate_content call with a JSON schema and a 25-second timeout. Logs prompt and total tokens with an estimated cost — counts only. REFRAIN_FAKE_AI=1 swaps in FakeGemini and marks every reply simulated.', prd: 'prd.md > States and Boundaries (AI request fails)' },
+    ratelimit: { t: 'Rate limits', what: 'In-memory, thread-safe: 30 AI requests per IP per hour, 360 Gemini calls per UTC day. One worker and one instance keep a single copy of the counters.', prd: 'Protects the public link' },
+    index: { t: 'Page shell', what: 'One HTML page with one <section> per screen; scripts load as ES modules; no inline scripts or styles, to match the security headers.', prd: 'prd.md > Screens and Layout' },
+    css: { t: 'Styles', what: 'Palette tokens (paper, ink, teal, amber, night), Georgia headings, system sans body, cards, the stage row that scrolls sideways on phones, the dark focus screen, reduced-motion rules.', prd: 'prd.md > Look and Feel' },
+    mainjs: { t: 'Boot and navigation', what: 'Loads progress and picks the first screen: Welcome, Teach-back (pending not sent), the debrief retry state (sent, no coaching yet), or Home.', prd: 'prd.md > States and Boundaries' },
+    store: { t: 'Saved progress', what: 'One JSON value under refrain.v1: load (fresh state if missing, unreadable, or unknown version), save on every change, reset.', prd: 'prd.md > Progress on This Device' },
+    api: { t: 'Server calls', what: 'POST JSON with a 55-second timeout; maps failures to “The coach couldn\u2019t respond. Your work is saved.” or “The coach needs a short break.”; passes the simulated flag through.', prd: 'prd.md > States and Boundaries (AI request fails)' },
+    dom: { t: 'Safe DOM helpers', what: 'Show one screen at a time, build elements, and set all user and AI text with textContent — never innerHTML.', prd: 'Security' },
+    timer: { t: 'Countdown and chime', what: 'Redraws from endAt − Date.now() every 250 ms; schedules the two-tone chime on the Web Audio clock at session start; cancels it on End early.', prd: 'prd.md > Focus Session and Distraction Logging' },
+    welcome: { t: 'Welcome screen', what: 'Refrain, the promise, “focus → teach back → recall”, the data notice, Start. Only when nothing is saved.', prd: 'prd.md > Screens and Layout > Welcome' },
+    survey: { t: 'Survey screen', what: 'Four fields in order with tap-to-fill goal examples and plain-word inline messages; Build my roadmap stays disabled until all are valid.', prd: 'prd.md > Survey and Roadmap' },
+    home: { t: 'Home screen', what: 'Goal, stage cards, rule card, Pick up where you left off, topic + Demo length + Start, history rows, Reset everything with an inline confirmation.', prd: 'prd.md > Screens and Layout > Home (Roadmap)' },
+    warmup: { t: 'Warm-up screen', what: 'Two questions, Check, got it / partly / missed with the saved one-line answers, Start focusing (works even if the check fails).', prd: 'prd.md > Warm-up Recall' },
+    focus: { t: 'Focus screen', what: 'Dark screen, countdown, topic, next step, rule, Distracted with the optional note, the End-early panel, and endSession.', prd: 'prd.md > Focus Session and Distraction Logging · > Ending Early and Pulled Away' },
+    debrief: { t: 'Teach-back and Debrief screen', what: 'Teach-back with Get feedback and Skip; the stacked debrief cards; applies the progression once; Try again and Back to roadmap.', prd: 'prd.md > Teach-back · > AI Debrief' },
+    conftest: { t: 'Test fixture', what: 'A Flask test app with REFRAIN_FAKE_AI=1, so tests never call Gemini.', prd: 'spec.md > Verification' },
+    trules: { t: 'Rule tests', what: 'Every progression row, the PRD allowance examples, sessions per day, and the default plan for every maximum from 5 to 120.', prd: 'prd.md > Roadmap Progression' },
+    tapi: { t: 'API tests', what: 'Validation errors, blank warm-up answers, zero taps, skipped teach-back, notes quoted, pulled away → hold, AI failure → progression returned, rate limit → 429.', prd: 'prd.md > AI Debrief · > States and Boundaries' },
+    smoke: { t: 'Live smoke test', what: 'Loads .env and makes one real Gemini call to confirm the SDK settings, then prints tokens and cost.', prd: 'spec.md > Decisions and Open Issues > Verify early in the build' },
+    reqs: { t: 'Dependencies', what: 'Pinned: Flask 3.1.3, gunicorn 26.2.0, google-genai 2.28.0, pydantic 2.13.5, python-dotenv 1.2.4; dev: pytest 9.1.1.', prd: 'spec.md > Stack' },
+    deploy: { t: 'Deploy files', what: '.python-version (3.13), Procfile (one gunicorn worker, 8 threads), .gcloudignore (keeps .env, devpost/, tests/, .venv/, skill packs out of the upload).', prd: 'spec.md > Where It Runs and How Someone Tries It' },
+    env: { t: 'Settings template', what: 'GOOGLE_GENAI_USE_ENTERPRISE, GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_QUOTA_PROJECT, GOOGLE_CLOUD_LOCATION, REFRAIN_FAKE_AI. Secret-free; .env itself is git-ignored.', prd: 'spec.md > Where It Runs' },
+    docs: { t: 'Repo docs', what: 'README (what Refrain is, run, deploy, demo path) and the open-source LICENSE you choose in 6-ship.', prd: '6-ship' },
+    devpost: { t: 'Devpost workspace', what: 'scope, PRD, spec, checklist, and their HTML companions. Not part of the app or the deploy upload.', prd: 'Required in the repo by the hackathon' }
+  };
+  var TREE = [
+    ['g', 'Server'], ['f', 'main.py', 'main', 0], ['d', 'refrain/', 0], ['f', '__init__.py', 'init', 1], ['f', 'routes.py', 'routes', 1], ['f', 'schemas.py', 'schemas', 1], ['f', 'rules.py', 'rules', 1], ['f', 'coach.py', 'coach', 1], ['f', 'gemini.py', 'gemini', 1], ['f', 'ratelimit.py', 'ratelimit', 1],
+    ['g', 'Browser'], ['d', 'static/', 0], ['f', 'index.html', 'index', 1], ['f', 'css/styles.css', 'css', 1], ['d', 'js/', 1], ['f', 'main.js', 'mainjs', 2], ['f', 'store.js', 'store', 2], ['f', 'api.js', 'api', 2], ['f', 'dom.js', 'dom', 2], ['f', 'timer.js', 'timer', 2], ['d', 'screens/', 2], ['f', 'welcome.js', 'welcome', 3], ['f', 'survey.js', 'survey', 3], ['f', 'home.js', 'home', 3], ['f', 'warmup.js', 'warmup', 3], ['f', 'focus.js', 'focus', 3], ['f', 'debrief.js', 'debrief', 3],
+    ['g', 'Tests and scripts'], ['d', 'tests/', 0], ['f', 'conftest.py', 'conftest', 1], ['f', 'test_rules.py', 'trules', 1], ['f', 'test_api.py', 'tapi', 1], ['f', 'scripts/smoke_gemini.py', 'smoke', 0],
+    ['g', 'Config and docs'], ['f', 'requirements.txt · requirements-dev.txt', 'reqs', 0], ['f', '.python-version · Procfile · .gcloudignore', 'deploy', 0], ['f', '.env.example', 'env', 0], ['f', 'README.md · LICENSE', 'docs', 0], ['f', 'devpost/', 'devpost', 0]
+  ];
+  var tree = $('tree'), fileBtns = [];
+  TREE.forEach(function (row) {
+    if (row[0] === 'g') { tree.appendChild(h('div', 'group', row[1])); return; }
+    var isDir = row[0] === 'd';
+    var label = isDir ? row[1] : row[1];
+    var depth = isDir ? row[2] : row[3];
+    var b = h('button', isDir ? 'dir' : 'file', label);
+    b.type = 'button';
+    b.style.paddingLeft = (8 + depth * 16) + 'px';
+    if (isDir) { b.disabled = true; } else {
+      b.setAttribute('data-k', row[2]);
+      b.addEventListener('click', function () { showFile(row[2], row[1]); });
+      fileBtns.push(b);
+    }
+    tree.appendChild(b);
+  });
+  function showFile(k, name) {
+    fileBtns.forEach(function (b) { b.setAttribute('aria-current', b.getAttribute('data-k') === k ? 'true' : 'false'); });
+    var c = COMP[k], d = $('file-detail'); clear(d);
+    d.appendChild(h('p', 'where', name));
+    d.appendChild(h('h3', null, c.t));
+    d.appendChild(h('p', null, c.what));
+    d.appendChild(h('p', 'ref', c.prd));
+  }
+  showFile('rules', 'rules.py');
+
+  /* ---------- cost ---------- */
+  var cYear = '2026';
+  var yBtns = document.querySelectorAll('#c-year button');
+  for (var yi = 0; yi < yBtns.length; yi++) {
+    yBtns[yi].addEventListener('click', function (e) { cYear = e.currentTarget.getAttribute('data-y'); renderC(); });
+  }
+  function money(v) { return '$' + (v < 10 ? v.toFixed(2) : v.toFixed(0)); }
+  function metric(v, l) { var m = h('div', 'metric'); m.appendChild(h('div', 'v', v)); m.appendChild(h('div', 'l', l)); return m; }
+  function renderC() {
+    var sessions = parseInt($('c-sessions').value, 10), users = parseInt($('c-users').value, 10);
+    $('c-sessions-v').textContent = String(sessions);
+    $('c-users-v').textContent = String(users);
+    for (var i = 0; i < yBtns.length; i++) yBtns[i].setAttribute('aria-pressed', yBtns[i].getAttribute('data-y') === cYear ? 'true' : 'false');
+    var k = cYear === '2027' ? 2 : 1;
+    var perSession = 0.02 * k, perRoadmap = 0.007 * k;
+    var total = sessions * perSession + users * perRoadmap;
+    var box = $('c-result'); clear(box);
+    box.appendChild(metric(money(total), 'Gemini total for ' + sessions + ' sessions and ' + users + ' roadmaps'));
+    box.appendChild(metric('$' + perSession.toFixed(3), 'per full session (thinking medium)'));
+    box.appendChild(metric(money(360 * 0.01 * k), 'most the daily cap allows per day (360 calls)'));
+    box.appendChild(metric('≈ $0', 'Cloud Run hosting at hackathon traffic (free tier)'));
+  }
+  $('c-sessions').addEventListener('input', renderC);
+  $('c-users').addEventListener('input', renderC);
+  renderC();
+})();
+</script>
+</body>
+</html>

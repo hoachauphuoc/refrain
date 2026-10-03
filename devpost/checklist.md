@@ -1,0 +1,87 @@
+---
+doc: checklist
+status: approved
+---
+
+# Build Checklist
+
+Build mode: learn (learner's choice, Oct 3, 2026: "leam mode"; build order approved: "ok")
+
+Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing Account", services on, budget alert, and the service account `refrain-run` with `roles/aiplatform.user` — was created on Oct 3, 2026, before this plan was approved, at the learner's go-ahead ("bạn cứ thực hiện hiện tại tôi còn credit 200 đô").
+
+## Slices
+
+- [ ] **1. Your survey becomes a real AI roadmap**
+  Becomes usable: Open Refrain locally, read the Welcome screen and its data notice, answer the four survey questions, and get a roadmap of 4–6 stages (minutes and sessions per day) with a reason Gemini wrote from your answers. It is still there after a reload, and **Reset everything** brings Welcome back.
+  Why now: It proves the riskiest piece first — the app's own Gemini 3.8 Flash calls through Vertex AI with no API key (a direct REST call on the new project already worked) — and bootstraps the server, page shell, palette, and saved progress inside the first behavior you can use. Every later slice lands on this Home screen.
+  PRD ref: `prd.md > The Core Journey` (steps 1–3), `prd.md > Survey and Roadmap`, `prd.md > Screens and Layout` (Welcome, Survey, Home), `prd.md > Progress on This Device`
+  Spec ref: `spec.md > Where It Runs and How Someone Tries It`, `spec.md > Components` (Page shell and screen switching, Saved progress, Server calls, Welcome screen, Survey screen, Home screen, App setup and security headers, API routes and input checks, Fixed rules, Coach: roadmap builder, Gemini client and simulated coach), `spec.md > Look and Feel`, `spec.md > File Structure`, `spec.md > External Services and Dependencies`, `spec.md > Decisions and Open Issues` (Verify early in the build)
+  Build: Scaffold per the file structure — pinned `requirements.txt` and `requirements-dev.txt`, `.python-version`, `.env.example`, `.gitignore` additions, and a `.venv`. One-time Google sign-in for local AI calls (`gcloud auth application-default login`, which opens the browser). Write `scripts/smoke_gemini.py` first and run it to settle the SDK details (verify-early items 1–4 and 7) before building on them. Then the server: `refrain/gemini.py` (client, one `gemini_call` log line per call, `FakeGemini`), the roadmap half of `rules.py` (`check_roadmap`, `default_roadmap`, `default_reason`, `sessions_per_day`, `mentions_survey`, `has_claim`), the roadmap builder in `coach.py` (one retry, then the default plan), `schemas.py`, `POST /api/roadmap` in `routes.py`, and `create_app()` with the security headers. Then the browser: `index.html`, `styles.css` with the palette tokens, `dom.js`, `store.js`, `api.js`, and the Welcome, Survey, and Home screens (goal, stage cards, the first-rule placeholder, "Your first session is ready", and **Reset everything** with its confirmation). Tests for the roadmap rules and the endpoint.
+  Verify (mechanical): `python scripts/smoke_gemini.py` prints a valid JSON answer with token counts and an estimated cost; `pytest` passes, including `default_roadmap` passing `check_roadmap` with distinct stages for every maximum from 5 to 120; `flask --app main run` serves `/` with the three security headers; real `POST /api/roadmap` calls for the two contrasting surveys (a 16-year-old revising for an exam, a 35-year-old certification learner) return stages that pass `check_roadmap` and reasons that name their different goals; in the browser, Welcome → Survey → Home renders, invalid fields show their messages, and a reload keeps the roadmap.
+  Learner check: Start the app, open http://localhost:8080, and fill in the survey as yourself or as the junior-manager persona. Read your roadmap: do the starting length and the reason feel right for you? Then reload the page and check that the roadmap is still there.
+  Commit: `Add survey and AI roadmap via Gemini on Vertex AI`
+
+- [ ] **2. Your distraction notes become your rule, and the coach checks your explanation**
+  Becomes usable: From Home, type a topic, switch on **Demo length**, and start the dark focus screen with the countdown and your rule. Tap **Distracted** with notes such as "Slack" and "email ping", hear the chime at zero, explain the core idea in two or three sentences (or **Skip**), and read the debrief: what you got, what's missing, two questions for next time, your pattern quoting your notes, an if-then rule, and the roadmap moving up or holding. Home then shows the new stage, the rule, and a history row, and the next focus screen shows the rule.
+  Why now: This is the unique kernel — your own notes turned into a personal rule, your own explanation checked — so it comes straight after the roadmap it needs, while there is the most time left to tune the coach's words.
+  PRD ref: `prd.md > The Core Journey` (steps 4, 6–9), `prd.md > Focus Session and Distraction Logging`, `prd.md > Teach-back`, `prd.md > AI Debrief`, `prd.md > Roadmap Progression`, `prd.md > States and Boundaries`, `prd.md > Screens and Layout` (Home, Focus Session, Teach-back and Debrief)
+  Spec ref: `spec.md > The Core Journey Through the System` (steps 4, 6–9), `spec.md > Components` (Home screen, Focus screen and timer, Teach-back and Debrief screen, Fixed rules, Coach: debrief writer), `spec.md > Data Model`, `spec.md > External Services and Dependencies` (Refrain's own API), `spec.md > Important Failure Modes`
+  Build: The progression half of `rules.py` (`tap_allowance`, `progress` with every row of the table, `roadmap_sentence`, `outside_interruption`); `POST /api/debrief` (validate → progression → coach, with the progression returned even when the coach fails); the debrief writer in `coach.py` with the code-enforced edge cases (explanation given or skipped, no taps, taps without notes, the pattern quoting a note, the rule's if-then form, one retry) and its `FakeGemini` answer. In the browser: Home's topic field, **Demo length** switch, **Start session**, rule card, and history rows; `timer.js` (countdown from the end time, chime on the Web Audio clock) and `focus.js` (**Distracted** with the note field and tally, completion at zero); `pending` in `store.js`; `debrief.js` (teach-back, debrief cards, **Try again**, **Back to roadmap**); and `main.js` reopening Teach-back or the debrief retry after a reload. Tests for every progression case and the debrief edge cases.
+  Verify (mechanical): `pytest` passes, covering every row of the progression table, the allowance examples (25 → 5, demo → 2), 0 taps keeping the previous rule, a skipped teach-back returning only pattern, rule, and roadmap, a pattern that forgets the notes getting them put in front, and a Gemini failure still returning the progression; a real `POST /api/debrief` with the notes "Slack" and "email ping" returns a rule in "If …, then I'll …" form, a pattern quoting a note, and exactly two questions; a one-minute demo session runs end to end in the browser, and a reload during the teach-back reopens Teach-back; the `gemini_call` log lines show tokens and `est_usd`.
+  Learner check: With **Demo length** on, run one session on something you studied today: tap **Distracted** twice with your own notes, let the minute end, write two sentences, and read the debrief. Does the rule sound like it was written for you, and is *What's missing* fair? Once, leave the tab in the background for the whole minute and check that the chime still plays on time.
+  Commit: `Add focus session, teach-back, and AI debrief`
+
+- [ ] **3. The next session opens by asking what you remember**
+  Becomes usable: After a debrief with an explanation, Home offers **Start with warm-up**. You answer the two saved questions from memory and press **Check**; each shows got it, partly, or missed with its one-line answer, and **Start focusing** clears them and opens the focus screen. After a skipped teach-back, the next session starts directly.
+  Why now: It closes the memory half of the kernel — the recall that makes the teach-back worth doing — using the questions slice 2 already saves.
+  PRD ref: `prd.md > The Core Journey` (steps 5 and 10), `prd.md > Warm-up Recall`, `prd.md > Screens and Layout` (Warm-up)
+  Spec ref: `spec.md > Components` (Warm-up screen, Coach: warm-up checker), `spec.md > External Services and Dependencies` (Refrain's own API), `spec.md > Data Model` (`warmup`)
+  Build: `POST /api/check`; the warm-up checker in `coach.py` (empty answers marked missed by code, and no Gemini call when every answer is empty) and its `FakeGemini` answer; `warmup.js` with the verdicts, the one-line answers, and a **Start focusing** that works even when the check fails; Home's **Start with warm-up**. Tests for the empty-answer cases and the verdict values.
+  Verify (mechanical): `pytest` passes, including empty answers marked missed without a Gemini call; a real `POST /api/check` returns one valid verdict per answered question; in the browser, a debrief with an explanation leads to **Start with warm-up** → **Check** → verdicts → **Start focusing** → the focus screen, and the questions are gone afterwards.
+  Learner check: Start your next session with the warm-up. Answer one question from memory and leave the other empty, then press **Check**. Do the marks and one-line answers feel fair?
+  Commit: `Add warm-up recall checked by the coach`
+
+- [ ] **4. A meeting can cut a session short without costing you progress**
+  Becomes usable: **End early** opens the panel while the countdown keeps running. **I was pulled away**, with "Where I stopped" and "My next step", holds your stage; the debrief says plainly that being pulled away is not a focus lapse and gives a ready-to-resume rule; and Home shows **Pick up where you left off** (the next step also appears on the next focus screen) until the next session ends. **I lost focus** eases back one stage, never below the first, and **Keep going** returns to the countdown.
+  Why now: It is the learner's own story — meetings and urgent tasks cutting focus — and the demo's closing beat. It reuses the session, debrief, and progression paths from slices 2 and 3 without changing them.
+  PRD ref: `prd.md > The Core Journey` (steps 7 and 10), `prd.md > Ending Early and Pulled Away`, `prd.md > AI Debrief` (outside interruption, not a lapse), `prd.md > Roadmap Progression`, `prd.md > States and Boundaries` (pulled away with both fields blank)
+  Spec ref: `spec.md > Components` (Focus screen and timer, Home screen, Coach: debrief writer), `spec.md > Data Model` (`resume`), `spec.md > Decisions and Open Issues` (agent-proposed details: pulled away with no taps, zero while the End-early panel is open)
+  Build: The End-early panel in `focus.js` (**Keep going**, **I lost focus**, **I was pulled away** with two optional fields and **Save and end**; zero while the panel is open counts as completed; the chime is cancelled on an early end); `endSession` with the outcome and the resume note; `resume` replaced or cleared at every session end; Home's **Pick up where you left off** card and the next-step line on the focus screen; in the debrief writer, the ready-to-resume rule for outside interruptions, a rule for pulled away with no taps, and the "before you were pulled away" pattern line. Tests for pulled away (hold plus the not-a-lapse sentence), lost focus on stage 1 and above, and 0 taps plus pulled away.
+  Verify (mechanical): `pytest` passes for the new cases; a real `POST /api/debrief` for a pulled-away session with the note "meeting" returns a ready-to-resume rule in if-then form; in the browser, both End-early paths move the roadmap correctly, and the pick-up card appears with a note and clears after the next session; cost check — after the first five real sessions, total the `gemini_call` lines per session, compare them with the ≈ $0.02 estimate at `medium`, and record the cost and latency here.
+  Learner check: Start a session, press **End early** → **I was pulled away**, write where you stopped and your next step, and check that the debrief says your stage holds and Home shows **Pick up where you left off**. Then try **I lost focus** once and watch the roadmap ease back one stage.
+  Commit: `Add end early: pulled away holds, lost focus eases back`
+
+- [ ] **5. A public link anyone can try**
+  Becomes usable: Refrain runs at a public `https://refrain-….run.app` address from the new project, with per-visitor and daily limits on AI use, and a README that explains how to run it, deploy it, and switch it off.
+  Why now: Everything it serves is already built. Deploying adds only the limits and Cloud Build's first-deploy permissions, so it goes last; if it slips, the demo can still be recorded locally.
+  PRD ref: `prd.md > The Core Journey` (success), `prd.md > States and Boundaries` (AI request fails, data boundary)
+  Spec ref: `spec.md > Where It Runs and How Someone Tries It` (public link), `spec.md > Components` (Rate limits, Cloud Run service), `spec.md > Important Failure Modes` (someone hammers the public link), `spec.md > Verification` (public link)
+  Build: `ratelimit.py` (30 AI requests per IP per hour, 360 Gemini calls per UTC day), wired into the three routes in the spec's order; `Procfile`, `.gcloudignore`, and `README.md` (what Refrain is, run locally, deploy, demo path, how to stop spending); deploy with the spec's `gcloud run deploy` command; and log `X-Forwarded-For` once on the deployed service to confirm which entry is the real client. Tests for the limits: 429 on roadmap and check, and a debrief that still returns its progression with `coachError: "rate_limited"`.
+  Verify (mechanical): `pytest` passes; the deploy succeeds; the `run.app` URL returns the three security headers; the demo path is walked once on the public URL with real Gemini; 31 warm-up checks with empty answers (no Gemini cost) return 429 on the 31st; the real `X-Forwarded-For` entry is confirmed and the code uses it.
+  Learner check: Open the public link in another browser or on your phone, walk the demo path once, and say whether it behaves the same as on your laptop.
+  Commit: `Deploy Refrain to Cloud Run with rate limits`
+
+## Hands-on Checkpoints
+
+- [ ] Early usable behavior explored — after slice 2: one full real session (focus → teach-back → debrief), to tune the coach's words and the focus screen before slices 3–5
+- [ ] Final kick-the-tires exploration and feedback completed
+
+## Final Review
+
+- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+
+## Code Tour and App Map
+
+- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+
+Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
+Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
+Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
+Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
+Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+
+## Revisions
+
+- Budget alert set to 260,000 VND a month (about $10) and counted before credits; `spec.md` and `spec.html` updated — "My Billing Account" bills in VND and carries a $200 credit, and a budget counts spend after credits by default, so the planned 10 USD alert could not be created as written and would never fire while the credit lasts.

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>PRD · Refrain — AI focus &amp; memory coach</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-10-03",
+    "intent": "Visual companion for the approved product requirements (Devpost Learn: Build With AI Basics)",
+    "dataSources": [{ "type": "file", "path": "devpost/prd.md", "note": "Canonical source. Regenerate this page after any PRD revision." }],
+    "sections": [
+      { "id": "expansion", "title": "From scope to product", "producerNotes": "Pairs of scope.md > The Core Loop phrases and the PRD behaviors that define them." },
+      { "id": "journey", "title": "The core journey", "producerNotes": "Diagram from prd.md > The Core Journey and > Screens and Layout; screen panels from > Features and Behavior and > States and Boundaries." },
+      { "id": "try", "title": "Try the key behaviors", "producerNotes": "Focus mock from > Focus Session and Distraction Logging and > Ending Early and Pulled Away; progression rules from > Roadmap Progression." },
+      { "id": "look", "title": "Look and feel", "producerNotes": "From prd.md > Look and Feel. Swatch hex values and fonts are illustrative; 4-spec sets exact values." },
+      { "id": "decisions", "title": "Product decisions", "producerNotes": "From prd.md > Product Decisions." },
+      { "id": "boundary", "title": "Building / Deferred / Non-goals", "producerNotes": "From prd.md > What We're Building, > Deferred From the POC, > Non-Goals." },
+      { "id": "open", "title": "Open questions", "producerNotes": "From prd.md > Open Questions." }
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#f7f8f6, #121614);
+      --card: light-dark(#ffffff, #1b211e);
+      --fg: light-dark(#1d2421, #e6ece8);
+      --muted: light-dark(#5b6762, #9fb0a8);
+      --line: light-dark(#d5ddd8, #34403a);
+      --accent: light-dark(#0f766e, #5eead4);
+      --accent-bg: light-dark(#e6f4f1, #133a35);
+      --warm: light-dark(#b45309, #fbbf24);
+      --warm-bg: light-dark(#fdf3e3, #3a2c12);
+      --cut: light-dark(#9f1239, #fda4af);
+      --cut-bg: light-dark(#fcebef, #3b1820);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, "Segoe UI", system-ui, sans-serif; line-height: 1.55; }
+    main { max-width: 960px; width: 100%; margin: 0 auto; padding: clamp(16px, 4vw, 32px); }
+    h1 { font-size: clamp(1.8rem, 4.5vw, 2.5rem); margin: 0.2em 0 0.1em; line-height: 1.15; font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; }
+    h2 { font-size: 1.15rem; margin: 0 0 0.6em; }
+    h3 { font-size: 1rem; margin: 0 0 6px; }
+    a { color: var(--accent); }
+    img, svg { max-width: 100%; height: auto; }
+    code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.92em; }
+    .eyebrow { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+    .badge { font-size: 0.8rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+    .badge.ok { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .lede { font-size: 1.08rem; color: var(--muted); margin: 0.4em 0 0; }
+    section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: clamp(16px, 3vw, 24px); margin: 18px 0; }
+    .muted { color: var(--muted); }
+
+    .pairs { display: grid; gap: 10px; }
+    .pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.6fr); gap: 12px; align-items: start; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+    .pair .said { color: var(--muted); font-style: italic; }
+    .pair .said::before { content: "Scope said"; display: block; font-style: normal; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--muted); }
+    .pair .now::before { content: "Now we know"; display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--accent); }
+    .pair .arrow { color: var(--accent); font-size: 1.3rem; padding-top: 14px; }
+    @media (max-width: 640px) { .pair { grid-template-columns: 1fr; } .pair .arrow { display: none; } }
+
+    .diagram { width: 100%; overflow-x: auto; }
+    svg.journey { width: 100%; min-width: 720px; display: block; color: var(--muted); }
+    .node rect { fill: var(--card); stroke: var(--line); stroke-width: 1.5; transition: fill .2s, stroke .2s; }
+    .node .t { fill: var(--fg); font-weight: 700; font-size: 15px; }
+    .node .s { fill: var(--muted); font-size: 12.5px; }
+    .node { cursor: pointer; }
+    .node:focus { outline: none; }
+    .node:hover rect, .node:focus rect { stroke: var(--accent); }
+    .node.active rect { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 3; }
+    .node.cond rect { stroke-dasharray: 5 4; }
+    .edge { stroke: currentColor; stroke-width: 1.8; fill: none; }
+    .edge.alt { stroke-dasharray: 6 5; }
+    .elabel { fill: var(--muted); font-size: 12px; }
+    .star { fill: var(--warm); }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 10px; }
+    .tabs button { font: inherit; font-size: 0.9rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+    .tabs button[aria-selected="true"] { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .panel { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+    .panel h3 { font-size: 1.05rem; }
+    .panel .ref { font-size: 0.82rem; color: var(--muted); margin: 0 0 10px; }
+    .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .panel h4 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 6px; }
+    .panel ul { margin: 0; padding-left: 0; list-style: none; }
+    .panel li { margin: 5px 0; padding-left: 1.5em; position: relative; }
+    .panel ul.criteria li::before { content: "☐"; position: absolute; left: 0; color: var(--accent); }
+    .panel ul.states li::before { content: "◇"; position: absolute; left: 0.1em; color: var(--warm); }
+    .panel p { margin: 0 0 8px; }
+
+    .try-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .focus-mock { background: #0f1513; color: #dfe8e3; border-radius: 14px; padding: 22px 18px; text-align: center; border: 1px solid #22302b; position: relative; }
+    .focus-mock .topic { font-size: 0.8rem; color: #8fa39b; letter-spacing: 0.04em; }
+    .focus-mock .clock { font-size: 3rem; font-weight: 300; letter-spacing: 0.04em; margin: 4px 0 6px; font-variant-numeric: tabular-nums; }
+    .focus-mock .rule { font-size: 0.9rem; color: #b9c9c2; margin: 0 auto 16px; max-width: 30em; }
+    .focus-mock .rule strong { color: #fbbf24; font-weight: 600; }
+    .focus-mock button.big { font: inherit; font-size: 1.05rem; padding: 14px 28px; border-radius: 999px; border: 1px solid #2f6f66; background: #133a35; color: #e6fffa; cursor: pointer; }
+    .focus-mock button.big:hover { background: #18504a; }
+    .focus-mock .tally { font-size: 0.85rem; color: #8fa39b; margin-top: 10px; }
+    .focus-mock .note-row { display: none; margin-top: 12px; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .focus-mock .note-row.open { display: flex; }
+    .focus-mock input { font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid #2f3d38; background: #172019; color: #e6ece8; min-width: 0; width: 220px; }
+    .focus-mock .ghost { font: inherit; padding: 8px 12px; border-radius: 10px; border: 1px solid #2f3d38; background: transparent; color: #b9c9c2; cursor: pointer; }
+    .focus-mock .ghost:hover { border-color: #5eead4; }
+    .focus-mock .link { font: inherit; font-size: 0.85rem; background: none; border: none; color: #8fa39b; text-decoration: underline; cursor: pointer; margin-top: 14px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; min-height: 1.6em; }
+    .chip { font-size: 0.8rem; padding: 2px 10px; border-radius: 999px; background: #1f2b27; color: #cfe0d8; }
+    .end-panel { display: none; margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid #2f3d38; background: #141c19; text-align: left; }
+    .end-panel.open { display: block; }
+    .end-panel .q { font-weight: 600; margin: 0 0 10px; color: #e6ece8; }
+    .end-panel .choices { display: flex; flex-wrap: wrap; gap: 8px; }
+    .end-panel .fields { display: none; margin-top: 12px; gap: 8px; flex-direction: column; }
+    .end-panel .fields.open { display: flex; }
+    .end-panel .fields input { width: 100%; }
+    .end-panel .primary { font: inherit; padding: 8px 14px; border-radius: 10px; border: 1px solid #2f6f66; background: #133a35; color: #e6fffa; cursor: pointer; align-self: flex-start; }
+    .end-result { margin-top: 10px; font-size: 0.9rem; color: #fbbf24; min-height: 1.2em; }
+    .mock-note { font-size: 0.82rem; color: var(--muted); margin-top: 8px; }
+    .sim { border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+    .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .seg button { font: inherit; font-size: 0.88rem; padding: 6px 12px; border: none; background: var(--card); color: var(--fg); cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+    .stepper { display: inline-flex; align-items: center; gap: 10px; margin-left: 10px; }
+    .stepper button { font: inherit; width: 2.1em; height: 2.1em; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--fg); cursor: pointer; }
+    .stepper button:disabled { opacity: 0.4; cursor: default; }
+    .sim-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0; }
+    .stages { display: flex; gap: 6px; margin: 14px 0 8px; }
+    .stage { flex: 1; text-align: center; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--line); font-size: 0.85rem; color: var(--muted); }
+    .stage.done { background: var(--accent-bg); color: var(--accent); }
+    .stage.current { border: 2px solid var(--accent); color: var(--fg); font-weight: 700; }
+    .stage.next { border: 2px dashed var(--warm); color: var(--warm); font-weight: 700; }
+    .result { font-weight: 600; }
+
+    .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 10px 0 14px; }
+    .swatch { border-radius: 12px; border: 1px solid var(--line); overflow: hidden; }
+    .swatch .chip-color { height: 56px; }
+    .swatch .lbl { padding: 8px 10px; font-size: 0.85rem; }
+    .swatch .lbl span { display: block; color: var(--muted); font-size: 0.78rem; }
+    .typo { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: light-dark(#f6f1e7, #1d1b16); }
+    .typo .serif { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 1.6rem; margin: 0 0 4px; color: light-dark(#1f2a28, #f1ece2); }
+    .typo .sans { margin: 0; color: light-dark(#3a4642, #cfd8d3); }
+    .voice { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 14px; }
+    .voice div { border-radius: 12px; padding: 10px 14px; border: 1px solid var(--line); }
+    .voice .yes { border-color: var(--accent); }
+    .voice .yes::before { content: "Sounds like"; display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--accent); }
+    .voice .no::before { content: "Never"; display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--muted); }
+    .voice .no { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+    ul.plain { margin: 0; padding-left: 1.1em; }
+    ul.plain li { margin: 4px 0; }
+
+    .dec-group { margin: 0 0 14px; }
+    .dec-group h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .pill { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .pill.learner { background: var(--accent-bg); color: var(--accent); }
+    .pill.approved { background: light-dark(#eef2ff, #1e2340); color: light-dark(#4338ca, #a5b4fc); }
+    .pill.assume { background: var(--warm-bg); color: var(--warm); }
+    .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .col { border-radius: 12px; padding: 14px; border: 1px solid var(--line); }
+    .col.now { background: var(--accent-bg); border-color: var(--accent); }
+    .col.now h3 { color: var(--accent); }
+    .col.cut { background: var(--cut-bg); }
+    .col.cut h3 { color: var(--cut); }
+    details { border-top: 1px solid var(--line); padding: 7px 0; }
+    details:first-of-type { border-top: none; }
+    summary { cursor: pointer; font-weight: 600; }
+    details p { margin: 6px 0 2px; color: var(--muted); font-size: 0.95rem; }
+    footer { color: var(--muted); font-size: 0.88rem; margin: 24px 0 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Devpost Learn · Build With AI: Basics · Product requirements</div>
+    <h1>Refrain</h1>
+    <div class="badges">
+      <span class="badge ok">PRD approved · Oct 3, 2026</span>
+      <span class="badge">Laptop-first web app · English</span>
+      <span class="badge">Canonical: devpost/prd.md</span>
+    </div>
+    <p class="lede">An AI coach that trains focus and memory in one study loop. Demo persona: a junior manager who studies after work and keeps getting pulled into meetings and urgent tasks.</p>
+  </header>
+
+  <section id="expansion">
+    <h2>From scope to product</h2>
+    <div class="pairs">
+      <div class="pair"><div class="said">“a four-question survey … the AI builds a roadmap”</div><div class="arrow">→</div><div class="now">One screen with validation (max minutes 5–120, never more than the daily minutes); 4–6 stages that never get shorter; sessions per day that fit the daily budget; a reason that quotes the user's own answers.</div></div>
+      <div class="pair"><div class="said">“tap ‘Distracted’ and optionally type a few words”</div><div class="arrow">→</div><div class="now">The tally rises the instant you tap, even with no note; a one-line field asks “What pulled you away?”; Enter saves, Esc or Skip closes; the countdown never pauses.</div></div>
+      <div class="pair"><div class="said">“if a meeting or urgent task pulls them away”</div><div class="arrow">→</div><div class="now">End early asks why. “I was pulled away” → jot where you stopped and your next step; the roadmap holds; the note greets you next session. “I lost focus” → ease back one stage.</div></div>
+      <div class="pair"><div class="said">“explain the core idea in two or three sentences”</div><div class="arrow">→</div><div class="now">You type the topic before the session so the coach can judge fairly; Get feedback stays disabled while empty; Skip still gives you a rule and a roadmap change.</div></div>
+      <div class="pair"><div class="said">“two questions … answer them from memory”</div><div class="arrow">→</div><div class="now">They open the next session as a warm-up; each answer is marked got it / partly / missed with a one-line answer; blanks count as missed; then they clear.</div></div>
+      <div class="pair"><div class="said">“up a stage, hold, or ease back — never back to zero”</div><div class="arrow">→</div><div class="now">Each stage allows one tap per 5 minutes (at least 2). Within it → up · more → hold · pulled away → hold · lost focus → ease back, never below stage 1. Taps never push you back.</div></div>
+    </div>
+  </section>
+
+  <section id="journey">
+    <h2>The core journey — tap a screen</h2>
+    <div class="diagram">
+      <svg class="journey" viewBox="0 0 936 300" role="group" aria-label="Screen journey diagram">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"></path>
+          </marker>
+        </defs>
+        <path class="edge" d="M180,82 L200,82" marker-end="url(#arr)"></path>
+        <path class="edge" d="M364,82 L384,82" marker-end="url(#arr)"></path>
+        <path class="edge" d="M548,82 L568,82" marker-end="url(#arr)"></path>
+        <path class="edge" d="M732,82 L752,82" marker-end="url(#arr)"></path>
+        <path class="edge alt" d="M468,50 C530,16 774,16 836,46" marker-end="url(#arr)"></path>
+        <text class="elabel" x="652" y="12" text-anchor="middle">no questions waiting → straight to focus</text>
+        <path class="edge" d="M836,114 L836,196" marker-end="url(#arr)"></path>
+        <text class="elabel" x="828" y="148" text-anchor="end">time's up · end early</text>
+        <text class="elabel" x="828" y="164" text-anchor="end">(pulled away / lost focus)</text>
+        <path class="edge" d="M756,232 L736,232" marker-end="url(#arr)"></path>
+        <text class="elabel" x="746" y="288" text-anchor="middle">feedback · skip</text>
+        <path class="edge" d="M572,232 L468,232 L468,118" marker-end="url(#arr)"></path>
+        <text class="elabel" x="476" y="176">back to roadmap</text>
+
+        <g class="node cond" data-screen="welcome" tabindex="0" role="button" aria-label="Welcome screen">
+          <rect x="20" y="50" width="160" height="64" rx="12"></rect>
+          <text x="34" y="76" class="t">Welcome</text><text x="34" y="96" class="s">first visit only</text>
+        </g>
+        <g class="node cond" data-screen="survey" tabindex="0" role="button" aria-label="Survey screen">
+          <rect x="204" y="50" width="160" height="64" rx="12"></rect>
+          <text x="218" y="76" class="t">Survey</text><text x="218" y="96" class="s">4 questions → roadmap</text>
+        </g>
+        <g class="node" data-screen="home" tabindex="0" role="button" aria-label="Home and roadmap screen">
+          <rect x="388" y="50" width="160" height="64" rx="12"></rect>
+          <text x="402" y="76" class="t">Home · Roadmap</text><text x="402" y="96" class="s">stages · rule · pick up</text>
+        </g>
+        <g class="node cond" data-screen="warmup" tabindex="0" role="button" aria-label="Warm-up screen">
+          <rect x="572" y="50" width="160" height="64" rx="12"></rect>
+          <text x="586" y="76" class="t">Warm-up</text><text x="586" y="96" class="s">recall 2 questions</text>
+        </g>
+        <g class="node" data-screen="focus" tabindex="0" role="button" aria-label="Focus session screen">
+          <rect x="756" y="50" width="160" height="64" rx="12"></rect>
+          <text x="770" y="76" class="t">Focus session</text><text x="770" y="96" class="s">dark · tap Distracted</text>
+        </g>
+        <g class="node" data-screen="teach" tabindex="0" role="button" aria-label="Teach-back screen">
+          <rect x="756" y="200" width="160" height="64" rx="12"></rect>
+          <text x="770" y="226" class="t">Teach-back</text><text x="770" y="246" class="s">explain the core idea</text>
+        </g>
+        <g class="node" data-screen="debrief" tabindex="0" role="button" aria-label="AI debrief screen">
+          <rect x="572" y="200" width="160" height="64" rx="12"></rect>
+          <text x="586" y="226" class="t">AI debrief</text><text x="586" y="246" class="s">gaps · questions · rule</text>
+          <path class="star" d="M716,204 l4,9 10,1 -7,6 2,10 -9,-5 -9,5 2,-10 -7,-6 10,-1z"></path>
+        </g>
+      </svg>
+    </div>
+    <p class="muted" style="font-size:0.88rem;margin:6px 0 0">Dashed outline: shown only sometimes (first visit, or when questions are waiting).</p>
+    <div class="tabs" role="tablist" aria-label="Screens" id="tabs"></div>
+    <div class="panel" id="panel" role="tabpanel" aria-live="polite"></div>
+  </section>
+
+  <section id="try">
+    <h2>Try the key behaviors</h2>
+    <div class="try-grid">
+      <div>
+        <h3>The focus screen</h3>
+        <div class="focus-mock">
+          <div class="topic">Project management course — managing risks</div>
+          <div class="clock" aria-label="Countdown (static in this mock)">00:58</div>
+          <div class="rule"><strong>Your rule:</strong> If I want to check Slack, then I'll park the thought and check it at the break.</div>
+          <button type="button" class="big" id="tap">Distracted</button>
+          <div class="tally" id="tally">0 noted</div>
+          <div class="note-row" id="note-row">
+            <input type="text" id="note" maxlength="40" placeholder="What pulled you away?" aria-label="Distraction note" />
+            <button type="button" class="ghost" id="skip">Skip</button>
+          </div>
+          <div class="chips" id="chips" aria-label="Saved notes"></div>
+          <button type="button" class="link" id="end-early">End early</button>
+          <div class="end-panel" id="end-panel" role="dialog" aria-label="Ending early?">
+            <p class="q">Ending early?</p>
+            <div class="choices">
+              <button type="button" class="ghost" id="c-pulled">I was pulled away</button>
+              <button type="button" class="ghost" id="c-lost">I lost focus</button>
+              <button type="button" class="ghost" id="c-keep">Keep going</button>
+            </div>
+            <div class="fields" id="fields">
+              <input type="text" id="f-where" maxlength="80" placeholder="Where I stopped" aria-label="Where I stopped" />
+              <input type="text" id="f-next" maxlength="80" placeholder="My next step" aria-label="My next step" />
+              <button type="button" class="primary" id="save-end">Save and end</button>
+            </div>
+          </div>
+          <div class="end-result" id="end-result" aria-live="polite"></div>
+        </div>
+        <p class="mock-note">Mock of <code>prd.md &gt; Focus Session</code> and <code>&gt; Ending Early and Pulled Away</code>. The countdown is static here.</p>
+      </div>
+      <div class="sim">
+        <h3>Roadmap progression</h3>
+        <div class="sim-row">
+          <span>Session</span>
+          <div class="seg" role="group" aria-label="Session outcome">
+            <button type="button" id="o-done" aria-pressed="true">Completed</button>
+            <button type="button" id="o-pulled" aria-pressed="false">Pulled away</button>
+            <button type="button" id="o-lost" aria-pressed="false">Lost focus</button>
+          </div>
+        </div>
+        <div class="sim-row" id="taps-row">
+          <span>Distraction taps</span>
+          <span class="stepper"><button type="button" id="minus" aria-label="Fewer taps">−</button><strong id="taps">1</strong><button type="button" id="plus" aria-label="More taps">+</button></span>
+        </div>
+        <div class="sim-row">
+          <span>Current stage</span>
+          <span class="stepper"><button type="button" id="s-minus" aria-label="Earlier stage">−</button><strong id="stage-num">3</strong><button type="button" id="s-plus" aria-label="Later stage">+</button></span>
+          <span class="muted" style="font-size:0.85rem">of 5 (example roadmap)</span>
+        </div>
+        <div class="stages" id="stages" aria-hidden="true"></div>
+        <p class="muted" id="allowance" style="font-size:0.9rem;margin:0 0 6px"></p>
+        <p class="result" id="result"></p>
+        <p class="muted" style="font-size:0.85rem;margin:0">Rules from <code>prd.md &gt; Roadmap Progression</code>. Why generous: students' minds wander on roughly a third to half of thought probes during lectures (<a href="https://psycnet.apa.org/doiLanding?doi=10.1037%2Fstl0000053">Wammes et al. 2016</a>; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3730052">review</a>), and a strict cap would teach people to stop tapping. Stage lengths here are only an example; the AI builds the real roadmap from the survey.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="look">
+    <h2>Look and feel</h2>
+    <p style="margin-top:0">Calm and warm, like a quiet study desk — clarity over cleverness, forgiveness over fear (<a href="https://www.uxmatters.com/mt/archives/2025/05/designing-calm-ux-principles-for-reducing-users-anxiety.php">UXmatters, “Designing Calm”</a>).</p>
+    <div class="swatches">
+      <div class="swatch"><div class="chip-color" style="background:#f6f1e7"></div><div class="lbl">Paper<span>background</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#1f2a28"></div><div class="lbl">Ink<span>text</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#0f766e"></div><div class="lbl">Deep teal<span>actions · progress</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#d97706"></div><div class="lbl">Warm amber<span>“aha” moments only</span></div></div>
+      <div class="swatch"><div class="chip-color" style="background:#0f1513"></div><div class="lbl">Focus dark<span>session screen</span></div></div>
+    </div>
+    <div class="typo">
+      <p class="serif">Stage 3 · 15-minute sessions</p>
+      <p class="sans">Serif headings for a bookish feel; a clean, highly legible sans-serif for body text and inputs; large numerals for the countdown. Rounded cards, soft shadows, generous whitespace, minimal motion.</p>
+    </div>
+    <p class="muted" style="font-size:0.85rem">Swatches and fonts are illustrative; <code>4-spec</code> sets the exact values. No red or alarm colors anywhere.</p>
+    <div class="voice">
+      <div class="yes">You held 15 minutes with two notes — moving up to 20.</div>
+      <div class="no">Failed! You lost your streak.</div>
+      <div class="yes">The meeting pulled you away — that's not a lapse. Your next step is saved: “finish the risk table”.</div>
+      <div class="no">✨ Amazing!!! You're a focus superstar 🚀</div>
+    </div>
+    <p class="muted" style="font-size:0.9rem;margin:12px 0 0">Avoid generic AI-app styling: purple gradients, sparkles, chat-bubble layouts, gamified badges, confetti.</p>
+  </section>
+
+  <section id="decisions">
+    <h2>Product decisions</h2>
+    <div class="dec-group">
+      <h3><span class="pill learner">Learner</span> Your decisions</h3>
+      <ul class="plain">
+        <li>Project name <strong>Refrain</strong> — “to refrain” from a distraction, and “a refrain” you repeat until you know it by heart.</li>
+        <li>English interface — matches the English demo video and judges.</li>
+        <li>Audience is everyone who wants to retrain focus; the survey adapts the plan.</li>
+        <li>Demo persona: a working adult like you — a junior manager whose focus is cut by meetings and urgent tasks.</li>
+        <li>The four survey questions: age, training goal, minutes per day, maximum minutes per session.</li>
+        <li>Memory training is a core goal alongside focus, to go deeper than Focusito.</li>
+        <li>Paid AI service (Gemini on Google Cloud), so users' study text and notes are not used to train Google's models.</li>
+      </ul>
+    </div>
+    <div class="dec-group">
+      <h3><span class="pill approved">Approved</span> Proposals you approved after asking for research</h3>
+      <ul class="plain">
+        <li>Distraction notes → if-then rule; no streak resets.</li>
+        <li>Teach-back and next-session recall in the PoC; memory drills later; speed reading cut.</li>
+        <li>End early separates “pulled away” (hold + ready-to-resume note, <a href="https://www.washington.edu/news/2018/01/16/task-interrupted-a-plan-for-returning-helps-you-move-on">Leroy &amp; Glomb 2018</a>) from “lost focus” (ease back).</li>
+        <li>Progression: one tap per 5 minutes allowed (at least 2); taps never push you back.</li>
+        <li>Laptop-first web app that also works on a phone.</li>
+        <li>The calm visual direction above.</li>
+      </ul>
+    </div>
+    <div class="dec-group">
+      <h3><span class="pill assume">Assumptions</span> Approved with this PRD (“looks good”)</h3>
+      <ul class="plain">
+        <li>A “What will you study?” field before each session.</li>
+        <li>The survey is one screen; the goal field offers tap-to-fill examples.</li>
+        <li>Maximum minutes per session limited to 5–120.</li>
+        <li>A soft chime at the end of a session.</li>
+        <li>A page closed mid-session is discarded.</li>
+        <li>A data notice on the Welcome screen.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="boundary">
+    <h2>What we're building — and what we're not</h2>
+    <div class="cols">
+      <div class="col now">
+        <h3>Building now</h3>
+        <ul class="plain">
+          <li>Welcome with data notice; survey; AI roadmap with reason</li>
+          <li>Home: stages, active rule, pick-up card, topic field, demo-length switch, history</li>
+          <li>Warm-up with AI-checked recall</li>
+          <li>Dark focus session with one-tap logging and chime</li>
+          <li>End early: pulled away (where I stopped + next step) or lost focus</li>
+          <li>Teach-back with skip</li>
+          <li>AI debrief: got / missing / 2 questions / pattern / rule / roadmap</li>
+          <li>No-reset progression rules</li>
+          <li>Progress in this browser; reset everything</li>
+          <li>Friendly AI-failure state with retry</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3>Deferred — tap for why</h3>
+        <details><summary>Accounts and sync</summary><p>One device proves the loop; accounts add sign-in, storage, and privacy work.</p></details>
+        <details><summary>Memory drills</summary><p>Names &amp; faces, phone numbers, memory palace — a second loop that would dilute the two-minute demo.</p></details>
+        <details><summary>Prioritizing work tasks</summary><p>Part of your story, but a separate problem with its own loop.</p></details>
+        <details><summary>Spaced review beyond the next session</summary><p>Needs a review calendar; the PoC proves recall at the next session.</p></details>
+        <details><summary>Several good sessions before moving up</summary><p>More realistic, but it would hide the roadmap change in the demo.</p></details>
+        <details><summary>Tuning the tap allowance from real usage</summary><p>Needs data from many sessions.</p></details>
+        <details><summary>Keeping a phone screen awake</summary><p>The laptop is the primary device for the PoC.</p></details>
+        <details><summary>Vietnamese and other languages</summary><p>English first for the hackathon.</p></details>
+      </div>
+      <div class="col cut">
+        <h3>Non-goals</h3>
+        <details><summary>Speed reading</summary><p>Evidence shows a speed–comprehension trade-off.</p></details>
+        <details><summary>AI summaries of the material</summary><p>The user explains; the coach checks.</p></details>
+        <details><summary>Blocking or automatic detection</summary><p>Out of scope by design.</p></details>
+        <details><summary>Calendar or chat integrations</summary><p>The user says when they were pulled away.</p></details>
+        <details><summary>Streaks, badges, leaderboards, social</summary><p>The coach is kind and private, not competitive.</p></details>
+        <details><summary>Medical or “brain improvement” claims</summary><p>This is a study-habit coach.</p></details>
+        <details><summary>Uploading notes or PDFs</summary><p>The user brings their own material; the app trains how they use it.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="open">
+    <h2>Open questions</h2>
+    <ul class="plain">
+      <li>None blocking <code>4-spec</code>.</li>
+    </ul>
+  </section>
+
+  <footer>This page is a companion. <code>devpost/prd.md</code> is canonical.</footer>
+</main>
+
+<script>
+  (function () {
+    var screens = {
+      welcome: {
+        name: 'Welcome', ref: 'prd.md > Screens and Layout > Welcome',
+        layout: 'The name Refrain, a one-sentence promise, a two-line “how it works” (focus → teach back → recall), the data notice, and Start. Shown only when nothing is saved.',
+        criteria: ['On first visit the Welcome screen appears; after Start, the Survey shows the four questions in order.'],
+        states: ['First use — nothing saved: Welcome → Survey.', 'Data boundary — progress lives only in this browser; content goes to the AI service only to produce the coaching, on a paid Google Cloud AI service where Google does not use it to train its models.']
+      },
+      survey: {
+        name: 'Survey', ref: 'prd.md > Features and Behavior > Survey and Roadmap',
+        layout: 'One screen, four fields in order: age; training goal (tap-to-fill examples such as “Study for a certification after work”, or your own words); minutes available per day; maximum minutes per session. Build my roadmap at the bottom.',
+        criteria: [
+          'Build my roadmap stays disabled until all four answers are filled in.',
+          'Age and minutes accept positive whole numbers; maximum minutes per session is 5–120 and never more than minutes per day.',
+          'Each invalid field says what it needs in plain words.',
+          'The roadmap has 4–6 stages; the first is shorter than the maximum, the last equals it, and lengths never decrease.',
+          'Each stage shows a length and a number of sessions per day whose total fits the daily minutes.',
+          'The reason mentions at least one of the user\u2019s own answers and contains no statistics or medical claims.',
+          'A 16-year-old revising for an exam and a 35-year-old studying for a certification after work get reasons that refer to their different goals.'
+        ],
+        states: ['AI request fails — “The coach couldn\u2019t respond. Your work is saved.” with Try again; the answers stay filled in.']
+      },
+      home: {
+        name: 'Home · Roadmap', ref: 'prd.md > Screens and Layout > Home (Roadmap)',
+        layout: 'Top to bottom: the goal as a heading; stage cards in a row; the active if-then rule card; a Pick up where you left off card (after being pulled away); “What will you study?”, the Demo length (1 minute) switch, and Start session (Start with warm-up when questions are waiting); session history; a small Reset everything link.',
+        criteria: [
+          'Each history row shows date, length, outcome (completed / pulled away / ended early), taps, and the roadmap change.',
+          'After a session the new current stage is highlighted.',
+          'Pick up where you left off appears only after “I was pulled away” with a note, and clears when the next session ends.',
+          'Closing and reopening the browser keeps survey, roadmap, stage, rule, saved questions, the pick-up note, and history.',
+          'Reset everything asks for confirmation, clears all of it, and shows the Welcome screen.',
+          'Nothing in the app shows a streak or resets progress to zero.'
+        ],
+        states: ['First use — “Your first session is ready”, empty history, and “Your first rule will come from your first session”.', 'Returning — current stage, active rule, history; warm-up waiting if questions are saved; pick-up card if the last session was interrupted with a note.']
+      },
+      warmup: {
+        name: 'Warm-up', ref: 'prd.md > Features and Behavior > Warm-up Recall',
+        layout: 'The two saved questions, each with an answer field; Check; then each shows got it / partly / missed and a one-line answer; Start focusing.',
+        criteria: [
+          'Opens before the timer only when questions are saved; otherwise the Focus Session starts directly.',
+          'Each answer is marked got it / partly / missed, with a one-line answer.',
+          'An empty answer counts as missed and still shows the one-line answer.',
+          'After Start focusing the two questions are cleared; the next teach-back creates new ones.'
+        ],
+        states: ['AI request fails — calm message with Try again; the typed answers are kept.']
+      },
+      focus: {
+        name: 'Focus session', ref: 'prd.md > Features and Behavior > Focus Session and Distraction Logging · Ending Early and Pulled Away',
+        layout: 'Full-screen, dark, nearly empty: large countdown, the topic and (after an interruption) the saved next step in small text, the active rule, one large Distracted button, a small tally, a small End early link. End early opens “Ending early?” with I was pulled away / I lost focus / Keep going.',
+        criteria: [
+          'The countdown starts at the current stage\u2019s length, or 1:00 with Demo length on.',
+          'Each tap adds one to the tally immediately and records the time, even with no note.',
+          'Saving or skipping a note never pauses the countdown.',
+          'At zero a soft chime plays and Teach-back appears.',
+          'The End early panel keeps the countdown running; Keep going closes it.',
+          'I was pulled away shows “Where I stopped” and “My next step” (both optional); Save and end records the minutes and opens Teach-back.',
+          'I lost focus records the minutes completed and opens Teach-back.'
+        ],
+        states: ['Pulled away with both fields blank — the roadmap still holds; no pick-up card.', 'Page closed during a session — the session is not saved and the roadmap is unchanged.']
+      },
+      teach: {
+        name: 'Teach-back', ref: 'prd.md > Features and Behavior > Teach-back',
+        layout: 'The topic, the prompt “In two or three sentences, what\u2019s the core idea?”, a text box, Get feedback and Skip.',
+        criteria: [
+          'The prompt shows the topic typed before the session.',
+          'Get feedback is disabled while the box is empty.',
+          'Skip goes straight to the debrief without the explanation parts.',
+          'The coach never writes a summary of the material in place of the user\u2019s explanation.'
+        ],
+        states: ['Very short or off-topic explanation — the coach responds kindly, says what a fuller one would include, and still writes two questions about the topic.']
+      },
+      debrief: {
+        name: 'AI debrief ★', ref: 'prd.md > Features and Behavior > AI Debrief',
+        layout: 'Stacked cards: What you got · What\u2019s missing · Next warm-up (two questions) · Your pattern · Your rule (highlighted) · Your roadmap (the change and why) — then Back to roadmap.',
+        criteria: [
+          'What you got names at least one point from the explanation.',
+          'What\u2019s missing names a specific idea the explanation left out, or says plainly nothing important is missing.',
+          'Next warm-up shows exactly two questions answerable without the material.',
+          'Your pattern quotes at least one of the user\u2019s own notes when notes exist.',
+          'Your rule is one “If …, then I\u2019ll …” sentence referring to something the user noted.',
+          'After an outside interruption, Your rule is a ready-to-resume plan, e.g. “If a meeting pulls me away, then I\u2019ll write where I stopped and my next step before I go.”',
+          'After I was pulled away, the debrief says plainly that being pulled away is not a focus lapse.',
+          'Your roadmap states the change, the next session length, and the reason in one sentence.',
+          'With teach-back skipped, only Your pattern, Your rule, and Your roadmap appear.'
+        ],
+        states: [
+          'No distractions tapped — says none were noted; no rule is invented; the previous rule stays.',
+          'Taps without notes — says it can\u2019t see what pulled them away and asks for a word or two next time; the rule is general but honest.',
+          'AI request fails — calm message with Try again; typed text and the session record are kept.'
+        ]
+      }
+    };
+    var order = ['welcome', 'survey', 'home', 'warmup', 'focus', 'teach', 'debrief'];
+    var tabs = document.getElementById('tabs');
+    var panel = document.getElementById('panel');
+
+    order.forEach(function (key) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.dataset.screen = key;
+      b.textContent = screens[key].name;
+      b.addEventListener('click', function () { select(key); });
+      tabs.appendChild(b);
+    });
+
+    function list(items, cls) {
+      var ul = document.createElement('ul');
+      ul.className = cls;
+      items.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+      return ul;
+    }
+
+    function select(key) {
+      var s = screens[key];
+      panel.textContent = '';
+      var h = document.createElement('h3'); h.textContent = s.name; panel.appendChild(h);
+      var r = document.createElement('p'); r.className = 'ref'; r.textContent = s.ref; panel.appendChild(r);
+      var grid = document.createElement('div'); grid.className = 'panel-grid';
+      var c1 = document.createElement('div');
+      var h4a = document.createElement('h4'); h4a.textContent = 'Layout'; c1.appendChild(h4a);
+      var p = document.createElement('p'); p.textContent = s.layout; c1.appendChild(p);
+      var h4c = document.createElement('h4'); h4c.textContent = 'Edge states'; c1.appendChild(h4c);
+      c1.appendChild(list(s.states, 'states'));
+      var c2 = document.createElement('div');
+      var h4b = document.createElement('h4'); h4b.textContent = 'Acceptance criteria'; c2.appendChild(h4b);
+      c2.appendChild(list(s.criteria, 'criteria'));
+      grid.appendChild(c1); grid.appendChild(c2); panel.appendChild(grid);
+      document.querySelectorAll('.node').forEach(function (g) {
+        g.classList.toggle('active', g.dataset.screen === key);
+      });
+      tabs.querySelectorAll('button').forEach(function (b) {
+        b.setAttribute('aria-selected', b.dataset.screen === key ? 'true' : 'false');
+      });
+    }
+
+    document.querySelectorAll('.node').forEach(function (g) {
+      g.addEventListener('click', function () { select(g.dataset.screen); });
+      g.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(g.dataset.screen); }
+      });
+    });
+    select('focus');
+
+    // Focus mock: distraction taps
+    var count = 0;
+    var tap = document.getElementById('tap');
+    var tally = document.getElementById('tally');
+    var row = document.getElementById('note-row');
+    var note = document.getElementById('note');
+    var skip = document.getElementById('skip');
+    var chips = document.getElementById('chips');
+    function closeNote() { row.classList.remove('open'); note.value = ''; }
+    tap.addEventListener('click', function () {
+      count += 1;
+      tally.textContent = count + ' noted';
+      row.classList.add('open');
+      note.value = '';
+      note.focus();
+    });
+    note.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var v = note.value.trim();
+        if (v) { var c = document.createElement('span'); c.className = 'chip'; c.textContent = v; chips.appendChild(c); }
+        closeNote();
+        tap.focus();
+      } else if (e.key === 'Escape') { closeNote(); tap.focus(); }
+    });
+    skip.addEventListener('click', function () { closeNote(); tap.focus(); });
+
+    // Focus mock: end early
+    var endEarly = document.getElementById('end-early');
+    var endPanel = document.getElementById('end-panel');
+    var fields = document.getElementById('fields');
+    var fWhere = document.getElementById('f-where');
+    var fNext = document.getElementById('f-next');
+    var endResult = document.getElementById('end-result');
+    function resetEnd() { endPanel.classList.remove('open'); fields.classList.remove('open'); fWhere.value = ''; fNext.value = ''; }
+    endEarly.addEventListener('click', function () { endResult.textContent = ''; endPanel.classList.add('open'); fields.classList.remove('open'); });
+    document.getElementById('c-keep').addEventListener('click', function () { resetEnd(); endResult.textContent = 'Back to the countdown.'; tap.focus(); });
+    document.getElementById('c-lost').addEventListener('click', function () { resetEnd(); endResult.textContent = 'Session ended — the roadmap eases back one stage. Next: Teach-back.'; });
+    document.getElementById('c-pulled').addEventListener('click', function () { fields.classList.add('open'); fWhere.focus(); });
+    document.getElementById('save-end').addEventListener('click', function () {
+      var where = fWhere.value.trim(), next = fNext.value.trim();
+      var msg = 'Saved — the roadmap holds. ';
+      if (where || next) {
+        msg += 'Next session shows: ' + (where ? 'stopped at “' + where + '”' : '') + (where && next ? ' · ' : '') + (next ? 'next step “' + next + '”' : '') + '.';
+      } else {
+        msg += 'No note, so no pick-up card.';
+      }
+      resetEnd();
+      endResult.textContent = msg + ' Next: Teach-back.';
+    });
+
+    // Progression simulator
+    var outcome = 'done', taps = 1, stage = 3, total = 5;
+    var oDone = document.getElementById('o-done'), oPulled = document.getElementById('o-pulled'), oLost = document.getElementById('o-lost');
+    var tapsEl = document.getElementById('taps'), stageEl = document.getElementById('stage-num');
+    var minus = document.getElementById('minus'), plus = document.getElementById('plus');
+    var sMinus = document.getElementById('s-minus'), sPlus = document.getElementById('s-plus');
+    var stagesEl = document.getElementById('stages'), result = document.getElementById('result');
+    var allowanceEl = document.getElementById('allowance');
+    var tapsRow = document.getElementById('taps-row');
+    var lengths = [5, 10, 15, 20, 25];
+
+    function allowed(minutes) { return Math.max(2, Math.floor(minutes / 5)); }
+
+    function renderSim() {
+      oDone.setAttribute('aria-pressed', outcome === 'done' ? 'true' : 'false');
+      oPulled.setAttribute('aria-pressed', outcome === 'pulled' ? 'true' : 'false');
+      oLost.setAttribute('aria-pressed', outcome === 'lost' ? 'true' : 'false');
+      var tapsMatter = outcome === 'done';
+      tapsRow.style.opacity = tapsMatter ? '1' : '0.45';
+      minus.disabled = !tapsMatter || taps <= 0;
+      plus.disabled = !tapsMatter || taps >= 8;
+      sMinus.disabled = stage <= 1;
+      sPlus.disabled = stage >= total;
+      tapsEl.textContent = String(taps);
+      stageEl.textContent = String(stage);
+      var len = lengths[stage - 1];
+      var cap = allowed(len);
+      allowanceEl.textContent = 'A ' + len + '-minute stage allows ' + cap + ' taps (one per 5 minutes, at least 2).';
+      var next, text;
+      if (outcome === 'lost') {
+        next = Math.max(1, stage - 1);
+        text = next < stage ? 'Lost focus → ease back one stage → stage ' + next + ' (' + lengths[next - 1] + ' min).' : 'Lost focus → ease back — already at stage 1, so stay at ' + lengths[0] + ' min. Never below stage 1.';
+      } else if (outcome === 'pulled') {
+        next = stage;
+        text = 'Pulled away → hold stage ' + stage + ' (' + len + ' min). Not a lapse; your next step is saved.';
+      } else if (taps <= cap) {
+        next = Math.min(total, stage + 1);
+        text = next > stage ? 'Move up one stage → stage ' + next + ' (' + lengths[next - 1] + ' min).' : 'Move up — already on the last stage, so stay at ' + lengths[total - 1] + ' min.';
+      } else {
+        next = stage;
+        text = 'Hold stage ' + stage + ' (' + len + ' min) — more than ' + cap + ' taps. Every tap still counts as a rep.';
+      }
+      stagesEl.textContent = '';
+      for (var k = 1; k <= total; k++) {
+        var d = document.createElement('div');
+        d.className = 'stage' + (k < stage ? ' done' : '') + (k === stage ? ' current' : '') + (k === next && next !== stage ? ' next' : '');
+        d.textContent = lengths[k - 1] + 'm';
+        stagesEl.appendChild(d);
+      }
+      result.textContent = text;
+    }
+    oDone.addEventListener('click', function () { outcome = 'done'; renderSim(); });
+    oPulled.addEventListener('click', function () { outcome = 'pulled'; renderSim(); });
+    oLost.addEventListener('click', function () { outcome = 'lost'; renderSim(); });
+    minus.addEventListener('click', function () { if (taps > 0) { taps -= 1; renderSim(); } });
+    plus.addEventListener('click', function () { if (taps < 8) { taps += 1; renderSim(); } });
+    sMinus.addEventListener('click', function () { if (stage > 1) { stage -= 1; renderSim(); } });
+    sPlus.addEventListener('click', function () { if (stage < total) { stage += 1; renderSim(); } });
+    renderSim();
+  })();
+</script>
+</body>
+</html>
