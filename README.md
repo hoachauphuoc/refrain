@@ -97,7 +97,11 @@ gcloud run services delete refrain --region us-central1 --project YOUR_PROJECT
 
 ## Planning documents
 
-Refrain was planned and built with the Devpost **Build With AI: Basics** skill pack. The planning documents are in [`devpost/`](devpost/): [`scope.md`](devpost/scope.md) (the idea and what's in and out), [`prd.md`](devpost/prd.md) (every screen and behaviour), [`spec.md`](devpost/spec.md) (the technical design), and [`checklist.md`](devpost/checklist.md) (the build, step by step, with every change of plan recorded).
+Refrain was planned and built with the Devpost **Build With AI: Basics** skill pack. The planning documents are in [`devpost/`](devpost/): [`scope.md`](devpost/scope.md) (the idea and what's in and out), [`prd.md`](devpost/prd.md) (every screen and behaviour), [`spec.md`](devpost/spec.md) (the technical design), [`checklist.md`](devpost/checklist.md) (the build, step by step, with every change of plan recorded), and [`app-map.html`](devpost/app-map.html) (a one-page map of how one action travels through the finished code).
+
+## License
+
+Refrain is released under the [MIT License](LICENSE). The fonts and icons it ships keep their own licenses, listed under Credits.
 
 ## Credits
 
