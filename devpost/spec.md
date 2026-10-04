@@ -290,7 +290,10 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   - `RING` (center 100, radius 92 in a 200 × 200 viewBox) and `RING_LENGTH`.
   - `starPoint(fraction)`: the point on the ring for a moment of the session. 0 is the top, it runs clockwise, and values outside 0–1 are kept on the ring.
   - `planFrom(rule)`: the then-part of an "If …, then I'll …" rule (also "then I will", a curly apostrophe, or a comma after "then"), without its final period. Returns `null` when there is none.
-- **Talks to:** `focus.js`; later slices add the debrief and Home helpers here.
+  - `markSegments(text, phrases)`: the text in pieces, `{text, marked}`, with every place a phrase appears marked (ignoring case; overlaps merge; phrases under 2 characters are ignored). The pieces always join back to the original text.
+  - `stretches(tapSecs, endSec)` and `longestStretch(…)`: the focus stretches from the start, through each return, to the end.
+  - `clock(seconds)`: "1:15".
+- **Talks to:** `focus.js` and `debrief.js`; later slices add the Home helpers here.
 - PRD ref: `prd.md > Focus Session and Distraction Logging`.
 
 #### Welcome screen
@@ -373,13 +376,29 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 
 #### Teach-back and Debrief screen
 - **Files:** `static/js/screens/debrief.js`.
+- **Session summary** (both states, from `pending`):
+  - A small copy of the focus ring (`stroke-dashoffset` from `secondsDone`, a star at each tap's `starPoint`).
+  - Focused (`clock(secondsDone)`), Returns (tap count), and Longest stretch (`longestStretch` of the tap times).
+  - The focus ring and this ring share the view-transition name `session-ring`, so on browsers with View Transitions the ring glides from the focus screen into place (450 ms).
 - **Teach-back:**
   - Shows the topic, "In two or three sentences, what's the core idea?", and a text box (up to 1,500 characters).
   - **Get feedback** stays disabled while the box is empty or only spaces. Pressing it saves the explanation into `pending`, sets `submitted: true`, then calls the debrief.
   - **Skip** does the same with no explanation.
-- **Debrief:**
-  - Stacked cards: *What you got*, *What's missing*, *Next warm-up*, *Your pattern*, *Your rule* (amber, highlighted), and *Your roadmap*. Cards the response doesn't include are left out. Then **Back to roadmap**.
-  - *Your rule* shows the new rule. When the response keeps the previous rule, it reads "Your rule stays: …", or "No new rule this time — nothing pulled you away." when there is no previous rule.
+- **Debrief:** stacked cards, then **Back to roadmap**. Cards the response doesn't support are left out. All text goes in with `textContent`; the marks are `<mark>` elements around plain-text pieces from `markSegments`.
+  - *Your words* (when there was an explanation and coaching came back):
+    - the explanation on the lamp-lit page, with each phrase from `coach.gotQuotes` marked teal (a marker sweep of 700 ms, one after another);
+    - `got` on a teal check line;
+    - "What's missing:" in amber ink.
+  - *Next warm-up*: the two questions.
+  - *Your session*, built from `pending`, so it also shows when the coaching failed:
+    - a line for the planned length, filled to `secondsDone`, with a star at each tap and the longest stretch lit;
+    - the returns with their minute marks and notes ("0:07 team chat");
+    - a caption ("1:00 focused · 2 returns · longest stretch 0:41", with ", then pulled away" or ", then ended early");
+    - the pattern.
+  - *Your rule*: the new rule, with the words from this session's first two notes marked in amber, and "From your notes: …".
+    - When the response keeps the previous rule, it reads "Your rule stays: …", marked from `rule.fromNotes`.
+    - With no previous rule: "No new rule this time — nothing pulled you away."
+  - *Your roadmap*: a small path of the stages, with done, current, and later. On "up", the new stage lights once (1.1 s). Below it, `progression.sentence`.
 - **On response:**
   - If `pending.progressionApplied` is false:
     - set `stageIndex`;
@@ -389,7 +408,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
     - save the rule (unless the response says to keep the old one);
     - save `warmup` (topic and the two questions) when two questions came back;
     - clear `pending`.
-  - If coaching failed (Gemini error or the rate limit): show *Your roadmap*, the calm message, **Try again** (resends the same request), and **Back to roadmap** (clears `pending`; the roadmap change and history stay saved).
+  - If coaching failed (Gemini error or the rate limit): show *Your session*, *Your roadmap*, the calm message, **Try again** (resends the same request), and **Back to roadmap** (clears `pending`; the roadmap change and history stay saved).
   - If the server couldn't be reached at all, nothing is applied yet: the calm message and **Try again**. **Back to roadmap** then asks "Leave without the debrief? This session won't count toward your roadmap." and, if confirmed, clears `pending`.
 - PRD ref: `prd.md > Teach-back`, `prd.md > AI Debrief`, `prd.md > Screens and Layout > Teach-back and Debrief`.
 
@@ -513,12 +532,14 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Input:** topic, explanation (or none), notes with minute marks, tap count, outcome, the decided change and next length, the `outside_interruption` flag, previous rule, and age and goal.
 - **Schema** (built per request):
   - `got` and `missing`: strings, only when there is an explanation;
+  - `got_quotes`: up to 3 strings, only when there is an explanation — short phrases copied exactly from it that show what they got right (added during `5-build`);
   - `questions`: exactly 2 items of `{question, answer}` (`answer` is a one-line answer), only when there is an explanation;
   - `pattern`: string;
   - `rule`: string, only when a rule is required (below).
 - **Rules enforced in code, not left to the prompt:**
   - **Explanation given:** `got` and `missing` must be non-empty (under 600 characters each), and there must be exactly 2 questions with non-empty text (under 300 characters each).
-  - **Skipped teach-back:** `got`, `missing`, and `questions` are dropped, so the browser shows only *Your pattern*, *Your rule*, and *Your roadmap*.
+  - **Quotes are the user's own words:** `rules.verbatim_quotes` keeps a phrase only if it appears in the explanation. It ignores case and the quotation marks or end punctuation the coach may add, and returns the explanation's own characters, so the browser marks exactly those. A phrase that isn't there earns one retry (the same soft-problem path as the pattern); after that it is dropped, and the response carries the kept ones as `gotQuotes`.
+  - **Skipped teach-back:** `got`, `gotQuotes`, `missing`, and `questions` are dropped, so the browser shows only *Your session* (with the pattern), *Your rule*, and *Your roadmap*.
   - **No taps:** the pattern is templated: "No distractions noted this session." (or "No distractions noted before you were pulled away."). Unless the session ended with **I was pulled away**, there is no AI rule: the response says to keep the previous rule, and no new rule is invented.
   - **No taps and pulled away:** the end reason is a real event, so the AI still writes the ready-to-resume rule.
   - **Nothing for the AI to write** (no taps, no explanation, not pulled away): no AI call at all.
@@ -746,7 +767,7 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
 |---|---|---|
 | `POST /api/roadmap` | `{"age": 34, "goal": "…", "minutesPerDay": 60, "maxMinutes": 30}` | `{"stages": [{"minutes": 10, "sessionsPerDay": 6}, …], "reason": "…", "source": "ai" \| "default", "simulated": false}` |
 | `POST /api/check` | `{"topic": "…", "items": [{"question": "…", "answer": "…", "response": "…"}, {…}]}` | `{"results": [{"verdict": "got" \| "partly" \| "missed"}, {…}], "simulated": false}` |
-| `POST /api/debrief` | `{"survey": {"age": 34, "goal": "…"}, "topic": "…", "explanation": "…" \| null, "taps": [{"atSec": 95, "note": "Slack"}], "plannedMinutes": 10, "demo": false, "secondsDone": 372, "outcome": "completed" \| "pulled_away" \| "lost_focus", "resumeNote": {"where": "…", "next": "…"} \| null, "stages": [10, 15, 20, 25, 30], "stageIndex": 1, "previousRule": "…" \| null}` | `{"progression": {"change": "up" \| "hold" \| "ease_back", "newStageIndex": 2, "nextMinutes": 20, "allowance": 2, "sentence": "…"}, "coach": {"got": …, "missing": …, "questions": […], "pattern": "…", "rule": "…" \| null, "keepPreviousRule": false} \| null, "coachError": null \| "coach_unavailable", "simulated": false}` |
+| `POST /api/debrief` | `{"survey": {"age": 34, "goal": "…"}, "topic": "…", "explanation": "…" \| null, "taps": [{"atSec": 95, "note": "Slack"}], "plannedMinutes": 10, "demo": false, "secondsDone": 372, "outcome": "completed" \| "pulled_away" \| "lost_focus", "resumeNote": {"where": "…", "next": "…"} \| null, "stages": [10, 15, 20, 25, 30], "stageIndex": 1, "previousRule": "…" \| null}` | `{"progression": {"change": "up" \| "hold" \| "ease_back", "newStageIndex": 2, "nextMinutes": 20, "allowance": 2, "sentence": "…"}, "coach": {"got": …, "gotQuotes": ["…"] \| null, "missing": …, "questions": […], "pattern": "…", "rule": "…" \| null, "keepPreviousRule": false} \| null, "coachError": null \| "coach_unavailable", "simulated": false}` |
 
 Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`), 429 `rate_limited`, 503 `coach_unavailable`. The exception is `/api/debrief`: when Gemini fails or the rate limit is reached, it still returns 200 with `progression` filled in, `coach: null`, and `coachError` set, because the roadmap change doesn't depend on the AI. Its `stageIndex` is the stage the session was run at (`pending.stageIndexBefore`), so a retry returns the same progression.
 
@@ -779,7 +800,7 @@ Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`
     - the fonts and icons ship with their licenses.
   - Each slice is also walked in the browser at 100% and 200% zoom.
 - **Live AI:** `scripts/smoke_gemini.py` confirms the SDK settings. Then the PRD's acceptance checklists are walked in the browser with real Gemini, including the two contrasting surveys (a 20-year-old university student revising for exams vs. a 35-year-old certification learner) and a debrief whose rule quotes "Slack".
-- **Cost:** after the first five real sessions, compare the `gemini_call` log lines with the ≈ $0.02-per-session estimate at `medium`, note the latency, and record both in `checklist.md`. *Done in slice 4: $0.0046 per session at `medium` (debrief median 8.2 s), so `medium` stays; details in `checklist.md > Revisions`.*
+- **Cost:** after the first five real sessions, compare the `gemini_call` log lines with the ≈ $0.02-per-session estimate at `medium`, note the latency, and record both in `checklist.md`. *Done in slice 4: $0.0046 per session at `medium` (debrief median 8.2 s), so `medium` stays; details in `checklist.md > Revisions`. Rechecked in slice 9, after `got_quotes` was added: about $0.0043 per debrief, so ≈ $0.0055 per session, median 7.1 s.*
 - **Public link:** deploy, walk the demo path once on the `run.app` URL, and confirm the security headers and the 429 response.
 
 ## What Was Simplified and Why

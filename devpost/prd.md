@@ -56,7 +56,7 @@ Full-screen, dark, nearly empty: large countdown inside a ring that fills as the
 **End early** opens a small panel over the dark screen: "Ending early?" with **I was pulled away**, **I lost focus**, and **Keep going**. Choosing **I was pulled away** shows two short fields — "Where I stopped" and "My next step" — and **Save and end**.
 
 ### Teach-back and Debrief
-One screen in two states. **Teach-back:** the topic, the prompt "In two or three sentences, what's the core idea?", a text box, **Get feedback** and **Skip**. **Debrief:** the coach's response as stacked cards — *What you got*, *What's missing*, *Next warm-up* (the two questions), *Your pattern*, *Your rule* (highlighted), *Your roadmap* (the change and why) — then **Back to roadmap**.
+One screen in two states, under a summary of the session just finished (its ring with the stars, minutes focused, returns, and the longest stretch). **Teach-back:** the topic, the prompt "In two or three sentences, what's the core idea?", a text box, **Get feedback** and **Skip**. **Debrief:** the coach's response as stacked cards — *Your words* (the explanation on the light page with what they got marked, the coach's line on it, and *What's missing*), *Next warm-up* (the two questions), *Your session* (the session as a line, the returns with their notes, and the pattern), *Your rule* (highlighted, with the words from their notes marked), *Your roadmap* (a small stage path, the change and why) — then **Back to roadmap**.
 
 ## Look and Feel
 **Night study** — revised during `5-build` (Oct 3, 2026). The learner found the first look monotonous and asked for an interface that is professional and sparkling ("chuyên nghiệp và lung linh") and delights users. They approved the agent's researched proposal. It replaces the first agreed direction, a calm paper study desk. Develops `scope.md > Inspiration & Identity`.
@@ -153,15 +153,17 @@ Develops `scope.md > The Core Loop` step 4.
 Develops `scope.md > The Core Loop` step 5 and `scope.md > What "Working" Looks Like`.
 
 - As a learner, I want feedback built from my own explanation and my own distraction notes so that the advice is about me, not generic tips.
-  - [ ] *What you got* names at least one point from the user's explanation.
+  - [ ] Above the teach-back and the debrief, the session just finished: its ring with a star for each return, and three numbers — minutes focused, returns, and the longest stretch between returns. (Added during `5-build`.)
+  - [ ] *Your words* shows the user's explanation on the light page, with the parts the coach found right marked in their own words; a marked phrase is always the user's own text, never a paraphrase. (Added during `5-build`.)
+  - [ ] In *Your words*, the coach's line on what they got names at least one point from the user's explanation.
   - [ ] *What's missing* names at least one specific idea from the topic that the explanation left out, or says plainly that nothing important is missing.
   - [ ] *Next warm-up* shows exactly two questions that can be answered from the studied topic without the material in front of you.
-  - [ ] *Your pattern* quotes at least one of the user's own notes when notes exist.
-  - [ ] *Your rule* is one sentence in the form "If …, then I'll …" and refers to something the user noted.
+  - [ ] *Your session* draws the session as a line, with a star at each return and its note, the longest stretch lit, and the pattern beneath. The pattern quotes at least one of the user's own notes when notes exist. (The line was added during `5-build`.)
+  - [ ] *Your rule* is one sentence in the form "If …, then I'll …" and refers to something the user noted; the words that came from their notes are highlighted.
   - [ ] When the notes or the end reason point to an outside interruption (a meeting, a call, a manager, an urgent task), *Your rule* is a ready-to-resume plan — for example "If a meeting pulls me away, then I'll write where I stopped and my next step before I go."
   - [ ] After **I was pulled away**, the debrief says plainly that being pulled away is not a focus lapse.
-  - [ ] *Your roadmap* states the change (up / hold / ease back), the next session length, and the reason in one sentence.
-  - [ ] Skipped teach-back: the debrief shows only *Your pattern*, *Your rule*, and *Your roadmap*.
+  - [ ] *Your roadmap* states the change (up / hold / ease back), the next session length, and the reason in one sentence, under a small path of the stages; moving up lights the new stage once.
+  - [ ] Skipped teach-back: the debrief shows only *Your session* (with the pattern), *Your rule*, and *Your roadmap*.
 
 ### Roadmap Progression
 Develops `scope.md > The Core Loop` step 6 and `scope.md > Explicitly Cut` (streaks that reset).

@@ -150,6 +150,9 @@ class FakeGemini:
         answer = {}
         if "got" in wanted:
             answer["got"] = f"You put the core of \"{data['topic']}\" in your own words."
+            # The first few words of each sentence, copied exactly, so the marks show in the simulated debrief.
+            sentences = re.split(r"(?<=[.!?])\s+", data["explanation"].strip())
+            answer["got_quotes"] = [m.group(0) for s in sentences[:2] if (m := re.match(r"\S+(?:[ \t]+\S+){0,3}", s))]
             answer["missing"] = "Simulated: a real coach would name one idea your explanation left out."
             answer["questions"] = [
                 {"question": f"What is the main idea of {data['topic']}?", "answer": "The idea you explained."},

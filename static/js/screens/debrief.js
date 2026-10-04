@@ -1,8 +1,9 @@
-// Teach-back and Debrief: one screen in two states.
+// Teach-back and Debrief: one screen in two states, under the summary of the session just finished.
 // The roadmap change is applied once per session, whether or not the coach answers.
 
 import { MESSAGES, post, WAITS, WORK } from "../api.js";
-import { $, el, hideWork, showWork } from "../dom.js";
+import { $, el, hideWork, ringStar, showWork } from "../dom.js";
+import { clock, longestStretch, markSegments, RING_LENGTH, starPoint } from "../progress.js";
 import { store } from "../store.js";
 
 const MAX_EXPLANATION = 1500;
@@ -27,6 +28,19 @@ function requestBody(pending) {
   };
 }
 
+// --- The session just finished: its ring, and three numbers ---
+
+function renderSummary(pending) {
+  const length = pending.plannedMinutes * 60;
+  const done = Math.min(1, pending.secondsDone / length);
+  $("#summary-ring").setAttribute("stroke-dashoffset", (RING_LENGTH * (1 - done)).toFixed(2));
+  $("#summary-stars").replaceChildren(...pending.taps.map((tap) => ringStar(starPoint(tap.atSec / length))));
+  const best = longestStretch(pending.taps.map((tap) => tap.atSec), pending.secondsDone);
+  $("#summary-focused").textContent = clock(pending.secondsDone);
+  $("#summary-returns").textContent = String(pending.taps.length);
+  $("#summary-longest").textContent = clock(best.to - best.from);
+}
+
 // --- Teach-back ---
 
 function renderTeachButton() {
@@ -44,6 +58,7 @@ function showTeach(pending) {
   $("#teach-text").value = pending.explanation ?? "";
   $("#teach-status").textContent = "";
   $("#teach-submit").textContent = "Get feedback";
+  hideWork($("#teach-work"));
   renderTeachButton();
 }
 
@@ -61,7 +76,7 @@ async function submitTeach(explanation) {
   await fetchDebrief();
 }
 
-// --- Debrief ---
+// --- Debrief cards ---
 
 function card(title, body, className = "") {
   return el("article", { className: `debrief-card card ${className}`.trim() }, [el("h3", { text: title }), ...body]);
@@ -71,31 +86,116 @@ function para(text, className) {
   return el("p", { className, text });
 }
 
-function ruleCard(coach) {
-  if (coach.rule && !coach.keepPreviousRule) return card("Your rule", [para(coach.rule, "rule-text")], "rule");
-  const previous = store.state.rule;
-  const text = previous ? `Your rule stays: ${previous.text}` : "No new rule this time — nothing pulled you away.";
-  return card("Your rule", [para(text, previous ? "rule-text" : "muted")], previous ? "rule" : "");
+// Text with some phrases marked: every piece is plain text, and only the marks are elements.
+function marked(text, phrases, markClass) {
+  return markSegments(text, phrases).map((piece) =>
+    piece.marked ? el("mark", { className: markClass, text: piece.text }) : piece.text,
+  );
 }
 
+// The first two different notes (as the server's notes_lead picks them), so Home can say where the rule came from.
+function firstNotes(taps) {
+  const notes = [];
+  for (const { note } of taps) {
+    if (note && !notes.some((seen) => seen.toLowerCase() === note.toLowerCase())) notes.push(note);
+    if (notes.length === 2) break;
+  }
+  return notes;
+}
+
+function fromNotesLine(notes) {
+  return notes.length ? para(`From your notes: ${notes.map((note) => `“${note}”`).join(", ")}.`, "rule-source") : null;
+}
+
+// Your explanation on the lamp-lit page, with what you got marked in your own words.
+function wordsCard(explanation, coach) {
+  const page = el("div", { className: "page" }, [
+    el("p", { className: "your-words" }, marked(explanation, coach.gotQuotes ?? [], "got-mark")),
+    para(coach.got, "got-line"),
+    el("p", { className: "add-line" }, [el("strong", { text: "What's missing: " }), coach.missing]),
+  ]);
+  return card("Your words", [page], "words");
+}
+
+function warmupCard(questions) {
+  return card("Next warm-up", [
+    el("ol", { className: "questions" }, questions.map((q) => el("li", { text: q.question }))),
+    para("You'll answer these from memory before your next session.", "muted small"),
+  ]);
+}
+
+function percent(fraction) {
+  return `${(Math.min(1, Math.max(0, fraction)) * 100).toFixed(2)}%`;
+}
+
+// The session as a line: what you focused, a star at each return with its note, the longest stretch aglow.
+function sessionCard(pending, pattern) {
+  const length = pending.plannedMinutes * 60;
+  const taps = pending.taps;
+  const best = longestStretch(taps.map((tap) => tap.atSec), pending.secondsDone);
+  const line = el("div", { className: "timeline", attrs: { "aria-hidden": "true" } });
+  const done = el("span", { className: "done" });
+  done.style.width = percent(pending.secondsDone / length);
+  line.append(done);
+  if (best.to > best.from) {
+    const glow = el("span", { className: "best" });
+    glow.style.left = percent(best.from / length);
+    glow.style.width = percent((best.to - best.from) / length);
+    line.append(glow);
+  }
+  for (const tap of taps) {
+    const star = el("span", { className: "dot" });
+    star.style.left = percent(tap.atSec / length);
+    line.append(star);
+  }
+  const returns = taps.length
+    ? el("ol", { className: "returns" }, taps.map((tap) =>
+        el("li", {}, [el("span", { className: "at", text: clock(tap.atSec) }), tap.note || "no note"])))
+    : null;
+  const ending = { completed: "", pulled_away: ", then pulled away", lost_focus: ", then ended early" }[pending.outcome];
+  const caption = taps.length === 1 ? "1 return" : `${taps.length} returns`;
+  return card("Your session", [
+    line,
+    returns,
+    para(`${clock(pending.secondsDone)} focused${ending} · ${caption} · longest stretch ${clock(best.to - best.from)}`, "timeline-caption"),
+    pattern ? para(pattern, "pattern") : null,
+  ], "session");
+}
+
+// The rule, with the words that came from your notes highlighted.
+function ruleCard(coach, pending) {
+  if (coach.rule && !coach.keepPreviousRule) {
+    const notes = firstNotes(pending.taps);
+    return card("Your rule", [el("p", { className: "rule-text" }, marked(coach.rule, notes, "note-mark")), fromNotesLine(notes)], "rule");
+  }
+  const previous = store.state.rule;
+  if (!previous) return card("Your rule", [para("No new rule this time — nothing pulled you away.", "muted")]);
+  const notes = previous.fromNotes ?? [];
+  return card("Your rule", [
+    el("p", { className: "rule-text" }, ["Your rule stays: ", ...marked(previous.text, notes, "note-mark")]),
+    fromNotesLine(notes),
+  ], "rule");
+}
+
+// The roadmap as a small path; moving up lights the next stage once.
 function roadmapCard(progression) {
-  return card("Your roadmap", [para(progression.sentence)], "roadmap");
+  const stages = store.state.roadmap?.stages ?? [];
+  const now = progression.newStageIndex;
+  const path = el("ol", { className: "mini-path", attrs: { "aria-hidden": "true" } }, stages.map((stage, i) =>
+    el("li", {
+      className: i < now ? "done" : i > now ? "later" : progression.change === "up" ? "current lit" : "current",
+      text: `${stage.minutes} min`,
+    })));
+  return card("Your roadmap", [path, para(progression.sentence)], "roadmap");
 }
 
 function renderCards(coach, progression) {
+  const pending = store.state.pending;
   const cards = [];
-  if (coach) {
-    if (coach.got) cards.push(card("What you got", [para(coach.got)]));
-    if (coach.missing) cards.push(card("What's missing", [para(coach.missing)]));
-    if (coach.questions?.length === 2) {
-      cards.push(card("Next warm-up", [
-        el("ol", { className: "questions" }, coach.questions.map((q) => el("li", { text: q.question }))),
-        para("You'll answer these from memory before your next session.", "muted small"),
-      ]));
-    }
-    if (coach.pattern) cards.push(card("Your pattern", [para(coach.pattern)]));
-    cards.push(ruleCard(coach));
-  }
+  if (coach?.got && pending?.explanation) cards.push(wordsCard(pending.explanation, coach));
+  if (coach?.questions?.length === 2) cards.push(warmupCard(coach.questions));
+  if (pending) cards.push(sessionCard(pending, coach?.pattern));
+  if (coach) cards.push(ruleCard(coach, pending));
   if (progression) cards.push(roadmapCard(progression));
   $("#debrief-cards").replaceChildren(...cards);
 }
@@ -130,16 +230,6 @@ function historyRow(pending, progression) {
     change: progression.change,
     stageAfter: progression.newStageIndex,
   };
-}
-
-// The first two different notes (as the server's notes_lead picks them), so Home can say where the rule came from.
-function firstNotes(taps) {
-  const notes = [];
-  for (const { note } of taps) {
-    if (note && !notes.some((seen) => seen.toLowerCase() === note.toLowerCase())) notes.push(note);
-    if (notes.length === 2) break;
-  }
-  return notes;
 }
 
 async function fetchDebrief() {
@@ -180,7 +270,7 @@ async function fetchDebrief() {
     };
   }
   if (coach.questions?.length === 2) changes.warmup = { topic: pending.topic, items: coach.questions };
-  // Rendered before the rule is replaced, so "Your rule stays" can still read the previous one.
+  // Rendered before the rule is replaced and pending is cleared, so the cards can still read both.
   showDebrief({ coach, progression, simulated });
   store.update(changes);
 }
@@ -233,6 +323,7 @@ export function init(navigation) {
 export function enter() {
   const pending = store.state.pending;
   sending = false;
+  renderSummary(pending);
   if (!pending.submitted) {
     showTeach(pending);
     return;

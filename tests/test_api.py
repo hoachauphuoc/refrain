@@ -177,6 +177,7 @@ STAGES = [10, 15, 20, 25, 30]
 EXPLANATION = "A risk register lists each risk with its likelihood and impact. You score them to decide which to handle first."
 FULL = {
     "got": "You named the risk register and scoring by likelihood and impact.",
+    "got_quotes": ["risk register lists each risk", "likelihood and impact"],
     "missing": "Each risk also needs an owner and a response plan.",
     "questions": [
         {"question": "What two scores rank a risk?", "answer": "Likelihood and impact."},
@@ -246,7 +247,7 @@ def test_nothing_for_the_ai_to_write_means_no_call(client, fake):
     status, body = post(client, taps=[], explanation=None)
     assert status == 200
     assert fake.calls == []
-    assert body["coach"] == {"got": None, "missing": None, "questions": None,
+    assert body["coach"] == {"got": None, "gotQuotes": None, "missing": None, "questions": None,
                              "pattern": "No distractions noted this session.", "rule": None, "keepPreviousRule": True}
     assert body["progression"]["change"] == "up"
 
@@ -256,6 +257,7 @@ def test_a_skipped_teach_back_returns_only_pattern_rule_and_roadmap(client, fake
     status, body = post(client, explanation=explanation)
     coach = body["coach"]
     assert coach["got"] is None and coach["missing"] is None and coach["questions"] is None
+    assert coach["gotQuotes"] is None
     assert coach["pattern"] and coach["rule"]
     assert "got" not in fake.prompts[0].split("<user_data>")[0]  # only pattern and rule were asked for
 
@@ -282,6 +284,30 @@ def test_a_pattern_that_still_misses_the_notes_gets_them_put_in_front(client, fa
     fake.queue = [{**FULL, "pattern": "Chat apps pulled you twice."}] * 2
     status, body = post(client)
     assert body["coach"]["pattern"] == "You noted “Slack” and “email ping”. Chat apps pulled you twice."
+
+
+def test_quotes_from_the_explanation_come_back_to_be_marked(client, fake):
+    fake.queue = [FULL]
+    status, body = post(client)
+    assert body["coach"]["gotQuotes"] == ["risk register lists each risk", "likelihood and impact"]
+    assert fake.calls == ["debrief"]
+    assert "got_quotes" in fake.prompts[0].split("<user_data>")[0]
+
+
+def test_quotes_that_are_not_their_words_are_retried_once_then_dropped(client, fake):
+    invented = {**FULL, "got_quotes": ["“Risk Register lists each risk.”", "a heat map of every risk"]}
+    fake.queue = [invented, invented]
+    status, body = post(client)
+    # The first is theirs, written as they wrote it; the invented one is never marked.
+    assert body["coach"]["gotQuotes"] == ["risk register lists each risk"]
+    assert fake.calls == ["debrief", "debrief"]
+    assert "not copied exactly from their explanation" in fake.prompts[1]
+
+
+def test_the_simulated_coach_quotes_the_explanation_too(client, fake):
+    status, body = post(client)
+    quotes = body["coach"]["gotQuotes"]
+    assert quotes and all(quote in EXPLANATION for quote in quotes)
 
 
 def test_a_rule_not_in_if_then_form_is_retried(client, fake):

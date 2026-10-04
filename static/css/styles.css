@@ -1184,6 +1184,50 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 
 /* ---------- Teach-back and Debrief ---------- */
 
+/* The session just finished; the focus ring glides into this one (same view-transition name). */
+.session-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+  margin-bottom: var(--s6);
+  padding: var(--s4) var(--s5);
+}
+.summary-ring {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgb(45 212 191 / 0.35));
+}
+.summary-ring,
+#focus-dial .ring { view-transition-name: session-ring; }
+/* Drawn small, so the line and the stars are drawn thicker. */
+.summary-ring .ring-track,
+.summary-ring .ring-progress { stroke-width: 11; }
+.summary-ring .star-body { transform: scale(1.9); }
+::view-transition-group(session-ring) { animation-duration: 450ms; animation-timing-function: var(--ease); }
+.stats {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s4);
+  margin: 0;
+}
+.stats dt {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stats dd {
+  margin: 2px 0 0;
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
 #teach-form label {
   margin-bottom: var(--s3);
   font-family: var(--serif);
@@ -1205,7 +1249,7 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 .debrief-card:nth-child(n + 6) { animation-delay: 300ms; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
 .debrief-card h3 {
-  margin-bottom: var(--s2);
+  margin-bottom: var(--s3);
   font-family: var(--sans);
   font-size: 0.75rem;
   font-weight: 600;
@@ -1221,6 +1265,168 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 .questions { margin: 0 0 var(--s2); padding-left: 1.3em; }
 .questions li { margin-bottom: 6px; }
 
+/* Your words, on the lamp-lit page: the coach marks what you got, in your own text. */
+.page {
+  padding: var(--s4) var(--s5);
+  color: var(--page-ink);
+  background: var(--page);
+  border-radius: var(--r1);
+  box-shadow: 0 0 0 1px rgb(251 191 36 / 0.08), 0 18px 44px -20px rgb(251 191 36 / 0.45);
+}
+.page p { margin: 0 0 var(--s3); }
+.page p:last-child { margin-bottom: 0; }
+.your-words {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  line-height: 1.7;
+}
+.got-mark {
+  padding: 0 2px;
+  color: var(--page-ink);
+  background: linear-gradient(var(--marker), var(--marker)) no-repeat 0 0 / 100% 100%;
+  border-radius: 3px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: mark-sweep 700ms var(--ease) 450ms both;
+}
+.got-mark:nth-of-type(2) { animation-delay: 750ms; }
+.got-mark:nth-of-type(3) { animation-delay: 1050ms; }
+@keyframes mark-sweep { from { background-size: 0% 100%; } }
+.got-line {
+  display: flex;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: var(--teal-ink);
+}
+.got-line::before {
+  content: "";
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
+  background: currentColor;
+  -webkit-mask: url("/static/icons/check.svg") center / contain no-repeat;
+  mask: url("/static/icons/check.svg") center / contain no-repeat;
+}
+.add-line { font-size: 0.95rem; color: var(--amber-ink); }
+.add-line strong { font-weight: 600; }
+
+/* Your session, as a line */
+.timeline {
+  position: relative;
+  height: 28px;
+  margin: var(--s2) 6px var(--s3);
+}
+.timeline::before,
+.timeline .done {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 4px;
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+.timeline::before { right: 0; background: rgb(255 255 255 / 0.1); }
+.timeline .done { background: linear-gradient(90deg, var(--teal), var(--cyan)); }
+.timeline .best {
+  position: absolute;
+  top: 50%;
+  height: 12px;
+  border-radius: 6px;
+  transform: translateY(-50%);
+  background: rgb(94 234 212 / 0.3);
+  box-shadow: 0 0 14px rgb(45 212 191 / 0.55);
+}
+.timeline .dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: var(--star);
+  box-shadow: 0 0 0 4px rgb(251 191 36 / 0.18), 0 0 12px rgb(251 191 36 / 0.7);
+}
+.returns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0 0 var(--s2);
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+.returns .at {
+  margin-right: 6px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.timeline-caption { font-size: 0.9rem; color: var(--muted); }
+.debrief-card .pattern { margin-top: var(--s3); }
+
+/* Words in the rule that came from your notes */
+.note-mark {
+  padding: 0 3px;
+  color: var(--page-ink);
+  background: var(--marker-star);
+  border-radius: 3px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* The roadmap, small: moving up lights the next stage once. */
+.mini-path {
+  display: flex;
+  margin: 0 0 var(--s3);
+  padding: 0;
+  list-style: none;
+}
+.mini-path li {
+  position: relative;
+  flex: 1;
+  padding-top: 24px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.mini-path li::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgb(255 255 255 / 0.12);
+}
+.mini-path li:last-child::before { display: none; }
+.mini-path li::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--sky-2);
+  border: 2px solid rgb(255 255 255 / 0.35);
+  border-radius: 50%;
+}
+.mini-path .done::before { background: var(--teal); }
+.mini-path .done::after { background: var(--teal); border-color: var(--teal); }
+.mini-path .current { color: var(--star); font-weight: 600; }
+.mini-path .current::after {
+  background: var(--star);
+  border-color: var(--star);
+  box-shadow: 0 0 0 5px rgb(251 191 36 / 0.15), 0 0 18px rgb(251 191 36 / 0.7);
+}
+.mini-path .lit::after { animation: light-up 1.1s var(--ease) 500ms both; }
+@keyframes light-up {
+  0% { background: var(--sky-2); border-color: rgb(255 255 255 / 0.35); box-shadow: none; transform: scale(0.6); }
+  60% { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 760px) {
@@ -1233,6 +1439,10 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
   .home-hero { padding: var(--s5) var(--s4); }
   .distracted { width: 100%; min-width: 0; padding: 18px 24px; }
   .field.short input[type="text"] { max-width: none; }
+  .session-summary { gap: var(--s4); padding: var(--s4); }
+  .summary-ring { width: 64px; height: 64px; }
+  .stats { gap: var(--s2); }
+  .stats dd { font-size: 1.4rem; }
 }
 
 /* ---------- What the device asks for ---------- */

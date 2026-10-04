@@ -168,6 +168,28 @@ def test_quotes_note_is_word_for_word_and_case_insensitive():
     assert not rules.quotes_note("A chat ping pulled you twice.", ["Slack", "email ping"])
 
 
+EXPLAINED = "A risk register lists each risk with its likelihood and impact. You score them to decide which to handle first."
+
+
+def test_verbatim_quotes_keep_only_the_users_own_words_as_they_wrote_them():
+    kept, dropped = rules.verbatim_quotes(
+        ["“Risk register lists each risk.”", "a heat map", "likelihood and impact", "likelihood AND impact"], EXPLAINED)
+    assert kept == ["risk register lists each risk", "likelihood and impact"]
+    assert dropped == 1
+
+
+def test_verbatim_quotes_keep_at_most_three_and_ignore_scraps():
+    quotes = ["A risk register", "each risk", "its likelihood", "You score them", "to", ""]
+    kept, dropped = rules.verbatim_quotes(quotes, EXPLAINED)
+    assert kept == ["A risk register", "each risk", "its likelihood"]
+    assert dropped == 0
+
+
+@pytest.mark.parametrize("quotes", [None, "risk register", [None, 3]])
+def test_verbatim_quotes_survive_answers_of_the_wrong_shape(quotes):
+    assert rules.verbatim_quotes(quotes, EXPLAINED) == ([], 0)
+
+
 def test_notes_lead_uses_the_first_two_different_notes():
     assert rules.notes_lead(["Slack", "slack", "email ping", "news"]) == "You noted “Slack” and “email ping”."
     assert rules.notes_lead(["Slack"]) == "You noted “Slack”."

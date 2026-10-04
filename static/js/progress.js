@@ -21,3 +21,67 @@ export function planFrom(rule) {
   const plan = match[1].trim().replace(/[.!\s]+$/, "");
   return plan || null;
 }
+
+// The text in pieces, with every place a phrase appears (ignoring case) marked, so a screen can wrap
+// the marked pieces in <mark> while every piece still goes in as plain text.
+// markSegments("Slack pinged", ["slack"]) → [{ text: "Slack", marked: true }, { text: " pinged", marked: false }]
+export function markSegments(text, phrases) {
+  const source = typeof text === "string" ? text : "";
+  // Lower-casing can change the length of a few characters; then match case as written instead.
+  const folds = source.toLowerCase().length === source.length;
+  const haystack = folds ? source.toLowerCase() : source;
+  const ranges = [];
+  for (const phrase of Array.isArray(phrases) ? phrases : []) {
+    const needle = typeof phrase === "string" ? phrase.trim() : "";
+    if (needle.length < 2) continue;
+    const wanted = folds ? needle.toLowerCase() : needle;
+    for (let at = haystack.indexOf(wanted); at >= 0; at = haystack.indexOf(wanted, at + wanted.length)) {
+      ranges.push([at, at + wanted.length]);
+    }
+  }
+  ranges.sort((a, b) => a[0] - b[0] || b[1] - a[1]);
+  const merged = [];
+  for (const [start, end] of ranges) {
+    const last = merged[merged.length - 1];
+    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+    else merged.push([start, end]);
+  }
+  const pieces = [];
+  let at = 0;
+  for (const [start, end] of merged) {
+    if (start > at) pieces.push({ text: source.slice(at, start), marked: false });
+    pieces.push({ text: source.slice(start, end), marked: true });
+    at = end;
+  }
+  if (at < source.length) pieces.push({ text: source.slice(at), marked: false });
+  return pieces;
+}
+
+// The focus stretches between returns, in seconds: from the start, through each tap, to the end.
+// stretches([15, 40], 60) → [{ from: 0, to: 15 }, { from: 15, to: 40 }, { from: 40, to: 60 }]
+export function stretches(tapSecs, endSec) {
+  const end = Math.max(0, Number(endSec) || 0);
+  const marks = (Array.isArray(tapSecs) ? tapSecs : [])
+    .map(Number)
+    .filter(Number.isFinite)
+    .map((sec) => Math.min(end, Math.max(0, sec)))
+    .sort((a, b) => a - b);
+  const out = [];
+  let from = 0;
+  for (const to of [...marks, end]) {
+    out.push({ from, to });
+    from = to;
+  }
+  return out;
+}
+
+// The longest of those stretches, so the debrief can show the best run of the session.
+export function longestStretch(tapSecs, endSec) {
+  return stretches(tapSecs, endSec).reduce((best, s) => (s.to - s.from > best.to - best.from ? s : best));
+}
+
+// 75 → "1:15"
+export function clock(seconds) {
+  const total = Math.max(0, Math.round(Number(seconds) || 0));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}

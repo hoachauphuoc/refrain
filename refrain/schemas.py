@@ -137,6 +137,12 @@ def debrief_answer_schema(with_explanation, with_pattern, with_rule):
             "type": "string",
             "description": "One specific idea from the topic their explanation left out, or that nothing important is missing.",
         }
+        properties["got_quotes"] = {
+            "type": "array",
+            "maxItems": 3,
+            "items": {"type": "string"},
+            "description": "Up to three short phrases copied exactly from their explanation that show what they got right.",
+        }
         properties["questions"] = {
             "type": "array",
             "minItems": 2,
@@ -150,7 +156,7 @@ def debrief_answer_schema(with_explanation, with_pattern, with_rule):
                 "required": ["question", "answer"],
             },
         }
-        required += ["got", "missing", "questions"]
+        required += ["got", "missing", "got_quotes", "questions"]
     if with_pattern:
         properties["pattern"] = {
             "type": "string",

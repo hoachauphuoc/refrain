@@ -3,12 +3,11 @@
 // Each tap lights a star on the ring: a return, never a failure.
 // The running session lives only in memory: closing the page discards it, as the PRD requires.
 
-import { $, el } from "../dom.js";
+import { $, el, ringStar } from "../dom.js";
 import { planFrom, RING_LENGTH, starPoint } from "../progress.js";
 import { store } from "../store.js";
 import { cancelChime, formatClock, scheduleChime, startCountdown } from "../timer.js";
 
-const SVG = "http://www.w3.org/2000/svg";
 const NOTED_MS = 2000;
 
 let nav;
@@ -59,21 +58,8 @@ function renderRing(msLeft) {
 
 // One star for each return, placed at the moment of the tap; only a new one twinkles.
 function addStar(fraction) {
-  const { x, y } = starPoint(fraction);
-  const star = document.createElementNS(SVG, "g");
-  star.setAttribute("class", "ring-star new");
-  star.setAttribute("transform", `translate(${x} ${y})`);
-  const body = document.createElementNS(SVG, "g");
-  body.setAttribute("class", "star-body");
-  for (const [className, r] of [["star-pulse", 6], ["star-glow", 9], ["star-core", 4.5]]) {
-    const circle = document.createElementNS(SVG, "circle");
-    circle.setAttribute("class", className);
-    circle.setAttribute("r", String(r));
-    body.append(circle);
-  }
-  star.append(body);
   for (const old of document.querySelectorAll("#focus-stars .new")) old.classList.remove("new");
-  $("#focus-stars").append(star);
+  $("#focus-stars").append(ringStar(starPoint(fraction), true));
 }
 
 function tap() {

@@ -57,3 +57,22 @@ export function hideWork(box) {
   box.hidden = true;
   box.replaceChildren();
 }
+
+// SVG elements, with attributes only (never markup).
+export function svgEl(tag, attrs = {}, children = []) {
+  const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [name, value] of Object.entries(attrs)) node.setAttribute(name, String(value));
+  node.append(...children);
+  return node;
+}
+
+// One star on a ring, at a point from starPoint(). `twinkle` plays its 600 ms light-up once.
+export function ringStar({ x, y }, twinkle = false) {
+  return svgEl("g", { class: twinkle ? "ring-star new" : "ring-star", transform: `translate(${x} ${y})` }, [
+    svgEl("g", { class: "star-body" }, [
+      svgEl("circle", { class: "star-pulse", r: 6 }),
+      svgEl("circle", { class: "star-glow", r: 9 }),
+      svgEl("circle", { class: "star-core", r: 4.5 }),
+    ]),
+  ]);
+}

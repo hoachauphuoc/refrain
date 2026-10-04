@@ -227,6 +227,26 @@
     </section>
 
     <section id="screen-debrief" class="screen" hidden aria-label="Teach-back and debrief">
+      <!-- The session just finished: the focus ring glides in here (debrief.js). -->
+      <div class="session-summary card" id="session-summary">
+        <svg class="summary-ring" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="summary-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#5eead4"/>
+              <stop offset="1" stop-color="#22d3ee"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="100" cy="100" r="92"/>
+          <circle class="ring-progress" id="summary-ring" cx="100" cy="100" r="92" stroke="url(#summary-grad)" stroke-dasharray="578.05" stroke-dashoffset="578.05" transform="rotate(-90 100 100)"/>
+          <g id="summary-stars"></g>
+        </svg>
+        <dl class="stats">
+          <div><dt>Focused</dt><dd id="summary-focused">0:00</dd></div>
+          <div><dt>Returns</dt><dd id="summary-returns">0</dd></div>
+          <div><dt>Longest stretch</dt><dd id="summary-longest">0:00</dd></div>
+        </dl>
+      </div>
+
       <div id="teach">
         <p class="eyebrow">Teach back</p>
         <h2 id="teach-topic" tabindex="-1"></h2>

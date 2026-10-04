@@ -131,6 +131,9 @@ def debrief_prompt(session, result, needs, outside):
             "- missing: one specific idea from the topic that their explanation left out, or say plainly that "
             "nothing important is missing. If the explanation is very short or off-topic, say kindly what a "
             "fuller explanation would include.",
+            "- got_quotes: up to three short phrases (two to eight words each) copied character for character from "
+            "their explanation that show what they got right, so the app can mark them in their own text. Don't "
+            "paraphrase or fix their wording. Give an empty list if nothing in it is right.",
             "- questions: exactly two questions about the topic that they can answer from memory, without the "
             "material in front of them, each with a one-line answer. Ask about the topic even when the "
             "explanation was short or off-topic.",
@@ -220,6 +223,7 @@ def write_debrief(gemini, session, result):
     }
     out = {
         "got": None,
+        "gotQuotes": None,
         "missing": None,
         "questions": None,
         "pattern": None if notes else _templated_pattern(taps, pulled),
@@ -229,19 +233,25 @@ def write_debrief(gemini, session, result):
     if not any(needs.values()):
         return out  # nothing for the AI to write
 
-    def pattern_misses_notes(data):
+    # Problems code can repair: they earn one retry, then the answer is accepted and repaired.
+    def soft_problems(data):
+        problems = []
         if needs["pattern"] and not rules.quotes_note(data["pattern"], notes):
-            return "did not quote any of their notes word for word in the pattern"
-        return None
+            problems.append("did not quote any of their notes word for word in the pattern")
+        if needs["explanation"] and rules.verbatim_quotes(data.get("got_quotes"), session.explanation)[1]:
+            problems.append("put phrases in got_quotes that are not copied exactly from their explanation")
+        return ", and ".join(problems) or None
 
     data = _ask(gemini, "debrief", debrief_prompt(session, result, needs, outside),
                 schemas.debrief_answer_schema(**{f"with_{k}": v for k, v in needs.items()}),
-                _debrief_problems(needs), pattern_misses_notes)
+                _debrief_problems(needs), soft_problems)
     if data is None:
         raise CoachUnavailable("Both debrief answers broke a check")
 
     if needs["explanation"]:
         out["got"] = data["got"].strip()
+        # Only words that are really theirs get marked; invented ones are dropped.
+        out["gotQuotes"] = rules.verbatim_quotes(data.get("got_quotes"), session.explanation)[0]
         out["missing"] = data["missing"].strip()
         out["questions"] = [{"question": q["question"].strip(), "answer": q["answer"].strip()}
                             for q in data["questions"]]

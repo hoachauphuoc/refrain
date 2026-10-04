@@ -151,6 +151,30 @@ def quotes_note(text, notes):
     return any(note.lower() in lowered for note in notes if note)
 
 
+_QUOTE_EDGES = " \t\n\"'“”‘’.,;:!?"
+
+
+def verbatim_quotes(quotes, explanation, limit=3):
+    """(kept, dropped): the phrases that really are in the explanation, as the explanation writes them.
+
+    Matching ignores case and the quotation marks or end punctuation the coach may add, and each kept
+    phrase is the explanation's own text, so the browser can mark exactly those characters.
+    """
+    kept, dropped, lowered = [], 0, explanation.lower()
+    for quote in quotes if isinstance(quotes, list) else []:
+        phrase = quote.strip(_QUOTE_EDGES) if isinstance(quote, str) else ""
+        if len(phrase) < 3:
+            continue
+        at = lowered.find(phrase.lower()) if len(lowered) == len(explanation) else explanation.find(phrase)
+        if at < 0:
+            dropped += 1
+            continue
+        exact = explanation[at:at + len(phrase)]
+        if exact not in kept and len(kept) < limit:
+            kept.append(exact)
+    return kept, dropped
+
+
 def notes_lead(notes):
     """'You noted “Slack” and “email ping”.' from the first two different notes."""
     first = []

@@ -121,11 +121,11 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Run a demo session and tap **Distracted** twice. Do the stars and your plan make a tap feel like a rep rather than a failure?
   Commit: `Light a star for each return on the focus ring`
 
-- [ ] **9. The debrief marks up your own words**
+- [x] **9. The debrief marks up your own words**
   Becomes usable: The debrief opens with the session's small ring and three numbers: minutes focused, returns, and the longest stretch. Below them:
-  - *Your words* shows your explanation on the lamp-lit page, with a teal marker over what you got and an amber "Add: …" for what's missing;
+  - *Your words* shows your explanation on the lamp-lit page, with a teal marker over what you got and an amber "What's missing:" line;
   - *Your session* is a line of focus stretches with a star and its note at each return, and the longest stretch glows;
-  - *Your North Star* highlights the words that came from your notes;
+  - *Your rule* highlights the words that came from your notes;
   - moving up a stage lights the next stage once.
   Why now: Feedback works better the more specific information it carries (Wisniewski, Zierer & Hattie 2020). Marking the user's own sentences is the most specific feedback there is, and it is the moment the video shows the AI at work.
   PRD ref: `prd.md > AI Debrief`, `prd.md > Screens and Layout` (Teach-back and Debrief)
@@ -299,3 +299,21 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
     - Saving the note showed "Noted. Back to Project management course — managing risks.".
     - At 0:00 the ring was full (`stroke-dashoffset` 0), and Teach-back opened.
   - The background-tab case wasn't run separately: the ring is drawn by the same tick as the countdown, and that tick also runs when the tab becomes visible again (slice 2 already checked the countdown).
+- **Slice 9 built (Oct 4, 2026).**
+  - Four changes from the plan:
+    - The missing idea reads "What's missing: …" rather than "Add: …", because the coach may say that nothing important is missing.
+    - The rule card keeps the name *Your rule*, which says more than *Your North Star*.
+    - The summary sits above the teach-back too, so the focus ring glides straight into it when the session ends.
+    - *Your session* also shows when the coaching fails, since it needs no AI.
+  - Verified:
+    - `pytest`: 281 passed (8 new: `verbatim_quotes`, quotes kept and returned as written, invented ones retried once then dropped, the simulated coach quoting the explanation). `node --test`: 57 passed.
+    - In the browser, a demo session with "team chat" at 0:07 and "email ping" at 0:19:
+      - the summary read 1:00 focused, 2 returns, longest stretch 0:41;
+      - *Your words* marked "A risk register lists" and "You score them to";
+      - the rule marked "team chat";
+      - the stage path lit the new 30-minute stage.
+  - Real Gemini (five scripted debriefs with explanations, `medium`, on a local server):
+    - All five came back with two or three quotes, and every quote was the user's own text: none needed a retry, and none was dropped.
+    - Example from the Spanish case: "identity and origin", "states and locations", "estoy cansado".
+    - Debrief median 7.1 s (4.8–9.2 s; the first took 24.4 s, including the server's start-up).
+    - Cost: about $0.0043 per debrief, from the token counts at $0.75 / $3.75 per million (vs. $0.0034 in slice 4), so about $0.0055 per session with the warm-up check.
