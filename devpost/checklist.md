@@ -193,7 +193,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: After a few sessions, can you tell at a glance whether your rule is working and what pulls you away most?
   Commit: `Show your rule at work and your sky on Home`
 
-- [ ] **12. A first screen that shows the loop, and a polished public link**
+- [x] **12. A first screen that shows the loop, and a polished public link**
   Becomes usable:
   - Welcome plays a short animation of the loop once: the ring draws itself, three stars light up, a marker sweeps a line, and a question comes back. The three steps sit on glass cards.
   - Every control has its hover, keyboard-focus, pressed, and disabled look.
@@ -345,3 +345,26 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
       - *Your sky* drew star lines for the two new rows and text only for the older ones.
     - The wide layout (1280 px) and 200% zoom showed no overflow; the counters wrap to 2 × 2.
     - A reload kept everything, and **Reset everything** left no saved progress and showed Welcome.
+- **Slice 12 built and deployed (Oct 4, 2026).**
+  - **Built:**
+    - the Welcome loop (SVG and CSS, about 3.5 s, once; the last frame with reduced motion, whose rule now also drops animation delays);
+    - a hover look for text boxes;
+    - the spec's demo recording path rewritten in ten steps;
+    - README screenshots from the public link with the real coach (`docs/screenshots/`, kept out of the deploy by `.gcloudignore`) and a Credits section.
+  - **State pass:** an empty Home (counters, pulls, and the recall line hidden) and the waiting state ("What the coach is doing") were checked. For the error state, the local server was stopped mid-survey: the answers stayed, the message read "The coach couldn't respond. Your work is saved.", and **Try again** stayed.
+  - **Deployed:** three revisions, each with the quoted environment list and checked afterwards (four variables, the three security headers, `font/woff2`, only the app's files uploaded). The walk on the public link found three bugs, fixed in `refrain-00007-fxt` and `refrain-00008-pb6`:
+    - After **Reset everything** and a new survey, Home still showed the erased warm-up recall line: the counters returned early, before updating it.
+    - The warm-up verdict lines and **Rule at work** printed the word "null": `replaceChildren` writes a `null` argument as text, unlike `el()`, which skips it.
+    - A rule written from a brand-new distraction showed **More often** (0 → 0 → 1); it now shows **New**, since there is nothing earlier to compare with.
+  - **Verified on the public link, real Gemini:**
+    - Saved progress from the slice 6 walk, which predates `reviews` and tap times, loaded cleanly before **Reset everything**.
+    - The survey showed "What the coach is doing" and gave a roadmap in 5.9 s, with a reason naming the goal and the 60 minutes.
+    - In a demo session, two notes gave two stars and "Noted. Back to …".
+    - The debrief (11.4 s) marked three phrases copied exactly from the explanation, named risk responses as missing, and wrote a rule with "team chat" highlighted.
+    - The warm-up gave 1 got it and 1 missed. The plan line read "Your plan: write the person's name on a sticky note and reply during my break".
+    - One session ran out before the script's **End early**, so it completed: correctly counted, up a stage.
+    - The next warm-up brought the missed question back ("Back again: you missed this on Oct 4."), and it was got.
+    - **I was pulled away** with "manager call" held the stage ("Holding at 20 minutes, because being pulled away is not a focus lapse.") and gave a ready-to-resume rule.
+    - Home showed the counters, the pick-up card, **Rule at work** (**New**), three pulls, and the sky.
+    - About 8 AI requests in all.
+  - **Not repeated:** the 31-request rate-limit check. It would block this IP from the coach for an hour, and the learner shares it for their own try. The limiter is unchanged since slice 6 and still covered by `pytest`.

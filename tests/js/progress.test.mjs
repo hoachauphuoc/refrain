@@ -170,7 +170,8 @@ test("rule at work follows the rule's notes through the last sessions, oldest fi
   ];
   assert.deepEqual(ruleAtWork(RULE, history), { counts: [2, 1, 0], trend: "less" });
   assert.deepEqual(ruleAtWork(RULE, history, 2), { counts: [1, 0], trend: "less" });
-  assert.deepEqual(ruleAtWork(RULE, [row("x", ["team chat"]), row("w", [])]), { counts: [0, 1], trend: "more" });
+  assert.deepEqual(ruleAtWork(RULE, [row("y", ["team chat", "team chat"]), row("x", ["team chat"])]), { counts: [1, 2], trend: "more" });
+  assert.deepEqual(ruleAtWork(RULE, [row("x", ["team chat"]), row("w", [])]), { counts: [0, 1], trend: "new" });
   assert.deepEqual(ruleAtWork(RULE, [row("x", ["team chat"])]), { counts: [1], trend: null });
 });
 

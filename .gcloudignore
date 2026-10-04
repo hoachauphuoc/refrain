@@ -16,6 +16,7 @@ __pycache__/
 
 # Not needed to run the app
 devpost/
+docs/
 tests/
 scripts/
 requirements-dev.txt

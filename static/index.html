@@ -44,9 +44,50 @@
 
     <section id="screen-welcome" class="screen" hidden aria-labelledby="welcome-title">
       <div class="welcome-hero">
-        <p class="eyebrow">A coach for focus and memory</p>
-        <h1 id="welcome-title" tabindex="-1">Train your focus and your memory, <span class="shine">from your own words.</span></h1>
-        <p class="promise">Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words.</p>
+        <div class="hero-text">
+          <p class="eyebrow">A coach for focus and memory</p>
+          <h1 id="welcome-title" tabindex="-1">Train your focus and your memory, <span class="shine">from your own words.</span></h1>
+          <p class="promise">Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words.</p>
+        </div>
+        <!-- The loop, played once: the session ring draws itself, a star lights for each return,
+             the coach marks your words on the page, and a question comes back. Decoration only. -->
+        <div class="hero-art" aria-hidden="true">
+          <svg class="loop-art" viewBox="0 0 360 300" focusable="false">
+            <defs>
+              <linearGradient id="art-ring-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#5eead4"/>
+                <stop offset="1" stop-color="#22d3ee"/>
+              </linearGradient>
+              <radialGradient id="art-glow">
+                <stop offset="0" stop-color="#2dd4bf" stop-opacity="0.2"/>
+                <stop offset="1" stop-color="#2dd4bf" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="130" cy="140" r="128" fill="url(#art-glow)"/>
+            <circle class="art-track" cx="130" cy="140" r="86"/>
+            <circle class="art-ring" cx="130" cy="140" r="86" stroke="url(#art-ring-grad)" stroke-dasharray="540.35" transform="rotate(-90 130 140)"/>
+            <text class="art-clock" x="130" y="152" text-anchor="middle">14:32</text>
+            <g class="art-star s1" transform="translate(207.8 103.4)"><g class="art-star-body"><circle class="art-star-glow" r="11"/><circle class="art-star-core" r="5"/></g></g>
+            <g class="art-star s2" transform="translate(176.1 212.6)"><g class="art-star-body"><circle class="art-star-glow" r="11"/><circle class="art-star-core" r="5"/></g></g>
+            <g class="art-star s3" transform="translate(67.3 198.9)"><g class="art-star-body"><circle class="art-star-glow" r="11"/><circle class="art-star-core" r="5"/></g></g>
+            <g class="art-page">
+              <rect class="art-page-bg" x="200" y="200" width="152" height="82" rx="12"/>
+              <rect class="art-mark" x="210" y="211" width="102" height="18" rx="3"/>
+              <text class="art-words" x="213" y="224">risk register lists</text>
+              <text class="art-words" x="213" y="245">each risk by impact.</text>
+              <text class="art-add" x="213" y="268">Missing: who owns it</text>
+            </g>
+            <g class="art-back">
+              <rect class="art-chip" x="200" y="24" width="152" height="40" rx="20"/>
+              <!-- Lucide "rotate-ccw" (ISC license, see /static/licenses/Lucide-ISC.txt) -->
+              <g class="art-chip-icon" transform="translate(214 35) scale(0.75)">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </g>
+              <text class="art-chip-text" x="240" y="49">Back again</text>
+            </g>
+          </svg>
+        </div>
       </div>
       <ol class="steps">
         <li class="step card">

@@ -489,6 +489,7 @@ textarea {
 }
 textarea::placeholder { color: var(--page-muted); }
 textarea::selection { background: var(--marker); color: var(--page-ink); }
+textarea:hover:not(:disabled):not([readonly]) { border-color: var(--teal-ink); }
 textarea:disabled,
 textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 
@@ -583,7 +584,76 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 
 /* ---------- Welcome ---------- */
 
-.welcome-hero { padding: var(--s6) 0 var(--s5); }
+.welcome-hero {
+  display: grid;
+  align-items: center;
+  gap: var(--s5);
+  padding: var(--s6) 0 var(--s5);
+}
+@media (min-width: 900px) {
+  .welcome-hero { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); }
+}
+.hero-art svg {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin-inline: auto;
+  overflow: visible;
+}
+
+/* The loop, played once (about 3.5 s), then still. With reduced motion it starts at its last frame. */
+.art-track { fill: none; stroke: rgb(255 255 255 / 0.08); stroke-width: 7; }
+.art-ring {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dashoffset: 151.3; /* 72% drawn */
+  filter: drop-shadow(0 0 6px rgb(45 212 191 / 0.5));
+  animation: art-draw 1.6s linear 0.4s both;
+}
+@keyframes art-draw { from { stroke-dashoffset: 540.35; } }
+.art-clock {
+  font-family: var(--sans);
+  font-size: 38px;
+  font-weight: 250;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.art-star-glow { fill: rgb(251 191 36 / 0.25); }
+.art-star-core { fill: var(--star); }
+.art-star-body {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: art-star 600ms var(--ease) both;
+}
+/* Each star lights as the ring passes it. */
+.s1 .art-star-body { animation-delay: 0.8s; }
+.s2 .art-star-body { animation-delay: 1.31s; }
+.s3 .art-star-body { animation-delay: 1.8s; }
+@keyframes art-star {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.5); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.art-page { animation: art-rise 500ms var(--ease) 2s both; }
+.art-page-bg { fill: var(--page); filter: drop-shadow(0 10px 24px rgb(251 191 36 / 0.3)); }
+.art-mark {
+  fill: var(--marker);
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: art-mark 600ms var(--ease) 2.45s both;
+}
+@keyframes art-mark { from { transform: scaleX(0); } }
+.art-words { font-family: var(--serif); font-size: 13px; fill: var(--page-ink); }
+.art-add { font-family: var(--sans); font-size: 11px; font-weight: 600; fill: var(--amber-ink); }
+.art-back { animation: art-slide 600ms var(--ease) 3s both; }
+.art-chip { fill: var(--glass-strong); stroke: rgb(45 212 191 / 0.45); }
+.art-chip-icon { fill: none; stroke: var(--teal-hi); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.art-chip-text { font-family: var(--sans); font-size: 14px; font-weight: 600; fill: var(--teal-hi); }
+@keyframes art-rise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes art-slide { from { opacity: 0; transform: translateX(16px); } }
+
 #welcome-title { max-width: 13em; margin-bottom: var(--s5); }
 @supports (background-clip: text) or (-webkit-background-clip: text) {
   /* Teal to starlight, with one glint that sweeps across when the page opens. */
@@ -750,6 +820,7 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
   color: var(--muted);
 }
 .trend.less { color: var(--teal-hi); background: var(--tint-teal); border-color: rgb(45 212 191 / 0.4); }
+.trend.new { color: var(--star); border-color: rgb(251 191 36 / 0.4); }
 
 /* What pulls you away most */
 .pulls h3 {
@@ -1633,8 +1704,10 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
   ::view-transition-group(*),

@@ -58,13 +58,14 @@ function renderRuleAtWork(rule) {
   const text = work.counts.length === 1
     ? `${notes} came up ${plural(work.counts[0], "time")} last session. Your next sessions will show whether it pulls you less.`
     : `${notes} came up ${work.counts.join(" → ")} times in your last ${work.counts.length} sessions.`;
-  const trend = { less: "Less often", same: "About the same", more: "More often" }[work.trend];
-  line.replaceChildren(
+  const trend = { less: "Less often", same: "About the same", more: "More often", new: "New" }[work.trend];
+  // replaceChildren would write a null as the text "null", so only real nodes go in.
+  line.replaceChildren(...[
     el("strong", { text: "Rule at work" }),
     bars,
     el("span", { className: "work-text", text }),
     trend ? el("span", { className: `trend ${work.trend}`, text: trend }) : null,
-  );
+  ].filter(Boolean));
 }
 
 // Where the rule came from, so it reads as yours rather than a generic tip.
@@ -133,14 +134,14 @@ function countUp(node, target) {
 // Running totals only: they grow with every session and never reset, so a missed day costs nothing.
 function renderCounters(history) {
   const sum = totals(history, store.state.reviews);
+  // Warm-up recall stays a line of its own: how much of what you studied you could bring back.
+  $("#home-totals").hidden = sum.recall.asked === 0;
+  $("#home-totals").textContent = `Warm-ups: ${sum.recall.got} of ${sum.recall.asked} answers recalled${sum.recall.partly ? `, ${sum.recall.partly} partly` : ""}.`;
   $("#home-counters").hidden = sum.sessions === 0;
   if (sum.sessions === 0) return;
   const values = { sessions: sum.sessions, minutes: Math.floor(sum.seconds / 60), returns: sum.returns, kept: sum.kept };
   for (const [key, value] of Object.entries(values)) countUp($(`#count-${key}`), value);
   counted = true;
-  // Warm-up recall stays a line of its own: how much of what you studied you could bring back.
-  $("#home-totals").hidden = sum.recall.asked === 0;
-  $("#home-totals").textContent = `Warm-ups: ${sum.recall.got} of ${sum.recall.asked} answers recalled${sum.recall.partly ? `, ${sum.recall.partly} partly` : ""}.`;
 }
 
 // What pulls you away most: the three most frequent notes, each with a bar.
@@ -286,4 +287,5 @@ export function enter() {
 
 export function reset() {
   $("#home-topic").value = "";
+  counted = false;
 }

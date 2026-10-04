@@ -183,7 +183,9 @@ export function ruleAtWork(rule, history, limit = 5) {
   if (rows.length === 0) return null;
   const counts = rows.map((row) => notesMatching(row.notes, fromNotes));
   const [first, last] = [counts[0], counts[counts.length - 1]];
-  const trend = counts.length < 2 ? null : last < first ? "less" : last > first ? "more" : "same";
+  // A pull seen only in the latest session is new, not "more often": nothing to compare it with yet.
+  const isNew = last > 0 && counts.slice(0, -1).every((count) => count === 0);
+  const trend = counts.length < 2 ? null : isNew ? "new" : last < first ? "less" : last > first ? "more" : "same";
   return { counts, trend };
 }
 

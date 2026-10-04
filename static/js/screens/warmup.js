@@ -61,11 +61,12 @@ function showVerdicts(verdicts, reviews) {
     const item = items[i];
     // Kept: it was back for its second recall, and this time it was got again.
     const kept = item.review && reviews.some((r) => r.kept && r.question === item.question && r.topic === item.topic);
-    $(`#warmup-verdict-${i}`).replaceChildren(
+    // replaceChildren would write a null as the text "null", so only real nodes go in.
+    $(`#warmup-verdict-${i}`).replaceChildren(...[
       el("span", { className: `verdict ${verdict}`, text: LABELS[verdict] }),
       kept ? el("span", { className: "kept", text: "Idea kept" }) : null,
       el("span", { className: "saved-answer", text: item.answer }),
-    );
+    ].filter(Boolean));
     $(`#warmup-verdict-${i}`).hidden = false;
   });
 }

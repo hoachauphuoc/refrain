@@ -72,16 +72,26 @@ Open http://localhost:8080. If PowerShell blocks `Activate.ps1`, run the same co
 - **Simulated coach, for offline work and tests only:** `$env:REFRAIN_FAKE_AI = "1"` before `flask run`. Every AI result then carries a visible **Simulated coach** label; never used for the demo video.
 - **One real Gemini call** to check the SDK settings and token logging: `python scripts/smoke_gemini.py`.
 
-**Demo recording path (for `6-ship`, under three minutes).**
-1. **Reset everything** (or a fresh browser profile).
-2. Fill the survey as the junior-manager persona, with illustrative answers such as 34, "Study for a certification after work", 60, 30.
-3. Show the roadmap and its reason.
-4. Switch on **Demo length**, type a topic (for example "Project management course — managing risks"), and start.
-5. Tap **Distracted** twice with "team chat" and "email ping", and let the minute end. (Plain words rather than product names: the video must not show third-party trademarks.)
-6. Write a two-sentence teach-back, then show the debrief (gap, two questions, rule, roadmap moving).
-7. **Start with warm-up**: answer from memory, **Check**, **Start focusing**.
-8. **End early** → **I was pulled away**, fill both fields, **Save and end**.
-9. Show the debrief saying the stage holds, then Home with **Pick up where you left off**.
+**Demo recording path (for `6-ship`, under three minutes).** Rewritten in slice 12 around the moments the redesign added; the demo minute can be trimmed in editing.
+1. **Reset everything** (or a fresh browser profile), then open Welcome and let the loop play once: the ring draws itself, three stars light, the coach marks a line, and a question comes back.
+2. Fill the survey as the junior-manager persona, with illustrative answers such as 34, "Study for a certification after work", 60, 30, and show "What the coach is doing" while the roadmap is built.
+3. Show the roadmap: the stage path, the current stage as a star, and the reason.
+4. Switch on **Demo length**, type a topic (for example "Project management course — managing risks"), and start. The ring fills as the minute runs.
+5. Tap **Distracted** twice with "team chat" and "email ping": a star lights on the ring at each tap, and "Noted. Back to …" follows each note. (Plain words rather than product names: the video must not show third-party trademarks.)
+6. At the chime, the ring glides into the session summary. Write a two-sentence teach-back that leaves something out, then show the debrief:
+   - *Your words*, with what you got marked in your own sentences and "What's missing";
+   - *Your session* as a line of stars;
+   - *Your rule*, with "team chat" highlighted;
+   - the stage lighting up.
+7. **Start with warm-up**: answer one question from memory and leave one empty, **Check**, **Start focusing**.
+8. Tap **Distracted** once: "Your plan: …" shows the rule's then-part right when it is needed. Then **End early** → **I was pulled away**, fill both fields, **Save and end**, and **Skip** the teach-back.
+9. Show the debrief saying the stage holds because being pulled away is not a focus lapse, then Home:
+   - the counters;
+   - **Rule at work**;
+   - **What pulls you away most**;
+   - **Your sky**;
+   - **Pick up where you left off**.
+10. Optional, if time allows: start once more to show the missed question "Back again".
 
 Record locally or on the public link; warm the public link up first, because the first request after idle can take a few seconds while Cloud Run starts an instance.
 
@@ -115,7 +125,7 @@ Every billable step below gets a final yes from the learner at the start of `5-b
    gcloud run deploy refrain --source . --region us-central1 --project refrain-coach-<suffix> --service-account refrain-run@refrain-coach-<suffix>.iam.gserviceaccount.com --allow-unauthenticated --max-instances 1 --concurrency 8 --memory 512Mi --timeout 60 --set-env-vars "GOOGLE_GENAI_USE_ENTERPRISE=true,GOOGLE_CLOUD_PROJECT=refrain-coach-<suffix>,GOOGLE_CLOUD_LOCATION=global" --quiet
    ```
    Keep the `--set-env-vars` list in quotes: unquoted, PowerShell hands it to `gcloud` as a single variable (found in `5-build`).
-7. Open the printed `https://refrain-….run.app` URL and walk the demo path once. *Deployed Oct 3, 2026: https://refrain-476222056020.us-central1.run.app*
+7. Open the printed `https://refrain-….run.app` URL and walk the demo path once. *Deployed Oct 3, 2026: https://refrain-476222056020.us-central1.run.app; redeployed Oct 4 with the Night study build (revision `refrain-00008-pb6`).*
 8. To stop all spending later (for example after judging), delete the service:
    ```
    gcloud run services delete refrain --region us-central1 --project refrain-coach-<suffix>
@@ -205,7 +215,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   - A star twinkles for 600 ms, and only after the user's own tap.
 - **Small touches:**
   - The primary button shows a light sheen on hover and presses down 2% when clicked; buttons that move on carry an arrow that nudges forward on hover.
-  - On Welcome, one glint sweeps across the gradient phrase when the page opens.
+  - On Welcome, the loop plays once (above), and one glint sweeps across the gradient phrase when the page opens.
   - On Home, the current stage's star breathes slowly (3.2 s), and debrief cards rise in one after another (60 ms apart).
   - Counters count up once, when they first appear.
 - **`prefers-reduced-motion: reduce`** turns off every animation and transition: the aurora, the sheen, the glint, the breathing star, count-ups, twinkles, and view transitions.
@@ -301,7 +311,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   - Home:
     - `totals(history, reviews)`: sessions, seconds, returns, ideas kept, and recall sums.
     - `notesMatching(notes, ruleNotes)`: how many notes name one of the rule's notes, ignoring case ("team chat again" counts for "team chat").
-    - `ruleAtWork(rule, history, limit = 5)`: `{counts, trend}` for the last sessions saved with notes, oldest first, or `null`.
+    - `ruleAtWork(rule, history, limit = 5)`: `{counts, trend}` for the last sessions saved with notes, oldest first, or `null`. The trend is `less`, `same`, `more`, or `new` (zero in every earlier session).
     - `topNotes(history, limit = 3)`: `[{note, count}]`, keeping the first spelling seen.
 - **Talks to:** `focus.js` and `debrief.js`; later slices add the Home helpers here.
 - PRD ref: `prd.md > Focus Session and Distraction Logging`.
@@ -310,6 +320,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Files:** `static/js/screens/welcome.js`.
 - **What it shows:**
   - The headline "Train your focus and your memory, from your own words.", with the last phrase in a teal-to-starlight gradient. The name **Refrain** is in the top bar.
+  - Beside the headline (below it on narrow screens), the loop drawn once in SVG and CSS, about 3.5 s, `aria-hidden`: the session ring draws itself to 72%, three stars light as it passes them, a small lamp-lit page rises with a marker sweeping "risk register lists" and "Missing: who owns it", and a "Back again" chip slides in. It then stays still; with reduced motion it shows only its last frame.
   - The promise, which names the problem: "Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words."
   - The three-step "how it works" on three glass cards with icons: focus and note what pulled you → teach back, get what's missing and one rule → recall next time.
   - One line on the plan: it starts at a length you can finish, a meeting that cuts a session short never counts against you, and nothing resets to zero.
@@ -343,7 +354,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   5. **Pick up where you left off**, when `resume` exists.
   6. The rule card with its starlight edge, or "Your first rule will come from your first session".
      - Under the rule, where it came from: "From your notes: “team chat”, “email ping”." from `rule.fromNotes`, or "Written after a session you were pulled away from." when `rule.pulledAway` and there were no notes.
-     - **Rule at work** (`ruleAtWork`): for the rule's notes, how many of each of the last five sessions' notes named one, oldest first. It shows one small bar per session (a dim stub for zero), the counts in words ("“team chat” came up 2 → 1 → 0 times in your last 3 sessions."), and **Less often** / **About the same** / **More often** from the first and last counts.
+     - **Rule at work** (`ruleAtWork`): for the rule's notes, how many of each of the last five sessions' notes named one, oldest first. It shows one small bar per session (a dim stub for zero), the counts in words ("“team chat” came up 2 → 1 → 0 times in your last 3 sessions."), and **Less often** / **About the same** / **More often** from the first and last counts, or **New** when the notes appear only in the latest session.
      - It is hidden when the rule has no notes or no session was saved with notes. With one session: "…came up 2 times last session. Your next sessions will show whether it pulls you less."
   7. **What pulls you away most** (`topNotes`): the three most frequent notes across sessions saved with notes, ignoring case, each with a count ("3×") and an amber bar scaled to the most frequent. Hidden before the first session; before any notes: "Your notes will show here after a session where you note what pulled you."
   8. **Your sky**:
