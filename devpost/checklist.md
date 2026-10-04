@@ -96,7 +96,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Open Refrain and walk Welcome → Home → a demo session. Does it look professional and "lung linh" to you, and which screen still feels plain?
   Commit: `Redesign Refrain as Night study`
 
-- [ ] **8. Each time you come back, a star lights up**
+- [x] **8. Each time you come back, a star lights up**
   Becomes usable: The focus screen is the quiet night:
   - a glowing ring fills with the countdown;
   - each **Distracted** tap places an amber star on the ring at that moment;
@@ -290,3 +290,12 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
     - Every request stays on the app's origin, and only the two Latin fonts load.
     - First visit: 234 KB uncompressed in 32 files.
     - The browser tool's synthetic Tab doesn't trigger `:focus-visible`, so the focus ring was checked where focus is moved by script (the warm-up's **Start focusing**) and on the text fields.
+- **Slice 8 built (Oct 4, 2026).**
+  - "Noted. Back to {topic}." shows whenever the note field closes, on Skip and Esc as well as Enter, because the tap counts as noticed with or without a note.
+  - Verified:
+    - `node --test`: 51 passed (46 contrast, 5 for `starPoint` and `planFrom`). `pytest`: 273 passed.
+    - In a demo session, two taps made two stars at their moments on the ring.
+    - With the rule "If something pulls me away, then I'll write where I stopped and my next step before I go.", the plan line read "Your plan: write where I stopped and my next step before I go".
+    - Saving the note showed "Noted. Back to Project management course — managing risks.".
+    - At 0:00 the ring was full (`stroke-dashoffset` 0), and Teach-back opened.
+  - The background-tab case wasn't run separately: the ring is drawn by the same tick as the countdown, and that tick also runs when the tab becomes visible again (slice 2 already checked the countdown).

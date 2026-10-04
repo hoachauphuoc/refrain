@@ -181,10 +181,23 @@
       <p class="focus-topic" id="focus-topic"></p>
       <p class="focus-next" id="focus-next" hidden></p>
       <div class="dial" id="focus-dial">
+        <!-- The ring fills with the session; each return lights a star on it (focus.js). -->
+        <svg class="ring" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#5eead4"/>
+              <stop offset="1" stop-color="#22d3ee"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="100" cy="100" r="92"/>
+          <circle class="ring-progress" id="focus-ring" cx="100" cy="100" r="92" stroke="url(#ring-grad)" stroke-dasharray="578.05" stroke-dashoffset="578.05" transform="rotate(-90 100 100)"/>
+          <g id="focus-stars"></g>
+        </svg>
         <div class="countdown" id="focus-countdown" role="timer" aria-label="Time left">0:00</div>
       </div>
       <p class="focus-rule" id="focus-rule" hidden></p>
       <button type="button" class="distracted" id="focus-distracted">Distracted</button>
+      <p class="focus-plan" id="focus-plan" hidden></p>
       <div class="note-row" id="focus-note-row" hidden>
         <label for="focus-note" class="sr-only">What pulled you away?</label>
         <input id="focus-note" type="text" maxlength="60" autocomplete="off" placeholder="What pulled you away?" enterkeyhint="done">

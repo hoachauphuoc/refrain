@@ -221,9 +221,10 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 
 **Focus screen.** The darkened sky (`--sky-0` over it) with:
 - the topic and the "next step" note in small `--muted` text;
-- the large countdown in a soft dial, which becomes a glowing ring with a star for each return in slice 8;
+- the large countdown inside the ring, which fills as the session runs, with an amber star on the ring for each return;
 - the rule in `--star`;
 - one large glass **Distracted** button;
+- while a note is typed, "Your plan: …" in `--muted` with the plan in `--star`;
 - the tally ("2 noted") and a small **End early** link;
 - the End-early panel as a glass card over the screen.
 
@@ -283,6 +284,15 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Talks to:** the server's **API routes**.
 - PRD ref: `prd.md > States and Boundaries` (AI request fails).
 
+#### Progress helpers (`progress.js`)
+- **Files:** `static/js/progress.js`, tested by `tests/js/progress.test.mjs`.
+- **What it does:** pure functions with no DOM and no storage, so Node's test runner can check them:
+  - `RING` (center 100, radius 92 in a 200 × 200 viewBox) and `RING_LENGTH`.
+  - `starPoint(fraction)`: the point on the ring for a moment of the session. 0 is the top, it runs clockwise, and values outside 0–1 are kept on the ring.
+  - `planFrom(rule)`: the then-part of an "If …, then I'll …" rule (also "then I will", a curly apostrophe, or a comma after "then"), without its final period. Returns `null` when there is none.
+- **Talks to:** `focus.js`; later slices add the debrief and Home helpers here.
+- PRD ref: `prd.md > Focus Session and Distraction Logging`.
+
 #### Welcome screen
 - **Files:** `static/js/screens/welcome.js`.
 - **What it shows:**
@@ -336,9 +346,15 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Files:** `static/js/screens/focus.js`, `static/js/timer.js`.
 - **The session:** held in memory only — `{topic, plannedMinutes, demo, endAt, taps:[{atSec, note}]}`. `plannedMinutes` is the current stage's minutes, or 1 with **Demo length**.
 - **Countdown:** `timer.js` redraws it every 250 ms from `endAt - Date.now()`.
+- **Ring and stars** (slice 8):
+  - On each tick the ring's `stroke-dashoffset` is set from the time left (`RING_LENGTH × time left / session length`), so after a background tab it catches up with the countdown instead of drifting. It is a presentation attribute, which the CSP allows.
+  - Each tap adds a star at `starPoint(elapsed / session length)`, built with `createElementNS`. Only the newest star carries the `new` class that twinkles it (600 ms).
+  - Stars are cleared when the next session starts.
 - **Distracted:**
   - Each tap adds `{atSec}` and updates the tally at once.
   - The note field ("What pulled you away?", up to 60 characters) opens under the button. Enter saves it to that tap; Esc or **Skip** closes it.
+  - While the field is open, "Your plan: …" shows the then-part of the active rule (`planFrom`), when there is one.
+  - Closing the field puts "Noted. Back to {topic}." in the tally for 2 seconds. The tally is `aria-live`, so screen readers hear it too.
   - A new tap first saves any typed note to the previous tap.
   - Nothing pauses the countdown.
 - **End early:**

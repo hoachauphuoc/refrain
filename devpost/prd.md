@@ -51,7 +51,7 @@ The main screen after the survey, in this order (on wide screens the roadmap spa
 The two saved questions, each with an answer field; **Check**; then each question shows got it / partly / missed and a one-line answer; **Start focusing**.
 
 ### Focus Session
-Full-screen, dark, nearly empty: large countdown, the topic in small text, the next step from **Pick up where you left off** (when there is one) in small text, the active rule, one large **Distracted** button, a small tally ("2 noted"), and a small **End early** link. After a tap, a one-line note field appears under the button with "What pulled you away?"; Enter saves the note, and Esc or **Skip** closes it without one.
+Full-screen, dark, nearly empty: large countdown inside a ring that fills as the session runs, with an amber star on the ring for each tap; the topic in small text; the next step from **Pick up where you left off** (when there is one) in small text; the active rule; one large **Distracted** button; a small tally ("2 noted"); and a small **End early** link. After a tap, a one-line note field appears under the button with "What pulled you away?", with the plan from the rule just above it; Enter saves the note, and Esc or **Skip** closes it without one.
 
 **End early** opens a small panel over the dark screen: "Ending early?" with **I was pulled away**, **I lost focus**, and **Keep going**. Choosing **I was pulled away** shows two short fields — "Where I stopped" and "My next step" — and **Save and end**.
 
@@ -124,6 +124,9 @@ Develops `scope.md > The Core Loop` step 3 and `scope.md > The Unique Kernel`.
   - [ ] The countdown starts at the current stage's length, or at 1:00 with **Demo length** on.
   - [ ] The active rule is visible during the whole session (or nothing, before the first rule exists).
   - [ ] Each **Distracted** tap adds one to the tally immediately and records the time into the session, even if no note is typed.
+  - [ ] A ring around the countdown fills as the session runs, and each tap lights a star on the ring at that moment; only the new star twinkles, and nothing else moves on its own. (Added during `5-build`.)
+  - [ ] While the note field is open, the plan from the active rule shows above it ("Your plan: note it and reply at the break"); before the first rule there is no plan line. (Added during `5-build`.)
+  - [ ] When the note is saved or skipped, "Noted. Back to {topic}." replaces the tally for two seconds. (Added during `5-build`.)
   - [ ] An optional note of a few words can be saved; saving or skipping it never pauses the countdown.
   - [ ] At zero, a soft chime plays and Teach-back appears.
 

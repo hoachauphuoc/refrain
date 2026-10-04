@@ -1,14 +1,20 @@
-// Focus: the dark screen, the countdown, one-tap distraction logging with an optional note,
+// Focus: the dark screen, the countdown inside the ring, one-tap distraction logging with an optional note,
 // and End early (pulled away, lost focus, or keep going) while the countdown keeps running.
+// Each tap lights a star on the ring: a return, never a failure.
 // The running session lives only in memory: closing the page discards it, as the PRD requires.
 
-import { $ } from "../dom.js";
+import { $, el } from "../dom.js";
+import { planFrom, RING_LENGTH, starPoint } from "../progress.js";
 import { store } from "../store.js";
 import { cancelChime, formatClock, scheduleChime, startCountdown } from "../timer.js";
+
+const SVG = "http://www.w3.org/2000/svg";
+const NOTED_MS = 2000;
 
 let nav;
 let session = null;
 let stopCountdown = null;
+let notedTimer = null;
 
 function elapsedSeconds() {
   return Math.min(session.plannedMinutes * 60, Math.floor((Date.now() - session.startedAt) / 1000));
@@ -20,12 +26,14 @@ function noteOpen() {
 
 function openNote() {
   $("#focus-note").value = "";
+  $("#focus-plan").hidden = !$("#focus-plan").hasChildNodes();
   $("#focus-note-row").hidden = false;
   $("#focus-note").focus();
 }
 
 function closeNote() {
   $("#focus-note-row").hidden = true;
+  $("#focus-plan").hidden = true;
   $("#focus-note").value = "";
 }
 
@@ -38,20 +46,54 @@ function saveTypedNote() {
 }
 
 function renderTally() {
+  clearTimeout(notedTimer);
   const n = session.taps.length;
   $("#focus-tally").textContent = n === 0 ? "Tap whenever your attention slips." : `${n} noted`;
+}
+
+// The ring fills as the session runs, redrawn from the countdown so it never drifts.
+function renderRing(msLeft) {
+  const done = 1 - msLeft / (session.plannedMinutes * 60_000);
+  $("#focus-ring").setAttribute("stroke-dashoffset", (RING_LENGTH * (1 - Math.min(1, Math.max(0, done)))).toFixed(2));
+}
+
+// One star for each return, placed at the moment of the tap; only a new one twinkles.
+function addStar(fraction) {
+  const { x, y } = starPoint(fraction);
+  const star = document.createElementNS(SVG, "g");
+  star.setAttribute("class", "ring-star new");
+  star.setAttribute("transform", `translate(${x} ${y})`);
+  const body = document.createElementNS(SVG, "g");
+  body.setAttribute("class", "star-body");
+  for (const [className, r] of [["star-pulse", 6], ["star-glow", 9], ["star-core", 4.5]]) {
+    const circle = document.createElementNS(SVG, "circle");
+    circle.setAttribute("class", className);
+    circle.setAttribute("r", String(r));
+    body.append(circle);
+  }
+  star.append(body);
+  for (const old of document.querySelectorAll("#focus-stars .new")) old.classList.remove("new");
+  $("#focus-stars").append(star);
 }
 
 function tap() {
   if (!session) return;
   saveTypedNote(); // a new tap first saves the note typed for the previous one
+  const elapsedMs = Date.now() - session.startedAt;
   session.taps.push({ atSec: elapsedSeconds(), note: "" });
+  addStar(elapsedMs / (session.plannedMinutes * 60_000));
   renderTally();
   openNote();
 }
 
+// Back to the button, with a moment's acknowledgement that the slip was noticed.
 function backToButton() {
   closeNote();
+  if (session) {
+    clearTimeout(notedTimer);
+    $("#focus-tally").textContent = `Noted. Back to ${session.topic}.`;
+    notedTimer = setTimeout(() => session && renderTally(), NOTED_MS);
+  }
   $("#focus-distracted").focus();
 }
 
@@ -110,6 +152,7 @@ function endSession(outcome, resumeNote = null) {
   if (!session) return;
   saveTypedNote();
   stopCountdown?.();
+  clearTimeout(notedTimer);
   if (outcome !== "completed") cancelChime();
   const finished = session;
   const secondsDone = outcome === "completed" ? finished.plannedMinutes * 60 : elapsedSeconds();
@@ -179,6 +222,10 @@ export function enter({ topic, plannedMinutes, demo, recall = null }) {
   const { rule } = store.state;
   $("#focus-rule").hidden = !rule;
   $("#focus-rule").textContent = rule ? rule.text : "";
+  // The plan from the rule, shown while a note is typed: support at the moment it is needed.
+  const plan = rule ? planFrom(rule.text) : null;
+  $("#focus-plan").replaceChildren(...(plan ? ["Your plan: ", el("strong", { text: plan })] : []));
+  $("#focus-stars").replaceChildren();
   closeNote();
   closeEndPanel();
   renderTally();
@@ -188,6 +235,7 @@ export function enter({ topic, plannedMinutes, demo, recall = null }) {
     session.endAt,
     (left) => {
       $("#focus-countdown").textContent = formatClock(left);
+      renderRing(left);
     },
     () => endSession("completed"),
   );
