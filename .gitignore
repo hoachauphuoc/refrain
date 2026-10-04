@@ -9,6 +9,12 @@
 # Editor and agent workspace (plans and local settings)
 .snowflake/
 
+# The Build With AI skill pack as installed on this laptop (the planning documents in devpost/ are the record)
+/.agents/
+/.claude/
+/agent/
+/skills-lock.json
+
 # Python
 .venv/
 __pycache__/
