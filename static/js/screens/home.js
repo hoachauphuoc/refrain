@@ -1,6 +1,7 @@
 // Home: the goal, the roadmap stages, the rule, starting a session, the history, and Reset everything.
 
 import { $, el } from "../dom.js";
+import { keptCount, warmupDue } from "../progress.js";
 import { store } from "../store.js";
 import { unlockSound } from "../timer.js";
 
@@ -98,6 +99,8 @@ function renderTotals(history) {
     const asked = total("got") + total("partly") + total("missed");
     parts.push(`${total("got")} of ${asked} warm-up answers recalled${total("partly") ? `, ${total("partly")} partly` : ""}`);
   }
+  const kept = keptCount(store.state.reviews);
+  if (kept > 0) parts.push(`${plural(kept, "idea")} kept`);
   $("#home-totals").textContent = parts.join(" · ");
 }
 
@@ -124,7 +127,7 @@ function renderHistory(history) {
 function renderStart() {
   const button = $("#home-start-btn");
   button.disabled = $("#home-topic").value.trim() === "";
-  button.textContent = store.state.warmup ? "Start with warm-up" : "Start session";
+  button.textContent = warmupDue(store.state) ? "Start with warm-up" : "Start session";
 }
 
 function render() {
@@ -153,11 +156,11 @@ function startSession() {
   const topic = $("#home-topic").value.trim();
   if (!topic) return;
   unlockSound(); // this click is what lets the browser play the end chime
-  const { roadmap, stageIndex, settings, warmup } = store.state;
+  const { roadmap, stageIndex, settings } = store.state;
   const demo = Boolean(settings.demoLength);
   const session = { topic, plannedMinutes: demo ? 1 : roadmap.stages[stageIndex].minutes, demo };
-  // Questions saved by the last debrief come first; otherwise the session starts directly.
-  nav.go(warmup ? "warmup" : "focus", session);
+  // Questions waiting from the last debrief, or one back for review, come first; otherwise the session starts.
+  nav.go(warmupDue(store.state) ? "warmup" : "focus", session);
 }
 
 let nav;

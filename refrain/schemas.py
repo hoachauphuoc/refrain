@@ -182,7 +182,8 @@ class CheckItem(BaseModel):
 
 class Check(BaseModel):
     topic: _text(120, min_length=1)
-    items: Annotated[list[CheckItem], Field(min_length=1, max_length=2)]
+    # The last session's two questions, plus at most one that is back for review.
+    items: Annotated[list[CheckItem], Field(min_length=1, max_length=3)]
 
 
 def parse_check(data):

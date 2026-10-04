@@ -12,6 +12,7 @@ export function emptyState() {
     stageIndex: 0,
     rule: null,
     warmup: null,
+    reviews: [], // warm-up questions brought back until they're kept (progress.js)
     resume: null,
     pending: null,
     history: [],

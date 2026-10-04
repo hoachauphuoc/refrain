@@ -1,8 +1,10 @@
-// Warm-up: answer the last session's two questions from memory, then the coach marks each one.
+// Warm-up: answer the last session's two questions from memory, plus one earlier question that is back
+// for review, then the coach marks each one. Missed ideas come back until they're kept (progress.js).
 // A coach outage never blocks studying: Start focusing works whether or not the check came back.
 
 import { post, WAITS, WORK } from "../api.js";
 import { $, el, hideWork, showWork } from "../dom.js";
+import { afterCheck, backAgainLabel, dueReviews } from "../progress.js";
 import { store } from "../store.js";
 import { unlockSound } from "../timer.js";
 
@@ -11,17 +13,29 @@ const MAX_ANSWER = 600;
 
 let nav;
 let next = null; // the session to start afterwards: { topic, plannedMinutes, demo }
+let items = []; // what this warm-up asks: { question, answer, topic, review } (review: the saved entry, or null)
 let recall = null; // { got, partly, missed } once the check came back
 let busy = false;
+
+// The last session's questions first, then at most one earlier question that is due again.
+function warmupItems() {
+  const { warmup, reviews, history } = store.state;
+  const fresh = (warmup?.items ?? []).map((item) => ({ question: item.question, answer: item.answer, topic: warmup.topic, review: null }));
+  const back = dueReviews(reviews, history.length)
+    .filter((review) => !fresh.some((item) => item.question === review.question))
+    .map((review) => ({ question: review.question, answer: review.answer, topic: review.topic, review }));
+  return [...fresh, ...back];
+}
 
 function answerBoxes() {
   return [...document.querySelectorAll("#warmup-items textarea")];
 }
 
-function renderItems(items) {
+function renderItems() {
   $("#warmup-items").replaceChildren(
     ...items.map((item, i) =>
-      el("li", { className: "warmup-item" }, [
+      el("li", { className: item.review ? "warmup-item review" : "warmup-item" }, [
+        item.review ? el("p", { className: "back-again ico i-rotate", text: backAgainLabel(item.review) }) : null,
         el("label", { text: item.question, attrs: { for: `warmup-answer-${i}` } }),
         el("textarea", { attrs: { id: `warmup-answer-${i}`, rows: "2", maxlength: String(MAX_ANSWER) } }),
         el("p", { className: "verdict-line", attrs: { id: `warmup-verdict-${i}`, hidden: "" } }),
@@ -42,14 +56,17 @@ function renderButtons(state) {
   for (const box of answerBoxes()) box.readOnly = state === "busy" || state === "checked";
 }
 
-function showVerdicts(items, verdicts) {
+function showVerdicts(verdicts, reviews) {
   verdicts.forEach((verdict, i) => {
-    const line = $(`#warmup-verdict-${i}`);
-    line.replaceChildren(
+    const item = items[i];
+    // Kept: it was back for its second recall, and this time it was got again.
+    const kept = item.review && reviews.some((r) => r.kept && r.question === item.question && r.topic === item.topic);
+    $(`#warmup-verdict-${i}`).replaceChildren(
       el("span", { className: `verdict ${verdict}`, text: LABELS[verdict] }),
-      el("span", { className: "saved-answer", text: items[i].answer }),
+      kept ? el("span", { className: "kept", text: "Idea kept" }) : null,
+      el("span", { className: "saved-answer", text: item.answer }),
     );
-    line.hidden = false;
+    $(`#warmup-verdict-${i}`).hidden = false;
   });
 }
 
@@ -64,8 +81,7 @@ function summary(counts) {
 
 async function check(event) {
   event.preventDefault();
-  const { warmup } = store.state;
-  if (busy || !warmup) return;
+  if (busy || items.length === 0) return;
   busy = true;
   $("#warmup-status").textContent = WAITS.check;
   showWork($("#warmup-work"), WORK.check);
@@ -73,13 +89,14 @@ async function check(event) {
 
   const responses = answerBoxes().map((box) => box.value.trim().slice(0, MAX_ANSWER));
   const result = await post("/api/check", {
-    topic: warmup.topic,
-    items: warmup.items.map((item, i) => ({ question: item.question, answer: item.answer, response: responses[i] })),
+    topic: items[0].topic,
+    items: items.map((item, i) => ({ question: item.question, answer: item.answer, response: responses[i] })),
   });
   busy = false;
   hideWork($("#warmup-work"));
 
   if (!result.ok) {
+    // Nothing is marked, so every question stays where it was, and a review stays due.
     $("#warmup-status").textContent = result.message;
     renderButtons("failed");
     return;
@@ -87,7 +104,11 @@ async function check(event) {
   const verdicts = result.data.results.map((r) => r.verdict);
   recall = { got: 0, partly: 0, missed: 0 };
   for (const verdict of verdicts) recall[verdict] += 1;
-  showVerdicts(warmup.items, verdicts);
+  const { reviews, history } = store.state;
+  const checked = items.map((item, i) => ({ question: item.question, answer: item.answer, topic: item.topic, verdict: verdicts[i] }));
+  const updated = afterCheck(reviews, checked, history.length, new Date().toISOString());
+  store.update({ reviews: updated });
+  showVerdicts(verdicts, updated);
   $("#warmup-tags").replaceChildren(
     ...(result.data.simulated ? [el("span", { className: "tag", text: "Simulated coach" })] : []),
   );
@@ -98,7 +119,7 @@ async function check(event) {
 
 function startFocusing() {
   unlockSound(); // this click also lets the browser play the end chime
-  store.update({ warmup: null }); // the questions are used; the next teach-back writes new ones
+  store.update({ warmup: null }); // the new questions are used; the next teach-back writes new ones
   nav.go("focus", { ...next, recall });
 }
 
@@ -112,10 +133,13 @@ export function init(navigation) {
 export function enter(session) {
   const { warmup } = store.state;
   next = session;
+  items = warmupItems();
   recall = null;
   busy = false;
-  $("#warmup-from").textContent = `From your last session on “${warmup.topic}”. Answer from memory, without your notes.`;
-  renderItems(warmup.items);
+  $("#warmup-from").textContent = warmup
+    ? `From your last session on “${warmup.topic}”. Answer from memory, without your notes.`
+    : `An idea from an earlier session on “${items[0]?.topic ?? ""}”. Answer from memory, without your notes.`;
+  renderItems();
   $("#warmup-tags").replaceChildren();
   $("#warmup-status").textContent = "";
   hideWork($("#warmup-work"));
@@ -124,6 +148,7 @@ export function enter(session) {
 
 export function reset() {
   next = null;
+  items = [];
   recall = null;
   $("#warmup-items").replaceChildren();
 }

@@ -147,7 +147,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Write a two-sentence explanation that leaves something out on purpose. Does the marked-up text show exactly what you got and what to add?
   Commit: `Mark up your explanation and draw the session in the debrief`
 
-- [ ] **10. Ideas you missed come back until you remember them**
+- [x] **10. Ideas you missed come back until you remember them**
   Becomes usable:
   - A warm-up question you missed, or got partly, comes back at your next warm-up, labelled "Back again — you missed this on Oct 3".
   - A question you got returns once more after three sessions.
@@ -317,3 +317,18 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
     - Example from the Spanish case: "identity and origin", "states and locations", "estoy cansado".
     - Debrief median 7.1 s (4.8–9.2 s; the first took 24.4 s, including the server's start-up).
     - Cost: about $0.0043 per debrief, from the token counts at $0.75 / $3.75 per million (vs. $0.0034 in slice 4), so about $0.0055 per session with the warm-up check.
+- **Slice 10 built (Oct 4, 2026).**
+  - The plan's "Back again" line has three versions:
+    - "you missed this on Oct 4" or "you partly had this", for the first box;
+    - "you had this on Oct 4. Get it once more to keep it.", for the second box, so the second recall reads as a goal.
+  - "Ideas kept" joins Home's totals line now; slice 11 gives it a counter.
+  - Verified:
+    - `pytest`: 282 passed (three check items accepted, four refused, and a mixed set of new and review questions checked together). `node --test`: 63 passed (the schedule, a kept idea never coming back, box 2 → box 1 on a miss, the saved list never changed in place, old saved data without `reviews`, the three labels).
+    - In the browser with the simulated coach, after five finished sessions:
+      - one got and one missed set the questions due at sessions 8 and 6;
+      - after one more session (teach-back skipped, so no new questions), Home offered **Start with warm-up**, and the warm-up held only the missed question, labelled "Back again: you missed this on Oct 4.";
+      - getting it moved it to box 2 (due at 9).
+    - The due dates were then moved up in saved progress, to avoid three more demo minutes; the timing itself is covered by the Node tests. With that:
+      - the box-2 question showed "…Get it once more to keep it." and, got again, **Idea kept**;
+      - two new questions plus one review were checked in one three-item request;
+      - Home's totals ended "· 2 ideas kept".

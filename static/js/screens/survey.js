@@ -83,6 +83,7 @@ async function submit(event) {
       stageIndex: 0,
       rule: null,
       warmup: null,
+      reviews: [],
       resume: null,
       pending: null,
       history: [],

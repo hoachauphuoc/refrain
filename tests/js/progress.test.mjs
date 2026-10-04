@@ -2,7 +2,10 @@
 // Run with: node --test "tests/js/*.test.mjs"
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { clock, longestStretch, markSegments, planFrom, RING, RING_LENGTH, starPoint, stretches } from "../../static/js/progress.js";
+import {
+  afterCheck, backAgainLabel, clock, dueReviews, keptCount, longestStretch, markSegments, planFrom,
+  RING, RING_LENGTH, starPoint, stretches, warmupDue,
+} from "../../static/js/progress.js";
 
 test("the ring starts at the top and fills clockwise", () => {
   const { center, radius } = RING;
@@ -73,4 +76,59 @@ test("clock shows minutes and seconds", () => {
   assert.equal(clock(0), "0:00");
   assert.equal(clock(1500), "25:00");
   assert.equal(clock(-3), "0:00");
+});
+
+// --- Spaced warm-ups ---
+
+const TOPIC = "Managing risks";
+const Q1 = { question: "What two scores rank a risk?", answer: "Likelihood and impact.", topic: TOPIC };
+const Q2 = { question: "What else does each risk need?", answer: "An owner and a plan.", topic: TOPIC };
+const OCT3 = "2026-10-03T09:00:00.000Z";
+
+test("a missed question is back at the next warm-up, a got one after three sessions", () => {
+  const reviews = afterCheck([], [{ ...Q1, verdict: "missed" }, { ...Q2, verdict: "got" }], 4, OCT3);
+  assert.deepEqual(reviews.map((r) => [r.box, r.due, r.kept]), [[1, 5, false], [2, 7, false]]);
+  assert.deepEqual(dueReviews(reviews, 4), []); // not in the same session
+  assert.deepEqual(dueReviews(reviews, 5).map((r) => r.question), [Q1.question]);
+  assert.deepEqual(dueReviews(reviews, 7, 2).map((r) => r.question), [Q1.question, Q2.question]);
+});
+
+test("getting it twice keeps the idea, and a kept idea never comes back", () => {
+  let reviews = afterCheck([], [{ ...Q1, verdict: "partly" }], 0, OCT3);
+  reviews = afterCheck(reviews, [{ ...Q1, verdict: "got" }], 1, OCT3);
+  assert.deepEqual([reviews[0].box, reviews[0].due, reviews[0].kept], [2, 4, false]);
+  reviews = afterCheck(reviews, [{ ...Q1, verdict: "got" }], 4, OCT3);
+  assert.equal(reviews[0].kept, true);
+  assert.equal(keptCount(reviews), 1);
+  assert.deepEqual(dueReviews(reviews, 100), []);
+});
+
+test("missing it from the second box sends it back to the first", () => {
+  let reviews = afterCheck([], [{ ...Q1, verdict: "got" }], 0, OCT3);
+  reviews = afterCheck(reviews, [{ ...Q1, verdict: "missed" }], 3, OCT3);
+  assert.deepEqual([reviews[0].box, reviews[0].due, reviews[0].kept], [1, 4, false]);
+});
+
+test("a check never changes the saved list in place", () => {
+  const saved = afterCheck([], [{ ...Q1, verdict: "missed" }], 0, OCT3);
+  const copy = structuredClone(saved);
+  afterCheck(saved, [{ ...Q1, verdict: "got" }], 1, OCT3);
+  assert.deepEqual(saved, copy);
+});
+
+test("the warm-up opens for new questions or a review that is due, and old saved data has neither", () => {
+  const reviews = afterCheck([], [{ ...Q1, verdict: "missed" }], 2, OCT3);
+  assert.equal(warmupDue({ warmup: null, reviews, history: [1, 2] }), false);
+  assert.equal(warmupDue({ warmup: null, reviews, history: [1, 2, 3] }), true);
+  assert.equal(warmupDue({ warmup: { topic: TOPIC, items: [] }, reviews: [], history: [] }), true);
+  assert.equal(warmupDue({ warmup: null, history: [] }), false); // saved before reviews existed
+});
+
+test("the back-again line says why the question is back", () => {
+  const [missed] = afterCheck([], [{ ...Q1, verdict: "missed" }], 0, OCT3);
+  const [partly] = afterCheck([], [{ ...Q1, verdict: "partly" }], 0, OCT3);
+  const [got] = afterCheck([], [{ ...Q1, verdict: "got" }], 0, OCT3);
+  assert.equal(backAgainLabel(missed), "Back again: you missed this on Oct 3.");
+  assert.equal(backAgainLabel(partly), "Back again: you partly had this on Oct 3.");
+  assert.equal(backAgainLabel(got), "Back again: you had this on Oct 3. Get it once more to keep it.");
 });

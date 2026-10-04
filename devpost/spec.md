@@ -20,8 +20,8 @@ PRD ref: `prd.md > The Core Journey`. Files are listed in **File Structure**.
 1. **Arrive.** The browser asks the server for `/` → Flask sends `static/index.html` with its CSS and JavaScript → `main.js` reads the sticky note (`store.js`). Nothing saved → the Welcome screen with the data notice → **Start** opens the Survey. A returning visitor goes straight to Home, or back to an unfinished teach-back or debrief (see **Saved progress**).
 2. **Survey.** `survey.js` checks each field as they type → **Build my roadmap** sends `POST /api/roadmap` with the four answers → `routes.py` checks them again and applies the rate limit → `coach.py` asks Gemini for 4–6 stage lengths and a reason → `rules.py` checks that the stages obey the limits. If not, the server asks once more; if it still fails, it uses the built-in default plan, labelled as such. It then adds sessions per day for each stage and sends back the roadmap.
 3. **Roadmap.** The browser saves the survey, roadmap, and stage 1 → Home shows the stage cards (stage 1 highlighted), "Your first rule will come from your first session", "Your first session is ready", and an empty history.
-4. **Start a session.** They type the topic and press **Start session** (or **Start with warm-up** when questions are waiting). The **Demo length (1 minute)** switch is saved in settings. The same click unlocks sound for the end chime (browsers only allow sound after a click).
-5. **Warm-up.** `warmup.js` shows the two saved questions → **Check** sends `POST /api/check` with the questions, their saved answer lines, and the typed answers → empty answers are marked missed by code without calling the AI; the rest are marked by Gemini → each question shows got it / partly / missed and its saved one-line answer → **Start focusing** clears the saved questions and opens Focus.
+4. **Start a session.** They type the topic and press **Start session** (or **Start with warm-up** when questions are waiting or one is back for review). The **Demo length (1 minute)** switch is saved in settings. The same click unlocks sound for the end chime (browsers only allow sound after a click).
+5. **Warm-up.** `warmup.js` shows the two saved questions, plus at most one earlier question that is back for review → **Check** sends `POST /api/check` with the questions, their saved answer lines, and the typed answers → empty answers are marked missed by code without calling the AI; the rest are marked by Gemini → each question shows got it / partly / missed and its saved one-line answer, and `reviews` schedules when each comes back → **Start focusing** clears the saved questions and opens Focus.
 6. **Focus.** `focus.js` starts a session held only in memory: topic, planned minutes, end time, taps. `timer.js` redraws the countdown from the end time several times a second, so it stays correct even if the tab was in the background. The active rule and any "my next step" note come from the sticky note. Each **Distracted** tap records the second it happened and adds one to the tally; the optional note attaches to that tap.
 7. **Session ends.** At zero the chime plays. **End early** opens the panel while the countdown keeps running; if it reaches zero first, the session counts as completed. **I was pulled away** (with optional "Where I stopped" / "My next step"), **I lost focus**, or completion all call `endSession`. It writes the finished session to the sticky note as `pending` and replaces the old "Pick up where you left off" note with the new one (or clears it). Then Teach-back opens. Closing the page before this point discards the session, as the PRD requires.
 8. **Teach-back.** `debrief.js` shows the topic and the text box → **Get feedback** saves the explanation into `pending` and sends `POST /api/debrief` → **Skip** sends it without an explanation.
@@ -293,6 +293,11 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
   - `markSegments(text, phrases)`: the text in pieces, `{text, marked}`, with every place a phrase appears marked (ignoring case; overlaps merge; phrases under 2 characters are ignored). The pieces always join back to the original text.
   - `stretches(tapSecs, endSec)` and `longestStretch(…)`: the focus stretches from the start, through each return, to the end.
   - `clock(seconds)`: "1:15".
+  - Spaced warm-ups, counted in sessions (`done` = the number of history rows):
+    - `afterCheck(reviews, checked, done, at)`: missed or partly → box 1, due at `done + 1`; got → box 2, due at `done + 3`; got from box 2 → `kept`. It returns a new list and never changes the saved one in place.
+    - `dueReviews(reviews, done, limit = 1)`: not kept, due now, the longest-waiting first.
+    - `warmupDue(state)`: new questions are saved, or a review is due.
+    - `keptCount(reviews)` and `backAgainLabel(review)`.
 - **Talks to:** `focus.js` and `debrief.js`; later slices add the Home helpers here.
 - PRD ref: `prd.md > Focus Session and Distraction Logging`.
 
@@ -328,18 +333,22 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **What it shows, in this order** (from 960 px wide, a grid: the roadmap card spans the top, the start and pick-up cards sit on the left, and the rule card on the right):
   1. The goal as a heading.
   2. The stages as a path (minutes, sessions per day): a line through one node per stage, with finished stages lit teal, the current one a glowing star with its minutes in `--star`, and later ones dimmed. A small muted "Default plan" note appears when the roadmap came from the built-in plan.
-  3. The topic field (up to 120 characters), the **Demo length (1 minute)** switch, and **Start session** / **Start with warm-up**.
+  3. The topic field (up to 120 characters), the **Demo length (1 minute)** switch, and **Start session** / **Start with warm-up** (`warmupDue`: questions saved, or a review due).
   4. **Pick up where you left off**, when `resume` exists.
   5. The rule card with its starlight edge, or "Your first rule will come from your first session". Under the rule, where it came from: "From your notes: “team chat”, “email ping”." from `rule.fromNotes`, or "Written after a session you were pulled away from." when `rule.pulledAway` and there were no notes.
-  6. A totals line — sessions, minutes focused (`secondsDone` summed), and warm-up answers recalled (`recall` summed; partly counted separately) — then history rows, newest first: date, length ("6 of 10 min", or "1 min demo"), outcome (completed / pulled away / ended early), taps, "warm-up 1 of 2" when `recall` exists, and change (up / hold / ease back). Totals only grow, so there is no streak to lose. The first time, it shows "Your first session is ready" instead.
+  6. A totals line — sessions, minutes focused (`secondsDone` summed), warm-up answers recalled (`recall` summed; partly counted separately), and ideas kept (`keptCount(reviews)`, once there is one) — then history rows, newest first: date, length ("6 of 10 min", or "1 min demo"), outcome (completed / pulled away / ended early), taps, "warm-up 1 of 2" when `recall` exists, and change (up / hold / ease back). Totals only grow, so there is no streak to lose. The first time, it shows "Your first session is ready" instead.
   7. **Reset everything**, which opens an inline confirmation ("Erase all progress on this device?" with **Erase** / **Cancel**) and then shows Welcome.
 - PRD ref: `prd.md > Screens and Layout > Home (Roadmap)`, `prd.md > Roadmap Progression`, `prd.md > Ending Early and Pulled Away`, `prd.md > Progress on This Device`.
 
 #### Warm-up screen
 - **Files:** `static/js/screens/warmup.js`.
 - **What it does:**
-  - Shows the two saved questions with answer boxes on the lamp-lit page, and **Check**.
-  - After the check, each question shows got it (starlight, with a check mark) / partly (half circle) / missed (muted, empty circle) and its saved one-line answer.
+  - Shows the two saved questions with answer boxes on the lamp-lit page, then at most one earlier question that is due again (`dueReviews`, the longest-waiting first), and **Check**.
+    - A review carries its "Back again" line from `backAgainLabel`: "Back again: you missed this on Oct 3.", "…you partly had this…", or "Back again: you had this on Oct 3. Get it once more to keep it.".
+    - When no new questions are saved but a review is due, the warm-up opens with just the review ("An idea from an earlier session on “…”.").
+    - The check request sends all items (up to three) with the new questions' topic.
+  - After the check, each question shows got it (starlight, with a check mark) / partly (half circle) / missed (muted, empty circle) and its saved one-line answer. A review recalled for the second time also shows **Idea kept**.
+  - Every checked item goes through `afterCheck` into `reviews`; if the check fails, nothing moves, and a review stays due.
   - **Start focusing** clears `warmup` and opens Focus, carrying the got / partly / missed counts into the session so its history row keeps them as `recall` (browser only; the server stays stateless).
   - If the check fails: the calm message with **Try again**. **Start focusing** still works, so a coach outage never blocks studying.
 - **Talks to:** `POST /api/check`, `store.js`, `focus.js`.
@@ -520,7 +529,7 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - PRD ref: `prd.md > Survey and Roadmap`.
 
 ##### Coach: warm-up checker
-- **Input:** the earlier topic, plus each question with its saved answer and the user's response.
+- **Input:** the earlier topic, plus each question (one to three: the last session's two and at most one review) with its saved answer and the user's response.
 - **Answers:**
   - Empty or blank responses are marked `missed` by code.
   - If every response is empty, no AI call is made.
@@ -611,6 +620,10 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
   "rule": { "text": "If Slack pings, then I'll note it and reply at the break.", "createdAt": "2026-10-05T12:20:00Z",
             "fromNotes": ["Slack"], "pulledAway": false },
   "warmup": { "topic": "Managing risks", "items": [ { "question": "…", "answer": "…" }, { "question": "…", "answer": "…" } ] },
+  "reviews": [
+    { "question": "…", "answer": "…", "topic": "Managing risks", "box": 1, "due": 6, "last": "missed",
+      "lastAt": "2026-10-04T08:10:00Z", "kept": false }
+  ],
   "resume": { "topic": "Managing risks", "where": "Risk register, step 3", "next": "Score the top five risks" },
   "pending": null,
   "history": [
@@ -636,6 +649,7 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
 | Current stage | `stageIndex` | When the debrief's progression is applied (once per session) | Kept |
 | Active rule | `rule` | Debrief with a new rule; unchanged when there were no taps (unless the session ended with **I was pulled away**). `fromNotes` keeps the session's first two different notes and `pulledAway` its end reason, so Home can say where the rule came from | Kept; shown on Home and Focus |
 | Waiting questions | `warmup` | Set by a debrief with an explanation; cleared at **Start focusing** | Kept until **Start focusing** |
+| Questions back for review | `reviews` | After each successful warm-up check (`afterCheck`): `box` 1 or 2, `due` as a session count, `kept` once recalled twice. Added during `5-build`; saved progress from before has none, and `load()` merges it over `emptyState()` | Kept; kept ideas stay in the list so Home can count them |
 | "Pick up" note | `resume` | Replaced or cleared at every session end | Kept until the next session ends |
 | Finished session awaiting debrief | `pending` | Written at session end; explanation and `submitted` set at **Get feedback** or **Skip**; cleared when coaching arrives or at **Back to roadmap** | Reopens Teach-back (not sent yet) or the debrief retry state (sent) |
 | Session history | `history` | One row when the progression is applied; `recall` holds the warm-up's got / partly / missed counts when the session opened with a checked warm-up, otherwise `null` | Kept |
@@ -766,7 +780,7 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
 | Endpoint | Request body | 200 response |
 |---|---|---|
 | `POST /api/roadmap` | `{"age": 34, "goal": "…", "minutesPerDay": 60, "maxMinutes": 30}` | `{"stages": [{"minutes": 10, "sessionsPerDay": 6}, …], "reason": "…", "source": "ai" \| "default", "simulated": false}` |
-| `POST /api/check` | `{"topic": "…", "items": [{"question": "…", "answer": "…", "response": "…"}, {…}]}` | `{"results": [{"verdict": "got" \| "partly" \| "missed"}, {…}], "simulated": false}` |
+| `POST /api/check` | `{"topic": "…", "items": [{"question": "…", "answer": "…", "response": "…"}, {…}]}` — 1 to 3 items (3 since `5-build`: two new questions and one review) | `{"results": [{"verdict": "got" \| "partly" \| "missed"}, {…}], "simulated": false}` |
 | `POST /api/debrief` | `{"survey": {"age": 34, "goal": "…"}, "topic": "…", "explanation": "…" \| null, "taps": [{"atSec": 95, "note": "Slack"}], "plannedMinutes": 10, "demo": false, "secondsDone": 372, "outcome": "completed" \| "pulled_away" \| "lost_focus", "resumeNote": {"where": "…", "next": "…"} \| null, "stages": [10, 15, 20, 25, 30], "stageIndex": 1, "previousRule": "…" \| null}` | `{"progression": {"change": "up" \| "hold" \| "ease_back", "newStageIndex": 2, "nextMinutes": 20, "allowance": 2, "sentence": "…"}, "coach": {"got": …, "gotQuotes": ["…"] \| null, "missing": …, "questions": […], "pattern": "…", "rule": "…" \| null, "keepPreviousRule": false} \| null, "coachError": null \| "coach_unavailable", "simulated": false}` |
 
 Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`), 429 `rate_limited`, 503 `coach_unavailable`. The exception is `/api/debrief`: when Gemini fails or the rate limit is reached, it still returns 200 with `progression` filled in, `coach: null`, and `coachError` set, because the roadmap change doesn't depend on the AI. Its `stageIndex` is the stage the session was run at (`pending.stageIndexBefore`), so a retry returns the same progression.

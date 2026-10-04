@@ -85,3 +85,60 @@ export function clock(seconds) {
   const total = Math.max(0, Math.round(Number(seconds) || 0));
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
+
+// --- Spaced warm-ups, counted in sessions rather than days (two Leitner boxes) ---
+// Missed or partly → box 1, back at the next warm-up. Got → box 2, back after three sessions.
+// Got again from box 2 → kept: it stops coming back and counts as an idea kept.
+// `done` is the number of sessions finished so far (the length of the history).
+export const REVIEW_GAP = { again: 1, later: 3 };
+
+const sameItem = (a, b) => a.question === b.question && a.topic === b.topic;
+
+// Questions back for review now, the longest-waiting first.
+export function dueReviews(reviews, done, limit = 1) {
+  return (Array.isArray(reviews) ? reviews : [])
+    .filter((review) => !review.kept && review.due <= done)
+    .sort((a, b) => a.due - b.due)
+    .slice(0, limit);
+}
+
+// Whether the next session opens with a warm-up: new questions are waiting, or one is back for review.
+export function warmupDue(state) {
+  return Boolean(state.warmup) || dueReviews(state.reviews, state.history?.length ?? 0).length > 0;
+}
+
+// The reviews after a check. `checked` lists { question, answer, topic, verdict } for every checked item,
+// new or back for review; `at` is when it was checked. The saved list itself is never changed.
+export function afterCheck(reviews, checked, done, at) {
+  const next = (Array.isArray(reviews) ? reviews : []).map((review) => ({ ...review }));
+  for (const item of checked) {
+    let entry = next.find((review) => sameItem(review, item));
+    if (!entry) {
+      entry = { question: item.question, answer: item.answer, topic: item.topic, box: 0, due: 0, last: null, lastAt: null, kept: false };
+      next.push(entry);
+    }
+    if (item.verdict === "got" && entry.box === 2) {
+      entry.kept = true;
+    } else if (item.verdict === "got") {
+      entry.box = 2;
+      entry.due = done + REVIEW_GAP.later;
+    } else {
+      entry.box = 1;
+      entry.due = done + REVIEW_GAP.again;
+    }
+    entry.last = item.verdict;
+    entry.lastAt = at;
+  }
+  return next;
+}
+
+export function keptCount(reviews) {
+  return (Array.isArray(reviews) ? reviews : []).filter((review) => review.kept).length;
+}
+
+// The line above a question that is back: why it is back, and when it was last asked.
+export function backAgainLabel(review) {
+  const day = new Date(review.lastAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (review.box === 2) return `Back again: you had this on ${day}. Get it once more to keep it.`;
+  return review.last === "partly" ? `Back again: you partly had this on ${day}.` : `Back again: you missed this on ${day}.`;
+}

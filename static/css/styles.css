@@ -995,6 +995,39 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 .verdict.partly { --icon: url("/static/icons/contrast.svg"); color: var(--ink); background: var(--glass-strong); }
 .verdict.missed { --icon: url("/static/icons/circle.svg"); color: var(--muted); }
 
+/* A question back for review, and the star when an idea is kept */
+.warmup-item.review {
+  padding-left: var(--s4);
+  border-left: 2px solid rgb(45 212 191 / 0.5);
+}
+.back-again {
+  margin: 0 0 var(--s2);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--teal-hi);
+}
+.kept {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--star);
+  background: var(--tint-star);
+  border: 1px solid rgb(251 191 36 / 0.45);
+  border-radius: 999px;
+  box-shadow: 0 0 18px -6px rgb(251 191 36 / 0.6);
+}
+.kept::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--star);
+  box-shadow: 0 0 8px var(--star);
+}
+
 /* ---------- Focus: the darkest, quietest screen; nothing moves on its own ---------- */
 
 #screen-focus:not([hidden]) {

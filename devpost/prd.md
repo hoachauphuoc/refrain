@@ -48,7 +48,7 @@ The main screen after the survey, in this order (on wide screens the roadmap spa
 7. A small **Reset everything** link at the bottom.
 
 ### Warm-up
-The two saved questions, each with an answer field; **Check**; then each question shows got it / partly / missed and a one-line answer; **Start focusing**.
+The two saved questions, and at most one earlier question back for review with its "Back again" line, each with an answer field; **Check**; then each question shows got it / partly / missed and a one-line answer (and **Idea kept** when a review is recalled the second time); **Start focusing**.
 
 ### Focus Session
 Full-screen, dark, nearly empty: large countdown inside a ring that fills as the session runs, with an amber star on the ring for each tap; the topic in small text; the next step from **Pick up where you left off** (when there is one) in small text; the active rule; one large **Distracted** button; a small tally ("2 noted"); and a small **End early** link. After a tap, a one-line note field appears under the button with "What pulled you away?", with the plan from the rule just above it; Enter saves the note, and Esc or **Skip** closes it without one.
@@ -112,10 +112,14 @@ Develops `scope.md > The Core Loop` step 1.
 Develops `scope.md > The Core Loop` step 2.
 
 - As someone who forgets what I studied, I want to be asked about my last session before I start so that I practise remembering instead of re-reading.
-  - [ ] When questions are saved, **Start with warm-up** opens the Warm-up before the timer; when none are saved (first session, or teach-back skipped), the Focus Session starts directly.
+  - [ ] When questions are saved, or an earlier one is back for review, **Start with warm-up** opens the Warm-up before the timer; otherwise (first session, or teach-back skipped with nothing due) the Focus Session starts directly.
   - [ ] Each answer is marked got it / partly / missed, with a one-line answer.
   - [ ] An empty answer counts as missed and still shows the one-line answer.
   - [ ] After **Start focusing**, those two questions are cleared; the next teach-back creates new ones.
+- As someone who wants to remember more over time, I want the questions I missed to come back until I know them, so that warm-ups keep training what I haven't learned yet (added during `5-build`; repeated retrieval is what made recall last in Karpicke & Roediger 2008).
+  - [ ] A question answered missed or partly comes back at the next warm-up, after the new questions, labelled "Back again: you missed this on Oct 3." (or "you partly had this"). At most one question comes back per warm-up.
+  - [ ] A question answered got comes back once more, three sessions later ("Back again: you had this on Oct 3. Get it once more to keep it."). Getting it again marks it **Idea kept**, and it stops coming back.
+  - [ ] Home's totals count the ideas kept. Spacing is counted in sessions, not days, so a missed day changes nothing.
 
 ### Focus Session and Distraction Logging
 Develops `scope.md > The Core Loop` step 3 and `scope.md > The Unique Kernel`.

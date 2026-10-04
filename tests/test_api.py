@@ -575,7 +575,7 @@ def test_an_unreachable_coach_answers_503_for_the_check(client, fake):
 @pytest.mark.parametrize("changes, field", [
     ({"topic": ""}, "topic"),
     ({"items": []}, "items"),
-    ({"items": [{"question": "Q?", "answer": "A.", "response": ""}] * 3}, "items"),
+    ({"items": [{"question": "Q?", "answer": "A.", "response": ""}] * 4}, "items"),
     ({"items": [{"question": "", "answer": "A.", "response": "x"}]}, "items"),
     ({"items": [{"question": "Q?", "answer": "A.", "response": "x" * 601}]}, "items"),
 ])
@@ -584,6 +584,15 @@ def test_check_rejects_invalid_input(client, fake, changes, field):
     assert status == 400
     assert body["error"] == "invalid_input" and field in body["fields"]
     assert fake.calls == []
+
+
+def test_two_new_questions_and_one_back_for_review_are_checked_together(client, fake):
+    review = {"question": "What does a response plan say?", "answer": "What you'll do if the risk happens.",
+              "response": "what we do if it happens"}
+    status, body = post_check(client, ["", ""], items=[*check_body(["likelihood and impact", ""])["items"], review])
+    assert status == 200
+    assert verdicts(body) == ["got", "missed", "got"]
+    assert "What does a response plan say?" in fake.prompts[0]
 
 
 def test_a_check_without_a_body_is_rejected(client):
