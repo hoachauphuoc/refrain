@@ -1535,6 +1535,7 @@ textarea[readonly] { color: var(--page-ink); background: var(--page-dim); }
 }
 .got-mark {
   padding: 0 2px;
+  margin: 0 -2px; /* the padding widens the marker, not the text, so no gaps show before the sweep */
   color: var(--page-ink);
   background: linear-gradient(var(--marker), var(--marker)) no-repeat 0 0 / 100% 100%;
   border-radius: 3px;

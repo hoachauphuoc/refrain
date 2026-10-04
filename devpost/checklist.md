@@ -217,11 +217,12 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
 
 ## Hands-on Checkpoints
 
-- [ ] Final kick-the-tires exploration and feedback completed — the learner's first hands-on try; it also takes the place of the early checkpoint planned after slice 2 (see Revisions)
+- [x] Final kick-the-tires exploration and feedback completed — run by the agent on the public link at the learner's request, in place of the learner's own try; it also takes the place of the early checkpoint planned after slice 2 (see Revisions)
 
 ## Final Review
 
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [ ] The marks in *Your words* no longer open gaps in the sentence before they draw in (found in the final walk; see Revisions)
 
 ## Code Tour and App Map
 
@@ -368,3 +369,19 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
     - Home showed the counters, the pick-up card, **Rule at work** (**New**), three pulls, and the sky.
     - About 8 AI requests in all.
   - **Not repeated:** the 31-request rate-limit check. It would block this IP from the coach for an hour, and the learner shares it for their own try. The limiter is unchanged since slice 6 and still covered by `pytest`.
+- **Final walk run by the agent at the learner's request (Oct 4, 2026).** Asked to try the app themselves, the learner first chose to ("Tôi tự thử" — "I'll try it myself"), then asked the agent to do it: "bạn tự thực hiện giúp tôi" ("do it for me"). The curriculum asks for the learner's own hands-on try, and the learner has not tried the app themselves; the hands-on checkpoint above is reworded to say who ran it. The walk used the IDE browser on the public link with the real coach, after **Reset everything** erased the slice 12 demo data.
+  - **Checked and as planned:**
+    - The survey refused age 16 ("Refrain is for adults. Enter your age as a whole number from 18 to 120."). 34, "Study for a certification after work", 60, 30 gave 10 → 15 → 20 → 25 → 30 minutes in 5.9 s, with a reason naming the goal.
+    - Session 1 (demo length): "team chat" and "email ping" lit two stars, at 0:10 and 0:31. The debrief (6.9 s) marked three phrases copied from the explanation, named risk responses as missing, wrote a rule with "team chat" highlighted, and moved up to 15 minutes.
+    - Session 2: the plan line read "Your plan: mute notifications and check it during my scheduled break" at the tap. A one-word teach-back ("risks") got an honest debrief ("You focused in on risks as the core of your study topic." and "What's missing: A fuller explanation would describe the steps to identify, evaluate, and respond to project risks.") and a rule from "manager call".
+    - Session 3: the warm-up brought a missed question back ("Back again: you missed this on Oct 4."), and the coach marked 2 got it, 1 missed. **I was pulled away** after 49 s, with both fields, held the stage at 20 minutes ("because being pulled away is not a focus lapse") and gave a ready-to-resume rule.
+    - Home then showed 3 sessions, 2 minutes, 3 returns, the pick-up card, the rule, three pulls, and the sky.
+    - A reload on Home kept everything. A reload mid-session discarded only that session (still 3 sessions, nothing pending) and kept the warm-up answer already checked (box 2).
+    - At about 446 px wide (320% zoom), only the stage path scrolls sideways, as designed.
+    - Six AI calls, about $0.016: roadmap 5.9 s, debriefs 6.9, 8.1 and 4.0 s, checks 2.7 and 1.8 s. The only warning in the Cloud Run log was a 404 for a font URL the agent mistyped.
+  - **Found and fixed:** in *Your words*, the marker's 2 px side padding opened gaps in the sentence ("can  rank", "first .") until each mark had drawn in, for about a second. A matching negative margin (`.got-mark`) keeps the text in place; the marks were checked with the simulated coach, frozen at the start of the animation and at its end.
+  - **By design, not changed:**
+    - A session whose countdown reaches zero while the End-early panel is open counts as completed (`spec.md > The Core Journey Through the System`, step 7). The 41 seconds left after the tap ran out while the agent typed the note and opened the panel, so session 2 completed, and the pulled-away path was walked again in session 3.
+    - Each warm-up brings back at most one earlier question, the longest-waiting first (`spec.md > Warm-up screen`).
+    - "Minutes focused" counts whole minutes (`spec.md > Home screen`).
+  - **Mistakes in the walk itself, not the app:** two browser steps were sent together. **Check** ran before an answer was typed, so session 2's warm-up was checked empty (2 missed, no AI call), and the typed text appeared later only because the browser tool writes into read-only boxes, which a person can't. A 30-second wait also ran before its click.
