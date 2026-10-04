@@ -125,14 +125,14 @@ Every billable step below gets a final yes from the learner at the start of `5-b
    gcloud run deploy refrain --source . --region us-central1 --project refrain-coach-<suffix> --service-account refrain-run@refrain-coach-<suffix>.iam.gserviceaccount.com --allow-unauthenticated --max-instances 1 --concurrency 8 --memory 512Mi --timeout 60 --set-env-vars "GOOGLE_GENAI_USE_ENTERPRISE=true,GOOGLE_CLOUD_PROJECT=refrain-coach-<suffix>,GOOGLE_CLOUD_LOCATION=global" --quiet
    ```
    Keep the `--set-env-vars` list in quotes: unquoted, PowerShell hands it to `gcloud` as a single variable (found in `5-build`).
-7. Open the printed `https://refrain-….run.app` URL and walk the demo path once. *Deployed Oct 3, 2026: https://refrain-476222056020.us-central1.run.app; redeployed Oct 4 with the Night study build (revision `refrain-00008-pb6`).*
+7. Open the printed `https://refrain-….run.app` URL and walk the demo path once. *Deployed Oct 3, 2026: https://refrain-476222056020.us-central1.run.app; redeployed Oct 4 with the Night study build (revision `refrain-00008-pb6`), then with the marker fix from the final walk (revision `refrain-00009-kd7`).*
 8. To stop all spending later (for example after judging), delete the service:
    ```
    gcloud run services delete refrain --region us-central1 --project refrain-coach-<suffix>
    ```
    Or shut the whole project down with `gcloud projects delete refrain-coach-<suffix>`.
 
-The repo is initialized with git at the start of `5-build` (each step is committed) and made public on GitHub in `6-ship`. The required demo video and public repository come from `6-ship`; the public link is extra.
+The repo is initialized with git at the start of `5-build` (each step is committed) and made public on GitHub in `6-ship`. The required demo video and public repository come from `6-ship`; the public link is extra. *Made public on Oct 4, 2026 under the MIT License: https://github.com/hoachauphuoc/refrain.*
 
 ## Look and Feel
 Carried from `prd.md > Look and Feel` (Night study, revised during `5-build`) and `scope.md > Inspiration & Identity`. The values below are the agent's specifics for that approved direction, and they replace the first paper theme. Token names are the ones used in `styles.css`.
