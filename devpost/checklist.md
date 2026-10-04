@@ -222,7 +222,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
 ## Final Review
 
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
-- [ ] The marks in *Your words* no longer open gaps in the sentence before they draw in (found in the final walk; see Revisions)
+- [x] The marks in *Your words* no longer open gaps in the sentence before they draw in (found in the final walk; deployed as `refrain-00009-kd7`; see Revisions)
 
 ## Code Tour and App Map
 
@@ -379,7 +379,7 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
     - A reload on Home kept everything. A reload mid-session discarded only that session (still 3 sessions, nothing pending) and kept the warm-up answer already checked (box 2).
     - At about 446 px wide (320% zoom), only the stage path scrolls sideways, as designed.
     - Six AI calls, about $0.016: roadmap 5.9 s, debriefs 6.9, 8.1 and 4.0 s, checks 2.7 and 1.8 s. The only warning in the Cloud Run log was a 404 for a font URL the agent mistyped.
-  - **Found and fixed:** in *Your words*, the marker's 2 px side padding opened gaps in the sentence ("can  rank", "first .") until each mark had drawn in, for about a second. A matching negative margin (`.got-mark`) keeps the text in place; the marks were checked with the simulated coach, frozen at the start of the animation and at its end.
+  - **Found and fixed:** in *Your words*, the marker's 2 px side padding opened gaps in the sentence ("can  rank", "first .") until each mark had drawn in, for about a second. A matching negative margin (`.got-mark`) keeps the text in place; the marks were checked with the simulated coach, frozen at the start of the animation and at its end. Deployed as `refrain-00009-kd7` with the quoted list of four variables; read back afterwards were the four variables, the three security headers, `font/woff2`, and the new line in the live stylesheet. `pytest` 282 and `node --test` 68 passed.
   - **By design, not changed:**
     - A session whose countdown reaches zero while the End-early panel is open counts as completed (`spec.md > The Core Journey Through the System`, step 7). The 41 seconds left after the tap ran out while the agent typed the note and opened the panel, so session 2 completed, and the pulled-away path was walked again in session 3.
     - Each warm-up brings back at most one earlier question, the longest-waiting first (`spec.md > Warm-up screen`).
