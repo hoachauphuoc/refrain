@@ -38,9 +38,9 @@ Why they come back: the plan becomes more personal after every session, the warm
 - Visual direction is captured in `prd.md > Look and Feel`.
 
 ## Why This Matters to the Learner
-The learner's goal, in their words (translated from Vietnamese): to help users "besides increasing focus, also train memory" — for example reading a book in a short time, remembering faces and phone numbers, or the brain automatically thinking to filter out the core knowledge to apply.
+The learner's goal, in their words: to help users "besides increasing focus, also train memory" — for example reading a book in a short time, remembering faces and phone numbers, or the brain automatically thinking to filter out the core knowledge to apply.
 
-Their personal story (translated from Vietnamese): "I am a junior manager at a company. I often lose focus because I have to juggle many things at once; my thinking gets interrupted by meetings and by urgent priority tasks; and I lack prioritization in my work, so my effectiveness at work and in studying goes down."
+Their personal story: "I am a junior manager at a company. I often lose focus because I have to juggle many things at once; my thinking gets interrupted by meetings and by urgent priority tasks; and I lack prioritization in my work, so my effectiveness at work and in studying goes down."
 
 Research that matches the story, for the pitch:
 - Employees are interrupted every two minutes during core work hours — 275 times a day — by meetings, emails, or chat pings (Microsoft Work Trend Index 2025). https://www.microsoft.com/en-us/worklab/work-trend-index/breaking-down-infinite-workday
