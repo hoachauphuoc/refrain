@@ -1,4 +1,6 @@
+import re
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 
@@ -6,6 +8,7 @@ from refrain import rules
 from refrain.gemini import CoachError
 from refrain.ratelimit import Limits, RateLimited
 
+STATIC = Path(__file__).resolve().parent.parent / "static"
 SURVEY = {"age": 34, "goal": "Study for a certification after work", "minutesPerDay": 60, "maxMinutes": 30}
 GOOD = {"stages": [10, 15, 20, 25, 30], "reason": "With 60 minutes after work, you start at 10 and build to 30."}
 
@@ -130,6 +133,37 @@ def test_index_and_scripts_are_served(client):
     script = client.get("/static/js/main.js")
     assert script.status_code == 200
     assert script.mimetype == "text/javascript"
+
+
+def test_fonts_are_served_with_their_type(client):
+    # nosniff means a font sent as anything else is refused by the browser.
+    for name in ("inter-latin", "inter-vietnamese", "fraunces-latin", "fraunces-vietnamese"):
+        response = client.get(f"/static/fonts/{name}.woff2")
+        assert response.status_code == 200
+        assert response.mimetype == "font/woff2"
+
+
+def test_page_has_no_inline_styles():
+    # The CSP (default-src 'self') blocks style attributes, so the page must not rely on any.
+    html = (STATIC / "index.html").read_text(encoding="utf-8")
+    assert not re.search(r"\sstyle\s*=", html)
+    assert "<style" not in html
+
+
+def test_every_file_the_stylesheet_names_exists():
+    css = (STATIC / "css" / "styles.css").read_text(encoding="utf-8")
+    urls = re.findall(r'url\("([^"]+)"\)', css)
+    assert urls
+    for url in urls:
+        path = STATIC / url.removeprefix("/static/") if url.startswith("/static/") else STATIC / "css" / url
+        assert path.resolve().is_file(), url
+
+
+def test_bundled_fonts_and_icons_ship_with_their_licenses():
+    licenses = {path.name for path in (STATIC / "licenses").iterdir()}
+    assert {"OFL-Fraunces.txt", "OFL-Inter.txt", "Lucide-ISC.txt"} <= licenses
+    for icon in (STATIC / "icons").glob("*.svg"):
+        assert "@license lucide-static" in icon.read_text(encoding="utf-8"), icon.name
 
 
 def test_oversized_requests_are_refused(client):

@@ -58,7 +58,10 @@ Tests use the simulated coach and make no AI calls:
 
 ```
 pytest
+node --test "tests/js/*.test.mjs"
 ```
+
+The second line uses Node's built-in test runner (Node 22 or newer, no packages). It checks the interface's colour contrast against WCAG AA, using the colours in `static/css/styles.css`.
 
 `python scripts/smoke_gemini.py` makes one real Gemini call and prints its tokens and estimated cost.
 

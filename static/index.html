@@ -3,37 +3,77 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0a1220">
   <title>Refrain — a coach for focus and memory</title>
   <meta name="description" content="Refrain trains your focus and your memory in one study loop, built from your own words.">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/static/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/css/styles.css">
   <script type="module" src="/static/js/main.js"></script>
 </head>
 <body>
+  <!-- The night sky: a slow, faint aurora and still star dust. Decoration only. -->
+  <div class="sky" aria-hidden="true">
+    <span class="aurora a1"></span>
+    <span class="aurora a2"></span>
+    <span class="aurora a3"></span>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <!-- Refrain's mark: a ring with a gap, and a star in the gap, the moment you come back. -->
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="logo-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5eead4"/>
+            <stop offset="1" stop-color="#22d3ee"/>
+          </linearGradient>
+        </defs>
+        <circle cx="16" cy="16" r="11" fill="none" stroke="url(#logo-ring)" stroke-width="3" stroke-linecap="round" stroke-dasharray="57.5 11.6"/>
+        <circle cx="25.5" cy="10.5" r="4.6" fill="#fbbf24" opacity="0.22"/>
+        <circle cx="25.5" cy="10.5" r="2.4" fill="#fbbf24"/>
+      </svg>
+      <span class="wordmark">Refrain</span>
+    </div>
+    <p class="topbar-stage" id="topbar-stage" hidden></p>
+  </header>
+
   <main class="column">
 
     <section id="screen-welcome" class="screen" hidden aria-labelledby="welcome-title">
-      <p class="eyebrow">A coach for focus and memory</p>
-      <h1 id="welcome-title" tabindex="-1">Refrain</h1>
-      <p class="promise">Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words.</p>
-      <ol class="how">
-        <li><strong>Focus</strong> for one session. Each time your attention slips, tap once and note what pulled you.</li>
-        <li><strong>Teach back</strong> the core idea in two or three sentences. The coach shows what's missing and turns your notes into one rule for next time.</li>
-        <li><strong>Recall</strong> it next time: the session opens with two questions to answer from memory.</li>
+      <div class="welcome-hero">
+        <p class="eyebrow">A coach for focus and memory</p>
+        <h1 id="welcome-title" tabindex="-1">Train your focus and your memory, <span class="shine">from your own words.</span></h1>
+        <p class="promise">Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words.</p>
+      </div>
+      <ol class="steps">
+        <li class="step card">
+          <span class="step-icon"><span class="icon i-timer" aria-hidden="true"></span></span>
+          <p><strong>Focus</strong> for one session. Each time your attention slips, tap once and note what pulled you.</p>
+        </li>
+        <li class="step card">
+          <span class="step-icon"><span class="icon i-pen" aria-hidden="true"></span></span>
+          <p><strong>Teach back</strong> the core idea in two or three sentences. The coach shows what's missing and turns your notes into one rule for next time.</p>
+        </li>
+        <li class="step card">
+          <span class="step-icon"><span class="icon i-brain" aria-hidden="true"></span></span>
+          <p><strong>Recall</strong> it next time: the session opens with two questions to answer from memory.</p>
+        </li>
       </ol>
-      <p class="plan-note">Your plan starts at a length you can finish and grows from there. A meeting that cuts a session short never counts against you, and nothing resets to zero.</p>
-      <p class="notice">Your answers and notes are sent to Google's Gemini AI on Google Cloud only to write your coaching — Google doesn't use them to train its models. Your progress stays in this browser. Refrain is for adults 18 and over.</p>
-      <button type="button" class="primary" id="welcome-start">Start</button>
+      <p class="plan-note"><span class="icon i-route" aria-hidden="true"></span><span>Your plan starts at a length you can finish and grows from there. A meeting that cuts a session short never counts against you, and nothing resets to zero.</span></p>
+      <p class="notice"><span class="icon i-shield" aria-hidden="true"></span><span>Your answers and notes are sent to Google's Gemini AI on Google Cloud only to write your coaching — Google doesn't use them to train its models. Your progress stays in this browser. Refrain is for adults 18 and over.</span></p>
+      <button type="button" class="primary go big" id="welcome-start">Start</button>
     </section>
 
     <section id="screen-survey" class="screen" hidden aria-labelledby="survey-title">
       <p class="eyebrow">Your starting point</p>
       <h2 id="survey-title" tabindex="-1">Four questions for your roadmap</h2>
-      <p class="muted">Your coach uses them to decide where your training starts.</p>
+      <p class="lede">Your coach uses them to decide where your training starts.</p>
       <form id="survey-form" class="card" novalidate>
         <fieldset id="survey-fields">
-          <div class="field">
+          <div class="field short">
             <label for="survey-age">Your age</label>
             <input id="survey-age" name="age" type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-describedby="survey-age-msg">
             <p class="field-msg" id="survey-age-msg" aria-live="polite"></p>
@@ -48,60 +88,65 @@
             </div>
             <p class="field-msg" id="survey-goal-msg" aria-live="polite"></p>
           </div>
-          <div class="field">
+          <div class="field short">
             <label for="survey-daily">Minutes you can give each day</label>
             <input id="survey-daily" name="minutesPerDay" type="text" inputmode="numeric" autocomplete="off" maxlength="4" aria-describedby="survey-daily-msg">
             <p class="field-msg" id="survey-daily-msg" aria-live="polite"></p>
           </div>
-          <div class="field">
+          <div class="field short">
             <label for="survey-max">Maximum minutes per session</label>
             <input id="survey-max" name="maxMinutes" type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-describedby="survey-max-msg">
             <p class="field-msg" id="survey-max-msg" aria-live="polite"></p>
           </div>
         </fieldset>
+        <div class="coach-work" id="survey-work" aria-hidden="true" hidden></div>
         <p class="status" id="survey-status" role="status"></p>
-        <button type="submit" class="primary" id="survey-submit" disabled>Build my roadmap</button>
+        <button type="submit" class="primary go" id="survey-submit" disabled>Build my roadmap</button>
       </form>
     </section>
 
     <section id="screen-home" class="screen" hidden aria-labelledby="home-goal">
-      <p class="eyebrow">Your roadmap</p>
-      <h2 id="home-goal" tabindex="-1"></h2>
-      <ol class="stages" id="home-stages" aria-label="Roadmap stages"></ol>
-      <p class="reason" id="home-reason"></p>
-      <p class="tags" id="home-tags"></p>
-
-      <div class="rule-card" id="home-rule">
-        <p class="rule-label" id="home-rule-label">Your rule</p>
-        <p class="rule-text" id="home-rule-text"></p>
-        <p class="rule-source" id="home-rule-source" hidden></p>
-      </div>
-
-      <div class="pickup card" id="home-pickup" hidden>
-        <p class="pickup-label">Pick up where you left off</p>
-        <p class="pickup-topic" id="home-pickup-topic"></p>
-        <div id="home-pickup-lines"></div>
-      </div>
-
-      <div class="start card">
-        <label for="home-topic">What will you study?</label>
-        <input id="home-topic" type="text" maxlength="120" autocomplete="off" placeholder="For example: Project management course — managing risks">
-        <div class="start-row">
-          <label class="switch" for="home-demo">
-            <input id="home-demo" type="checkbox" role="switch">
-            <span class="track" aria-hidden="true"></span>
-            <span>Demo length (1 minute)</span>
-          </label>
-          <button type="button" class="primary" id="home-start-btn" disabled>Start session</button>
+      <div class="home-grid">
+        <div class="home-hero card">
+          <p class="eyebrow">Your roadmap</p>
+          <h2 id="home-goal" tabindex="-1"></h2>
+          <ol class="stages" id="home-stages" aria-label="Roadmap stages"></ol>
+          <p class="reason" id="home-reason"></p>
+          <p class="tags" id="home-tags"></p>
         </div>
-      </div>
 
-      <section class="history" aria-labelledby="home-history-title">
-        <h3 id="home-history-title">Sessions</h3>
-        <p class="totals" id="home-totals" hidden></p>
-        <p class="muted" id="home-history-empty">Your first session is ready.</p>
-        <ol class="history-list" id="home-history"></ol>
-      </section>
+        <div class="start card">
+          <label for="home-topic">What will you study?</label>
+          <input id="home-topic" type="text" maxlength="120" autocomplete="off" placeholder="For example: Project management course — managing risks">
+          <div class="start-row">
+            <label class="switch" for="home-demo">
+              <input id="home-demo" type="checkbox" role="switch">
+              <span class="track" aria-hidden="true"></span>
+              <span>Demo length (1 minute)</span>
+            </label>
+            <button type="button" class="primary go" id="home-start-btn" disabled>Start session</button>
+          </div>
+        </div>
+
+        <div class="pickup card" id="home-pickup" hidden>
+          <p class="pickup-label ico i-bookmark">Pick up where you left off</p>
+          <p class="pickup-topic" id="home-pickup-topic"></p>
+          <div id="home-pickup-lines"></div>
+        </div>
+
+        <div class="rule-card card" id="home-rule">
+          <p class="rule-label ico i-compass" id="home-rule-label">Your rule</p>
+          <p class="rule-text" id="home-rule-text"></p>
+          <p class="rule-source" id="home-rule-source" hidden></p>
+        </div>
+
+        <section class="history card" aria-labelledby="home-history-title">
+          <h3 id="home-history-title">Sessions</h3>
+          <p class="totals" id="home-totals" hidden></p>
+          <p class="muted" id="home-history-empty">Your first session is ready.</p>
+          <ol class="history-list" id="home-history"></ol>
+        </section>
+      </div>
 
       <div class="reset">
         <button type="button" class="link" id="home-reset">Reset everything</button>
@@ -118,14 +163,15 @@
     <section id="screen-warmup" class="screen" hidden aria-labelledby="warmup-title">
       <p class="eyebrow">Warm-up</p>
       <h2 id="warmup-title" tabindex="-1">What do you remember?</h2>
-      <p class="muted" id="warmup-from"></p>
+      <p class="lede" id="warmup-from"></p>
       <form class="card" id="warmup-form" novalidate>
         <ol class="warmup-list" id="warmup-items"></ol>
         <p class="tags" id="warmup-tags"></p>
+        <div class="coach-work" id="warmup-work" aria-hidden="true" hidden></div>
         <p class="status" id="warmup-status" role="status"></p>
         <div class="actions left">
           <button type="submit" class="primary" id="warmup-check">Check</button>
-          <button type="button" class="primary" id="warmup-start" hidden>Start focusing</button>
+          <button type="button" class="primary go" id="warmup-start" hidden>Start focusing</button>
         </div>
       </form>
     </section>
@@ -134,7 +180,9 @@
       <h2 class="sr-only" tabindex="-1">Focus session</h2>
       <p class="focus-topic" id="focus-topic"></p>
       <p class="focus-next" id="focus-next" hidden></p>
-      <div class="countdown" id="focus-countdown" role="timer" aria-label="Time left">0:00</div>
+      <div class="dial" id="focus-dial">
+        <div class="countdown" id="focus-countdown" role="timer" aria-label="Time left">0:00</div>
+      </div>
       <p class="focus-rule" id="focus-rule" hidden></p>
       <button type="button" class="distracted" id="focus-distracted">Distracted</button>
       <div class="note-row" id="focus-note-row" hidden>
@@ -158,7 +206,7 @@
           <label for="focus-next-step">My next step</label>
           <input id="focus-next-step" type="text" maxlength="160" autocomplete="off">
           <div class="actions left">
-            <button type="submit" class="end-save" id="focus-save">Save and end</button>
+            <button type="submit" class="primary" id="focus-save">Save and end</button>
             <button type="button" class="link" id="focus-keep-resume">Keep going</button>
           </div>
         </form>
@@ -173,6 +221,7 @@
           <label for="teach-text">In two or three sentences, what's the core idea?</label>
           <textarea id="teach-text" rows="5" maxlength="1500" aria-describedby="teach-count"></textarea>
           <p class="field-msg" id="teach-count"></p>
+          <div class="coach-work" id="teach-work" aria-hidden="true" hidden></div>
           <p class="status" id="teach-status" role="status"></p>
           <div class="actions left">
             <button type="button" class="primary" id="teach-submit" disabled>Get feedback</button>
@@ -186,6 +235,7 @@
         <h2 id="debrief-title" tabindex="-1"></h2>
         <p class="tags" id="debrief-tags"></p>
         <div class="debrief-cards" id="debrief-cards"></div>
+        <div class="coach-work" id="debrief-work" aria-hidden="true" hidden></div>
         <p class="status" id="debrief-status" role="status"></p>
         <div class="actions left">
           <button type="button" class="primary" id="debrief-retry" hidden>Try again</button>

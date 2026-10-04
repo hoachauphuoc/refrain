@@ -24,6 +24,8 @@ SECURITY_HEADERS = {
 mimetypes.add_type("text/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
 mimetypes.add_type("image/svg+xml", ".svg")
+# Fonts need their own type too, because nosniff stops browsers from guessing.
+mimetypes.add_type("font/woff2", ".woff2")
 
 
 def _setup_logging():

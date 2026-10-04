@@ -14,6 +14,14 @@ export const WAITS = {
   debrief: "The coach is reading your session. This usually takes 5 to 20 seconds.",
 };
 
+// What each request asks the coach to do, shown while it runs. It is one request, so no line is ever ticked off.
+export const WORK = {
+  roadmap: ["Reading your answers", "Sizing your first stage", "Writing why"],
+  check: ["Comparing your answers with the questions", "Writing a one-line answer for each"],
+  debrief: ["Reading your explanation", "Looking at your session and notes", "Writing your rule and your next questions"],
+  debriefSkipped: ["Looking at your session and notes", "Writing your pattern and your rule"],
+};
+
 // Resolves to { ok: true, data } or { ok: false, code, message, fields, reached }.
 // `reached` is false when the server never answered (offline, timeout).
 export async function post(path, body) {

@@ -22,11 +22,14 @@ function renderStages(stages, current) {
       return item;
     }),
   );
-  // Keep the current stage in view when the row scrolls sideways (after the screen is shown).
-  requestAnimationFrame(() => {
-    const card = list.children[current];
-    if (card) list.scrollLeft = card.offsetLeft - list.offsetLeft - (list.clientWidth - card.clientWidth) / 2;
-  });
+}
+
+// Keep the current stage in view when the row scrolls sideways. Runs once Home is on screen,
+// because a hidden row has no layout to measure.
+function centerCurrentStage() {
+  const list = $("#home-stages");
+  const card = list.children[store.state.stageIndex];
+  if (card) list.scrollLeft = card.offsetLeft - list.offsetLeft - (list.clientWidth - card.clientWidth) / 2;
 }
 
 function renderRule(rule) {
@@ -161,6 +164,9 @@ let nav;
 
 export function init(navigation) {
   nav = navigation;
+  document.addEventListener("refrain:shown", (event) => {
+    if (event.detail === "home") centerCurrentStage();
+  });
   $("#home-topic").addEventListener("input", renderStart);
   $("#home-topic").addEventListener("keydown", (event) => {
     if (event.key === "Enter") startSession();

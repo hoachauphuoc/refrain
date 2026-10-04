@@ -71,7 +71,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Open the public link in another browser or on your phone, walk the demo path once, and say whether it behaves the same as on your laptop.
   Commit: `Deploy Refrain to Cloud Run with rate limits`
 
-- [ ] **7. Refrain looks like a product: the Night study design**
+- [x] **7. Refrain looks like a product: the Night study design**
   Becomes usable: Every screen moves to the Night study look, and everything works as before:
   - a night sky with a faint aurora, glass cards, and long text on a lamp-lit page;
   - Fraunces headings and Inter text;
@@ -84,12 +84,12 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Build:
   - `styles.css` rewritten around the spec's tokens, glass and page surfaces, and components, with the accessibility media queries.
   - `static/fonts/`: Fraunces and Inter, Latin and Vietnamese subsets. `static/licenses/`: the OFL and Lucide ISC texts. `font/woff2` registered in `refrain/__init__.py`.
-  - In `index.html`: the icon sprite, the top bar, and the new markup for the six screens. A new `favicon.svg`.
+  - In `index.html`: the sky layer, the top bar with the logo, and the new markup for the six screens. Icons as SVG files in `static/icons/`, drawn as CSS masks. A new `favicon.svg`.
   - View Transitions in `show()`; "What the coach is doing" in `api.js`; Home's grid of cards around the existing content.
   - `tests/js/contrast.test.mjs`, which reads the tokens from `styles.css` and checks every text/background pair from the spec.
   Verify (mechanical):
   - `pytest` passes, including the fonts' `font/woff2` type and no `style=` attribute in `index.html`.
-  - `node --test tests/js` passes the contrast pairs.
+  - `node --test "tests/js/*.test.mjs"` passes the contrast pairs.
   - Screenshots of all six screens at 100% and 200% zoom.
   - A keyboard-only walk works.
   - No request leaves the app's origin, and the first load is 350 KB or less.
@@ -112,7 +112,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   - The "Noted" line, and the reduced-motion rules.
   - Node tests for `starPoint` and `planFrom`.
   Verify (mechanical):
-  - `node --test tests/js` passes.
+  - `node --test "tests/js/*.test.mjs"` passes.
   - In the browser, a demo session shows:
     - the ring filling in step with the countdown, also after the tab sat in the background;
     - a star at each tap's position;
@@ -141,7 +141,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
     - the ring gliding into the debrief header with a view transition.
   - Tests in `pytest` and Node.
   Verify (mechanical):
-  - `pytest` and `node --test tests/js` pass.
+  - `pytest` and `node --test "tests/js/*.test.mjs"` pass.
   - Five scripted real-Gemini sessions with explanations: record how many have at least one verbatim quote, plus cost and latency compared with $0.0046 and 8.2 s.
   - In the browser, a demo session shows the marks, the timeline, and the highlights, and a skipped teach-back shows no *Your words* card.
   Learner check: Write a two-sentence explanation that leaves something out on purpose. Does the marked-up text show exactly what you got and what to add?
@@ -164,7 +164,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   - Tests.
   Verify (mechanical):
   - `pytest` passes: three items accepted, four refused.
-  - `node --test tests/js` passes: the schedule, a failed check keeping its items, and old saved data.
+  - `node --test "tests/js/*.test.mjs"` passes: the schedule, a failed check keeping its items, and old saved data.
   - In the browser:
     - a missed question returns at the next warm-up;
     - two gots make "1 idea kept";
@@ -188,7 +188,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   - Old rows without tap times show only their count.
   - Tests.
   Verify (mechanical):
-  - `node --test tests/js` passes for `ruleAtWork`, `topNotes`, and old data.
+  - `node --test "tests/js/*.test.mjs"` passes for `ruleAtWork`, `topNotes`, and old data.
   - In the browser, after four demo sessions: the counters, rule at work, top notes, and sky rows are right; a reload keeps them, and Reset clears them.
   Learner check: After a few sessions, can you tell at a glance whether your rule is working and what pulls you away most?
   Commit: `Show your rule at work and your sky on Home`
@@ -209,7 +209,7 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   - README screenshots and a Credits section.
   - Redeploy with the quoted environment list.
   Verify (mechanical):
-  - `pytest` and `node --test tests/js` pass.
+  - `pytest` and `node --test "tests/js/*.test.mjs"` pass.
   - Screenshots of every screen.
   - On the public link: a four-session demo walk with real Gemini, the security headers, and a 429 on the 31st request.
   Learner check: Watch the Welcome animation and walk the new demo path on the public link. Is this what you want the judges to see first?
@@ -275,3 +275,18 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
     - In-app progress views stand in for the Later charts.
     - `scope.md` records the revision.
     - The final review and the hands-on checkpoint above now come after slice 12.
+- **Slice 7 built (Oct 4, 2026).** Six things differ from the plan, all now in `spec.md`:
+  - **Icons:** SVG files in `static/icons/`, drawn as CSS masks, instead of an inline sprite. The scripts replace button text with `textContent`, which would wipe out an icon written inside the button.
+  - **Aurora and borders:** the contrast test assumes the teal and blue glows can overlap at full strength. At the planned 16% that overlap pushed muted text to 4.07:1, teal to 4.14:1, the amber tint to 4.25:1, and text-box borders to 2.78:1. The aurora is now teal 12%, blue 9%, and amber 8%, and borders are 55% white. Worst cases now: ink 7.8:1, muted 4.7:1, teal 4.8:1, star 5.3:1, borders 3.7:1.
+  - **Home order:** the start card comes right after the roadmap, before the pick-up and rule cards, so the main action follows the plan.
+  - **Welcome headline:** "Train your focus and your memory, from your own words." The name moves to the top bar.
+  - **Font fallbacks:** fallback sizes computed from the font files (fontTools, installed only in a temporary folder), so text doesn't jump when the fonts load. The Inter values match the ones Next.js publishes.
+  - **Test command:** Node 24 needs `node --test "tests/js/*.test.mjs"`; a bare folder fails with "Cannot find module".
+  - **Verified:**
+    - `pytest`: 273 passed, 4 of them new (font type, no inline styles, every stylesheet file exists, licenses shipped).
+    - `node --test`: 46 contrast checks passed.
+    - Walked with the simulated coach at 100%, 70%, and 200% zoom: Welcome → Survey → Home → demo session with a note → teach-back → debrief → Home → warm-up (partly, missed) → **I was pulled away** → skipped teach-back → Home with the pick-up card and two history rows.
+    - No horizontal overflow at 200% (only the stage path scrolls sideways, as designed).
+    - Every request stays on the app's origin, and only the two Latin fonts load.
+    - First visit: 234 KB uncompressed in 32 files.
+    - The browser tool's synthetic Tab doesn't trigger `:focus-visible`, so the focus ring was checked where focus is moved by script (the warm-up's **Start focusing**) and on the text fields.

@@ -1,7 +1,7 @@
 // Survey: four answers, checked as they're typed, then the coach builds the roadmap.
 
-import { post, WAITS } from "../api.js";
-import { $ } from "../dom.js";
+import { post, WAITS, WORK } from "../api.js";
+import { $, hideWork, showWork } from "../dom.js";
 import { store } from "../store.js";
 
 const NUMBERS = {
@@ -68,10 +68,12 @@ async function submit(event) {
   busy = true;
   $("#survey-status").textContent = WAITS.roadmap;
   $("#survey-submit").textContent = "Building your roadmap…";
+  showWork($("#survey-work"), WORK.roadmap);
   render();
 
   const result = await post("/api/roadmap", values);
   busy = false;
+  hideWork($("#survey-work"));
 
   if (result.ok) {
     const { stages, reason, source, simulated } = result.data;
@@ -130,6 +132,7 @@ export function reset() {
   touched.clear();
   busy = false;
   $("#survey-status").textContent = "";
+  hideWork($("#survey-work"));
   $("#survey-submit").textContent = SUBMIT_LABEL;
   render();
 }

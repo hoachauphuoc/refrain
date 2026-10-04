@@ -127,7 +127,7 @@ The repo is initialized with git at the start of `5-build` (each step is committ
 ## Look and Feel
 Carried from `prd.md > Look and Feel` (Night study, revised during `5-build`) and `scope.md > Inspiration & Identity`. The values below are the agent's specifics for that approved direction, and they replace the first paper theme. Token names are the ones used in `styles.css`.
 
-**Colors (CSS custom properties; WCAG AA checked by `tests/js/contrast.test.mjs`).** "Worst case" is the lightest place text can sit: hover glass over the brightest aurora glow.
+**Colors (CSS custom properties; WCAG AA checked by `tests/js/contrast.test.mjs`, which reads them from `styles.css`).** "Worst case" is the lightest place text can sit: hover glass where the teal and blue aurora glows overlap at full strength.
 
 | Token | Value | Use | Contrast |
 |---|---|---|---|
@@ -138,16 +138,19 @@ Carried from `prd.md > Look and Feel` (Night study, revised during `5-build`) an
 | `--surface-2` | `#172640` | Text boxes on the night | — |
 | `--glass` / `--glass-strong` | white at 6% / 10% | Cards, chips, buttons / hover | — |
 | `--edge` | white at 12% | Card edges and dividers (decorative) | — |
-| `--field-edge` | white at 40% | Borders of text boxes and switches | 3.0:1 or more |
-| `--ink` | `#EAF0FA` | Text on the night | 15.0:1 on sky-2; 7.9:1 worst case |
-| `--muted` | `#B3BDD0` | Secondary text; neutral states (missed, ease back) | 9.1:1 on sky-2; 4.8:1 worst case |
-| `--teal` | `#2DD4BF` | Actions, progress, links | 9.3:1 on sky-2; 4.9:1 worst case |
+| `--field-edge` | white at 55% | Borders of text boxes and switches | 3.7:1 on glass, worst case |
+| `--ink` | `#EAF0FA` | Text on the night | 15.0:1 on sky-2; 7.8:1 worst case |
+| `--muted` | `#B3BDD0` | Secondary text; neutral states (missed, ease back) | 9.1:1 on sky-2; 4.7:1 worst case |
+| `--teal` | `#2DD4BF` | Actions, progress, links | 9.3:1 on sky-2; 4.8:1 worst case |
 | `--teal-hi` | `#5EEAD4` | Hover, keyboard focus ring | 11.6:1 on sky-2 |
 | `--cyan` | `#22D3EE` | Second stop of the button gradient | — |
 | `--on-teal` | `#03241F` | Text on teal buttons | 8.8:1 on teal; 9.1:1 on cyan |
-| `--star` | `#FBBF24` | Stars, the rule, "got it" | 10.3:1 on sky-2; 5.4:1 worst case |
+| `--star` | `#FBBF24` | Stars, the rule, "got it" | 10.3:1 on sky-2; 5.3:1 worst case |
 | `--blue` | `#3B82F6` | Aurora only, never text | — |
+| `--aurora-teal` / `--aurora-blue` / `--aurora-star` | teal 12% / blue 9% / amber 8% | The three aurora glows at their brightest | — |
+| `--tint-teal` / `--tint-star` | teal 12% / amber 12% | Tinted chips and boxes (totals, "up", "got it") | ink and teal-hi on the teal tint, star on the amber tint: all 4.5:1 or more |
 | `--page` | `#FBF7EE` | The lamp-lit page | — |
+| `--page-dim` | `#EFE9DC` | The page once an answer is locked after checking | page ink 12.5:1 |
 | `--page-ink` | `#1F2A28` | Text on the page | 13.8:1 |
 | `--page-muted` | `#5B6661` | Secondary text on the page | 5.6:1 |
 | `--page-edge` | `#8C826F` | Text box border on the page | 3.6:1 |
@@ -159,16 +162,16 @@ Carried from `prd.md > Look and Feel` (Night study, revised during `5-build`) an
 There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm color. The app is dark throughout, and the lamp-lit page is its one light surface, for long text.
 
 **Surfaces.**
-- **Glass** (`.glass`): holds cards, chips, buttons, labels, and numbers, never paragraphs.
+- **Glass** (`.card`): holds cards, chips, buttons, labels, and numbers, never long paragraphs.
   - Built from the `--glass` fill, a 1 px `--edge` border, a faint top highlight, and `backdrop-filter: blur(18px) saturate(140%)`.
   - Without `backdrop-filter`, or with `prefers-reduced-transparency: reduce`, glass becomes solid `--surface`.
   - With `prefers-contrast: more`, edges become white at 60% and glows are dropped.
-- **Page** (`.page`): holds the teach-back box, the warm-up answers, and the marked-up explanation.
+- **Page** (every `textarea`, and later the marked-up explanation): holds the teach-back box, the warm-up answers, and the marked-up explanation.
   - Solid `--page` with a soft amber glow behind it, like a lamp.
   - Dark text on a light background is read more accurately (Piepenbrock et al. 2013).
-- **Background:** a vertical gradient from `--sky-2` to `--sky-1`, with faint, still star dust.
-  - Three blurred aurora glows (teal, blue, amber), each at most 16% opacity, drift with `transform` only, on loops of 60 s or longer.
-  - On the focus screen the background is `--sky-0` and the aurora is dimmed and still.
+- **Background** (`.sky`, fixed behind the page): a vertical gradient from `--sky-2` to `--sky-1`, with faint, still star dust that fades toward the bottom.
+  - Three aurora glows (radial gradients in teal, blue, and amber, at the strengths in the table) drift with `transform` only, on loops of 70–90 s.
+  - On the focus screen a `--sky-0` layer fades in over the sky (85% opacity, 600 ms) and the aurora stops.
 
 **Typography.**
 - **Headings:** Fraunces (variable weight and optical size), weights 400–600. Fallback `Georgia, "Times New Roman", serif`.
@@ -177,43 +180,48 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 - **Font files:** self-hosted in `static/fonts/`.
   - Latin and Vietnamese subsets are split by `unicode-range`, so English text loads only the two Latin files, about 140 KB.
   - `font-display: swap`, and the two Latin files are preloaded.
+  - Until they arrive, local Arial and Georgia stand in, resized with `size-adjust` and ascent/descent overrides computed from the font files (Inter over Arial: 107.17%, 90.39%, 22.51%; Fraunces over Georgia: 116.05%, 84.28%, 21.97%), so the text doesn't jump when the fonts swap in.
 - **License:** both fonts use the SIL Open Font License 1.1, which ships in `static/licenses/`.
 
 **Icons and logo.**
-- About a dozen Lucide icons (ISC license) in one inline SVG sprite in `index.html`. The copyright notice sits beside the sprite and in `static/licenses/`. Icons next to text are `aria-hidden`.
-- The logo is Refrain's own: a ring with a gap, and a star in the gap — the moment you come back. It is also the favicon.
+- Sixteen Lucide icons (ISC license, lucide-static 1.51.0) as SVG files in `static/icons/`, each keeping its `@license` comment; the full notice is in `static/licenses/`.
+  - They are drawn as CSS masks in the text color (`.icon` with a `--icon` URL, or a `::before` on labels, chips, and buttons). The scripts change button text with `textContent`, which would remove an icon written into the button, but a mask belongs to the CSS.
+  - Icons are decoration (`aria-hidden`, or pseudo-elements); the text beside them carries the meaning.
+- The logo is Refrain's own: a ring with a gap, and a star in the gap — the moment you come back. It is inline SVG in the top bar, and also the favicon.
 
 **Shapes, space, and layout.**
 - Radii of 12, 18, and 28 px. A 4 px spacing scale: 4, 8, 12, 16, 24, 32, 48, 64.
 - Soft shadows, plus teal or amber glows on focusable and "aha" elements.
 - A top bar with the logo and the current stage on every screen except Focus.
-- Home is a grid of cards from 960 px wide and one column below that. The other screens use a 680 px column.
+- Home is a grid of cards from 960 px wide (up to 1120 px) and one column below that. Welcome is up to 1000 px wide, so its three steps sit side by side, stacking below 760 px. The other screens use a 680 px column.
 
 **Motion.**
 - **Durations** (NN/g): about 100 ms for feedback such as a press or a toggle, and 200–300 ms for bigger changes. One easing curve: `cubic-bezier(0.2, 0.8, 0.2, 1)`.
 - **Screen changes** use the View Transitions API (`document.startViewTransition` in `show()`).
-  - A 250 ms cross-fade; named elements glide between screens (the logo, and from slice 9 the session ring).
+  - The old screen fades out in 160 ms while the new one fades in and rises 8 px over 280 ms. The sky and the logo have their own transition names, so they stay put (the sky only darkens into the focus screen); from slice 9 the session ring glides too.
   - Without the API, or with reduced motion, the screen switches with the 150 ms fade.
 - **During a session**, nothing starts moving on its own, because motion onset captures attention (Abrams & Christ 2003).
   - The ring advances with the countdown.
   - A star twinkles for 600 ms, and only after the user's own tap.
 - **Small touches:**
-  - The primary button shows a light sheen on hover and presses down 2% when clicked.
+  - The primary button shows a light sheen on hover and presses down 2% when clicked; buttons that move on carry an arrow that nudges forward on hover.
+  - On Welcome, one glint sweeps across the gradient phrase when the page opens.
+  - On Home, the current stage's star breathes slowly (3.2 s), and debrief cards rise in one after another (60 ms apart).
   - Counters count up once, when they first appear.
-- **`prefers-reduced-motion: reduce`** turns off every animation and transition: the aurora, the sheen, count-ups, twinkles, and view transitions.
+- **`prefers-reduced-motion: reduce`** turns off every animation and transition: the aurora, the sheen, the glint, the breathing star, count-ups, twinkles, and view transitions.
 
 **Waiting for the coach.**
 - Each AI wait shows "What the coach is doing": two or three lines that describe what that request asks for.
   - Roadmap: "Reading your answers", "Sizing your first stage", "Writing why".
   - Warm-up check: "Comparing your answers with the questions", "Writing a one-line answer for each".
   - Debrief: "Reading your explanation", "Looking at your session and notes", "Writing your rule and your next questions".
-- A soft shimmer moves through the lines, and the usual wait time sits beneath them.
+- A dot beside each line pulses in turn, and the usual wait time sits beneath them.
 - There are no tick marks, because it is one request, not separate steps.
 - Showing the work done during a wait raises how much people value the result (Buell & Norton 2011).
 
-**Focus screen.** Full-screen `--sky-0` with:
+**Focus screen.** The darkened sky (`--sky-0` over it) with:
 - the topic and the "next step" note in small `--muted` text;
-- the large countdown inside a glowing ring, with a star on the ring for each return (slice 8);
+- the large countdown in a soft dial, which becomes a glowing ring with a star for each return in slice 8;
 - the rule in `--star`;
 - one large glass **Distracted** button;
 - the tally ("2 noted") and a small **End early** link;
@@ -237,13 +245,17 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 #### Page shell and screen switching
 - **Files:** `static/index.html`, `static/js/main.js`, `static/js/dom.js`, `static/css/styles.css`.
 - **What it does:**
-  - One HTML page with one `<section>` per screen: Welcome, Survey, Home, Warm-up, Focus, Teach-back/Debrief.
+  - One HTML page with one `<section>` per screen: Welcome, Survey, Home, Warm-up, Focus, Teach-back/Debrief. Above them sit the decorative sky layer (`.sky`, `aria-hidden`) and the top bar (logo, and the current stage once a roadmap exists; hidden on Focus).
   - `dom.js` shows one section at a time and builds elements. All user and AI text is set with `textContent`, never `innerHTML`, so nothing typed or generated can run as code.
+    - Where the browser has View Transitions and the user hasn't asked for reduced motion, `show()` swaps screens inside `document.startViewTransition`; `main.js`'s `html.vt` class then turns off the CSS fade. Otherwise the swap is immediate, with the 150 ms fade.
+    - Because a transition runs the swap a frame later, `show()` fires a `refrain:shown` event after each swap, and layout work that needs the visible screen (centering the current stage on Home) waits for it.
+    - `showWork(box, lines)` and `hideWork(box)` draw and clear "What the coach is doing".
   - `main.js` loads saved progress and picks the first screen:
     - nothing saved → Welcome;
     - a finished session whose teach-back wasn't sent yet (`pending.submitted` false) → Teach-back;
     - a teach-back that was sent but has no coaching yet (`pending.submitted` true) → Debrief retry state;
     - otherwise → Home.
+  - `main.js` also writes the top bar's stage line ("Stage 2 of 5 · 15 min") on every screen change, and the debrief asks for it again once a session's progression is applied.
   - Scripts load as ES modules (`<script type="module">`), with no inline scripts or styles, to match the security headers.
 - **Talks to:** all screens, `store.js`.
 - PRD ref: `prd.md > Screens and Layout`, `prd.md > States and Boundaries`.
@@ -267,15 +279,16 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
     - "The coach needs a short break. Try again in a few minutes." — `rate_limited`.
   - Passes `simulated: true` through so screens can show the **Simulated coach** label.
   - `WAITS`: the line each screen shows while the coach works, from times measured with real Gemini in `5-build` — "The coach is building your plan. This usually takes about 10 seconds." (roadmap), "… checking your answers. This usually takes a few seconds." (warm-up check), "… reading your session. This usually takes 5 to 20 seconds." (debrief, and its **Try again**).
+  - `WORK`: the lines of "What the coach is doing" for each request (`spec.md > Look and Feel`), with a shorter debrief list when the teach-back was skipped ("Looking at your session and notes", "Writing your pattern and your rule"). The box is `aria-hidden`, because the `role="status"` line beneath it already announces the wait.
 - **Talks to:** the server's **API routes**.
 - PRD ref: `prd.md > States and Boundaries` (AI request fails).
 
 #### Welcome screen
 - **Files:** `static/js/screens/welcome.js`.
 - **What it shows:**
-  - **Refrain**.
+  - The headline "Train your focus and your memory, from your own words.", with the last phrase in a teal-to-starlight gradient. The name **Refrain** is in the top bar.
   - The promise, which names the problem: "Meetings and pings break up your study time, and much of what you study fades by the next week. Refrain coaches both, from your own words."
-  - The three-step "how it works": focus and note what pulled you → teach back, get what's missing and one rule → recall next time.
+  - The three-step "how it works" on three glass cards with icons: focus and note what pulled you → teach back, get what's missing and one rule → recall next time.
   - One line on the plan: it starts at a length you can finish, a meeting that cuts a session short never counts against you, and nothing resets to zero.
   - The data notice: "Your answers and notes are sent to Google's Gemini AI on Google Cloud only to write your coaching — Google doesn't use them to train its models. Your progress stays in this browser. Refrain is for adults 18 and over."
   - **Start**.
@@ -299,12 +312,12 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 
 #### Home screen
 - **Files:** `static/js/screens/home.js`.
-- **What it shows, top to bottom:**
+- **What it shows, in this order** (from 960 px wide, a grid: the roadmap card spans the top, the start and pick-up cards sit on the left, and the rule card on the right):
   1. The goal as a heading.
-  2. The stage cards (minutes, sessions per day): earlier stages marked done, the current one highlighted in teal, later ones dimmed. A small muted "Default plan" note appears when the roadmap came from the built-in plan.
-  3. The rule card in amber, or "Your first rule will come from your first session". Under the rule, where it came from: "From your notes: “team chat”, “email ping”." from `rule.fromNotes`, or "Written after a session you were pulled away from." when `rule.pulledAway` and there were no notes.
+  2. The stages as a path (minutes, sessions per day): a line through one node per stage, with finished stages lit teal, the current one a glowing star with its minutes in `--star`, and later ones dimmed. A small muted "Default plan" note appears when the roadmap came from the built-in plan.
+  3. The topic field (up to 120 characters), the **Demo length (1 minute)** switch, and **Start session** / **Start with warm-up**.
   4. **Pick up where you left off**, when `resume` exists.
-  5. The topic field (up to 120 characters), the **Demo length (1 minute)** switch, and **Start session** / **Start with warm-up**.
+  5. The rule card with its starlight edge, or "Your first rule will come from your first session". Under the rule, where it came from: "From your notes: “team chat”, “email ping”." from `rule.fromNotes`, or "Written after a session you were pulled away from." when `rule.pulledAway` and there were no notes.
   6. A totals line — sessions, minutes focused (`secondsDone` summed), and warm-up answers recalled (`recall` summed; partly counted separately) — then history rows, newest first: date, length ("6 of 10 min", or "1 min demo"), outcome (completed / pulled away / ended early), taps, "warm-up 1 of 2" when `recall` exists, and change (up / hold / ease back). Totals only grow, so there is no streak to lose. The first time, it shows "Your first session is ready" instead.
   7. **Reset everything**, which opens an inline confirmation ("Erase all progress on this device?" with **Erase** / **Cancel**) and then shows Welcome.
 - PRD ref: `prd.md > Screens and Layout > Home (Roadmap)`, `prd.md > Roadmap Progression`, `prd.md > Ending Early and Pulled Away`, `prd.md > Progress on This Device`.
@@ -312,8 +325,8 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 #### Warm-up screen
 - **Files:** `static/js/screens/warmup.js`.
 - **What it does:**
-  - Shows the two saved questions with answer boxes and **Check**.
-  - After the check, each question shows got it (amber) / partly / missed (muted) and its saved one-line answer.
+  - Shows the two saved questions with answer boxes on the lamp-lit page, and **Check**.
+  - After the check, each question shows got it (starlight, with a check mark) / partly (half circle) / missed (muted, empty circle) and its saved one-line answer.
   - **Start focusing** clears `warmup` and opens Focus, carrying the got / partly / missed counts into the session so its history row keeps them as `recall` (browser only; the server stays stateless).
   - If the check fails: the calm message with **Try again**. **Start focusing** still works, so a coach outage never blocks studying.
 - **Talks to:** `POST /api/check`, `store.js`, `focus.js`.
@@ -608,11 +621,12 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
 │   ├── gemini.py                # Gemini client (Vertex AI), token logging, FakeGemini for REFRAIN_FAKE_AI=1
 │   └── ratelimit.py             # in-memory per-IP and daily caps
 ├── static/                      # everything the browser loads
-│   ├── index.html               # one page, one <section> per screen, top bar, icon sprite
+│   ├── index.html               # one page, one <section> per screen, sky layer, top bar with the logo
 │   ├── favicon.svg              # the ring-and-star logo
 │   ├── css/
 │   │   └── styles.css           # Night study tokens, glass and page surfaces, components, focus screen, motion and accessibility rules
 │   ├── fonts/                   # Fraunces and Inter (variable), Latin and Vietnamese woff2 subsets
+│   ├── icons/                   # Lucide SVGs (ISC), drawn as CSS masks
 │   ├── licenses/                # SIL OFL 1.1 for both fonts, ISC for the Lucide icons
 │   └── js/
 │       ├── main.js              # boot: load progress, choose first screen, wire navigation
@@ -632,7 +646,7 @@ hackathon/                       # repo root → public GitHub repo in 6-ship
 │   ├── conftest.py              # app fixture with REFRAIN_FAKE_AI=1
 │   ├── test_rules.py            # every progression case, allowance, default plan for max 5–120
 │   ├── test_api.py              # validation errors, edge cases, AI failure path, rate limit
-│   └── js/                      # node --test, no packages: contrast of the color tokens, progress.js helpers
+│   └── js/                      # node --test "tests/js/*.test.mjs", no packages: contrast of the color tokens, progress.js helpers
 ├── scripts/
 │   └── smoke_gemini.py          # loads .env, makes one real Gemini call: confirms SDK settings, prints tokens and cost
 ├── requirements.txt             # Flask, gunicorn, google-genai, pydantic, python-dotenv (pinned)
@@ -740,6 +754,14 @@ Errors use the same shapes on every endpoint: 400 `invalid_input` (with `fields`
 ## Verification
 - **Fixed rules:** `pytest tests/test_rules.py`. It covers every row of the progression table, the allowance examples from the PRD (25 → 5, demo → 2), sessions per day within the daily minutes, `default_roadmap` passing `check_roadmap` with distinct stages for every maximum from 5 to 120, and the word lists in `outside_interruption`, `mentions_survey`, and `has_claim`.
 - **API with the simulated coach:** `pytest tests/test_api.py`. It covers survey validation (400 with field messages), empty warm-up answers marked missed without an AI call, 0 taps → previous rule kept (and a ready-to-resume rule when pulled away), skipped teach-back → only pattern, rule, and roadmap, a pattern that forgets the notes → the notes put in front, a reason that ignores the survey → retry then the default plan, pulled away → hold plus the not-a-lapse sentence, AI failure → progression still returned, and over the limit → 429.
+- **Look and feel:**
+  - `node --test "tests/js/*.test.mjs"` (Node's built-in test runner, no packages) checks every text/background pair in **Look and Feel** against WCAG AA, using the tokens read from `styles.css`.
+  - `pytest` checks that:
+    - the fonts are served as `font/woff2`;
+    - the page has no inline styles for the CSP to block;
+    - every file the stylesheet names exists;
+    - the fonts and icons ship with their licenses.
+  - Each slice is also walked in the browser at 100% and 200% zoom.
 - **Live AI:** `scripts/smoke_gemini.py` confirms the SDK settings. Then the PRD's acceptance checklists are walked in the browser with real Gemini, including the two contrasting surveys (a 20-year-old university student revising for exams vs. a 35-year-old certification learner) and a debrief whose rule quotes "Slack".
 - **Cost:** after the first five real sessions, compare the `gemini_call` log lines with the ≈ $0.02-per-session estimate at `medium`, note the latency, and record both in `checklist.md`. *Done in slice 4: $0.0046 per session at `medium` (debrief median 8.2 s), so `medium` stays; details in `checklist.md > Revisions`.*
 - **Public link:** deploy, walk the demo path once on the `run.app` URL, and confirm the security headers and the 429 response.

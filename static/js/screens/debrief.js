@@ -1,8 +1,8 @@
 // Teach-back and Debrief: one screen in two states.
 // The roadmap change is applied once per session, whether or not the coach answers.
 
-import { MESSAGES, post, WAITS } from "../api.js";
-import { $, el } from "../dom.js";
+import { MESSAGES, post, WAITS, WORK } from "../api.js";
+import { $, el, hideWork, showWork } from "../dom.js";
 import { store } from "../store.js";
 
 const MAX_EXPLANATION = 1500;
@@ -56,6 +56,7 @@ async function submitTeach(explanation) {
   sending = true;
   $("#teach-submit").textContent = "The coach is thinking…";
   $("#teach-status").textContent = WAITS.debrief;
+  showWork($("#teach-work"), explanation ? WORK.debrief : WORK.debriefSkipped);
   renderTeachButton();
   await fetchDebrief();
 }
@@ -103,6 +104,8 @@ function showDebrief({ coach = null, progression = null, simulated = false, mess
   $("#teach").hidden = true;
   $("#debrief").hidden = false;
   $("#debrief-leave").hidden = true;
+  hideWork($("#teach-work"));
+  hideWork($("#debrief-work"));
   $("#debrief-title").textContent = store.state.pending?.topic ?? $("#debrief-title").textContent;
   renderCards(coach, progression);
   $("#debrief-tags").replaceChildren(...(simulated ? [el("span", { className: "tag", text: "Simulated coach" })] : []));
@@ -158,6 +161,7 @@ async function fetchDebrief() {
       stageIndex: progression.newStageIndex,
       history: [historyRow(pending, progression), ...store.state.history],
     });
+    nav.topbar();
   }
 
   if (!coach) {
@@ -187,6 +191,7 @@ async function retry() {
   $("#debrief-retry").disabled = true;
   $("#debrief-retry").textContent = "The coach is thinking…";
   $("#debrief-status").textContent = WAITS.debrief;
+  showWork($("#debrief-work"), store.state.pending.explanation ? WORK.debrief : WORK.debriefSkipped);
   await fetchDebrief();
 }
 

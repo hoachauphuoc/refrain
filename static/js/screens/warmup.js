@@ -1,8 +1,8 @@
 // Warm-up: answer the last session's two questions from memory, then the coach marks each one.
 // A coach outage never blocks studying: Start focusing works whether or not the check came back.
 
-import { post, WAITS } from "../api.js";
-import { $, el } from "../dom.js";
+import { post, WAITS, WORK } from "../api.js";
+import { $, el, hideWork, showWork } from "../dom.js";
 import { store } from "../store.js";
 import { unlockSound } from "../timer.js";
 
@@ -38,7 +38,7 @@ function renderButtons(state) {
   check.disabled = state === "busy";
   check.textContent = { busy: "The coach is thinking…", failed: "Try again" }[state] ?? "Check";
   start.hidden = state === "ready" || state === "busy";
-  start.className = state === "checked" ? "primary" : "secondary";
+  start.className = state === "checked" ? "primary go" : "secondary";
   for (const box of answerBoxes()) box.readOnly = state === "busy" || state === "checked";
 }
 
@@ -68,6 +68,7 @@ async function check(event) {
   if (busy || !warmup) return;
   busy = true;
   $("#warmup-status").textContent = WAITS.check;
+  showWork($("#warmup-work"), WORK.check);
   renderButtons("busy");
 
   const responses = answerBoxes().map((box) => box.value.trim().slice(0, MAX_ANSWER));
@@ -76,6 +77,7 @@ async function check(event) {
     items: warmup.items.map((item, i) => ({ question: item.question, answer: item.answer, response: responses[i] })),
   });
   busy = false;
+  hideWork($("#warmup-work"));
 
   if (!result.ok) {
     $("#warmup-status").textContent = result.message;
@@ -116,6 +118,7 @@ export function enter(session) {
   renderItems(warmup.items);
   $("#warmup-tags").replaceChildren();
   $("#warmup-status").textContent = "";
+  hideWork($("#warmup-work"));
   renderButtons("ready");
 }
 
