@@ -221,20 +221,20 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — the learner confirmed with "ready" on Oct 4, 2026, after reading the agent's report of the final walk (no changes requested); they did not try the app themselves (see Revisions)
 - [x] The marks in *Your words* no longer open gaps in the sentence before they draw in (found in the final walk; deployed as `refrain-00009-kd7`; see Revisions)
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — a brief recap with a reference route, presented in the chat on Oct 4, 2026; not hands-on (see Activity mode)
+- [x] Optional edit and transfer reflection addressed — one safe edit and one reflection question were offered; neither has been taken up (see Edit outcome and Reflection)
+- [x] `devpost/app-map.html` generated from the finished code (commit `3fbd104`), checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: One action followed through the finished code: pressing *Get feedback* on the teach-back screen, the server's check that every phrase the coach "found" is really in the user's text, and the marked words in *Your words*. It is built from the real files and tests, and the map lists them. The learner did not run or open anything for it.
+Route and stops: Reference route, read from the code and not toured. (1) `static/js/screens/debrief.js` → `fetchDebrief()`. (2) `refrain/routes.py` → `debrief()`, `refrain/coach.py` → `write_debrief()`, `refrain/rules.py` → `verbatim_quotes()`. (3) `static/js/progress.js` → `markSegments()`, `static/js/screens/debrief.js` → `marked()`, `static/css/styles.css` → `.got-mark`.
+Edit outcome: Offered, not taken up: change the title *Your words* in `wordsCard()` (`static/js/screens/debrief.js`), then reload and finish one demo session to see it. No test mentions the title. Nothing changed.
+Reflection: Offered (one question about what to do differently when starting with an agent next time); no answer recorded here.
+Activity mode: Recap with a reference route and the map; the live app and editor route was offered and can still be followed from `devpost/app-map.html`.
 
 ## Revisions
 
@@ -385,3 +385,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
     - Each warm-up brings back at most one earlier question, the longest-waiting first (`spec.md > Warm-up screen`).
     - "Minutes focused" counts whole minutes (`spec.md > Home screen`).
   - **Mistakes in the walk itself, not the app:** two browser steps were sent together. **Check** ran before an answer was typed, so session 2's warm-up was checked empty (2 missed, no AI call), and the typed text appeared later only because the browser tool writes into read-only boxes, which a person can't. A 30-second wait also ran before its click.
+- **Final review confirmed (Oct 4, 2026).** After the agent's report of the walk, the fix, and the three behaviors kept by design, the learner replied "ready" and asked for no further changes. The one issue found was fixed and deployed before that reply (`refrain-00009-kd7`).
+- **Learning wrap-up and app map (Oct 4, 2026).** `devpost/app-map.html` is a standalone page (no scripts, no CDN, no network requests) that follows one action, *Get feedback* to the marked words, through three stops with real excerpts. Checked before it was committed: the build stopped if any excerpt's first line had moved; all 58 code names and paths in it exist in the project; it was viewed at desktop width, in the dark palette, and at a 480 px phone width, where a long test name had made the page scroll sideways until it was allowed to wrap. The wrap-up was presented as a recap, not hands-on; the route stays in the map for anyone to follow.

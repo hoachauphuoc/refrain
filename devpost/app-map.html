@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Refrain · App map</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f7f8f6;
+    --card: #ffffff;
+    --fg: #1d2421;
+    --muted: #55615b;
+    --line: #cfd8d3;
+    --accent: #0f766e;
+    --accent-bg: #e3f3f0;
+    --warm: #92400e;
+    --warm-bg: #fbf0dc;
+    --soft: #eef2ef;
+    --code-bg: #f1f4f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101513;
+      --card: #19201d;
+      --fg: #e6ece8;
+      --muted: #a8b7af;
+      --line: #33403a;
+      --accent: #5eead4;
+      --accent-bg: #123832;
+      --warm: #fbbf24;
+      --warm-bg: #38290f;
+      --soft: #202925;
+      --code-bg: #141a17;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, "Segoe UI", system-ui, sans-serif; line-height: 1.6; }
+  main { max-width: 1000px; margin: 0 auto; padding: clamp(16px, 4vw, 32px); }
+  h1 { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: clamp(1.8rem, 4.5vw, 2.5rem); line-height: 1.15; margin: 0.2em 0 0.3em; }
+  h2 { font-size: 1.2rem; margin: 0 0 0.5em; }
+  h3 { font-size: 1.05rem; margin: 0 0 0.3em; }
+  p { margin: 0.5em 0; }
+  a { color: var(--accent); }
+  code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9em; overflow-wrap: anywhere; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .skip { position: absolute; left: 8px; top: -60px; z-index: 2; padding: 8px 12px; border: 2px solid var(--accent); border-radius: 8px; background: var(--card); color: var(--fg); }
+  .skip:focus { top: 8px; }
+  .eyebrow { margin: 0; color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .lede { max-width: 62ch; font-size: 1.1rem; color: var(--muted); }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+  .badge { padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 0.82rem; color: var(--muted); }
+  .badge.warm { border-color: var(--warm); background: var(--warm-bg); color: var(--warm); }
+  section { margin: 18px 0; padding: clamp(16px, 3vw, 24px); border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.88rem; }
+  .pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; padding: 0; list-style: none; }
+  .pieces li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
+  .pieces p { margin: 0.2em 0 0; font-size: 0.93rem; }
+  .scroll { overflow-x: auto; }
+  svg.flow { display: block; width: 100%; min-width: 860px; height: auto; }
+  .flow .zone { fill: var(--soft); stroke: var(--line); stroke-width: 1.5; }
+  .flow .zl { fill: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; }
+  .flow .node rect { fill: var(--card); stroke: var(--accent); stroke-width: 1.5; }
+  .flow .ext rect { stroke: var(--warm); stroke-dasharray: 6 4; }
+  .flow .t { fill: var(--fg); font-size: 15.5px; font-weight: 700; }
+  .flow .f { fill: var(--accent); font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13.5px; }
+  .flow .s { fill: var(--muted); font-size: 13px; }
+  .flow .dot { fill: var(--accent); }
+  .flow .d { fill: var(--bg); font-size: 13px; font-weight: 700; }
+  .flow .a { fill: none; stroke: var(--muted); stroke-width: 2; }
+  .flow .h { fill: var(--muted); }
+  figcaption { margin-top: 8px; font-size: 0.88rem; color: var(--muted); }
+  figure { margin: 12px 0 0; }
+  .stop { margin-top: 16px; padding: 4px 0 4px 16px; border-left: 4px solid var(--accent); }
+  .stop .where { color: var(--muted); font-size: 0.93rem; }
+  details { margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  summary { padding: 8px 12px; cursor: pointer; font-weight: 600; }
+  details[open] summary { border-bottom: 1px solid var(--line); }
+  pre { margin: 0; padding: 10px 12px; overflow-x: auto; border-radius: 0 0 10px 10px; background: var(--code-bg); font-size: 0.86rem; line-height: 1.45; }
+  pre code { font-size: inherit; }
+  .table-wrap { overflow-x: auto; margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .practice { border-color: var(--accent); background: var(--accent-bg); }
+  .practice dl { margin: 10px 0 0; }
+  .practice dt { margin-top: 10px; font-weight: 700; }
+  .practice dd { margin: 2px 0 0; }
+  footer { margin: 18px 0 8px; font-size: 0.88rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the map</a>
+<main id="main">
+
+<header>
+  <p class="eyebrow">Refrain · App map</p>
+  <h1>How one action travels through Refrain</h1>
+  <p class="lede">You explain what you just studied in two or three sentences, and the coach marks the phrases that really are yours. This map follows that one action from the button you press to the highlighter on the page.</p>
+  <p class="badges">
+    <span class="badge">Written against commit <code>3fbd104</code> (<em>Record the deploy of the final-walk fix</em>), Oct 4, 2026</span>
+    <span class="badge warm">Reference route: read from the finished code, not walked hands-on</span>
+  </p>
+</header>
+
+<section aria-labelledby="pieces-h">
+  <h2 id="pieces-h">What is in the app</h2>
+  <p>Five pieces make up the app.</p>
+  <ul class="pieces">
+    <li><h3>The pages</h3><p><code>static/</code> · Plain HTML, CSS and JavaScript modules with no build step. One file per screen in <code>static/js/screens/</code>.</p></li>
+    <li><h3>The server</h3><p><code>refrain/</code> · A small Flask app. It serves the pages and answers three JSON requests: <code>/api/roadmap</code>, <code>/api/check</code> and <code>/api/debrief</code>.</p></li>
+    <li><h3>The fixed rules</h3><p><code>refrain/rules.py</code> · Plain Python for what the AI must not decide: when a stage moves, how many distractions a session allows, the default roadmap, and which quotes are real.</p></li>
+    <li><h3>The coach</h3><p>Gemini 3.8 Flash on Vertex AI · Writes only the words. Each request is one call that must answer in a JSON schema (<code>refrain/schemas.py</code>) and is checked in <code>refrain/coach.py</code>.</p></li>
+    <li><h3>Saved progress</h3><p><code>static/js/store.js</code> · One JSON value in the browser's <code>localStorage</code> under the key <code>refrain.v1</code>. The server stores nothing.</p></li>
+  </ul>
+</section>
+
+<section aria-labelledby="flow-h">
+  <h2 id="flow-h">One action, start to finish</h2>
+  <p>You press <em>Get feedback</em> on the teach-back screen. Five steps later your explanation is back on the page with your own words marked.</p>
+  <figure>
+    <div class="scroll" tabindex="0" role="region" aria-label="Diagram of the five steps; scrolls sideways on narrow screens">
+      <svg class="flow" viewBox="0 0 1000 322" role="img" aria-labelledby="flow-t flow-d">
+        <title id="flow-t">From the Get feedback button to your marked words</title>
+        <desc id="flow-d">Five steps in three stops. Stop 1, in your browser: debrief.js sends your explanation and saves the result in localStorage under refrain.v1. Stop 2, on the server: routes.py receives it, coach.py asks Gemini 3.8 Flash on Vertex AI for JSON, and rules.py keeps only the quotes that really are in your text. Stop 3, in your browser: progress.js marks your phrases and the page shows your words with the marks.</desc>
+
+        <rect class="zone" x="8" y="44" width="184" height="264" rx="14"/>
+        <rect class="zone" x="208" y="44" width="584" height="136" rx="14"/>
+        <rect class="zone" x="808" y="44" width="184" height="264" rx="14"/>
+        <text class="zl" x="100" y="30" text-anchor="middle">STOP 1 · BROWSER</text>
+        <text class="zl" x="500" y="30" text-anchor="middle">STOP 2 · SERVER</text>
+        <text class="zl" x="900" y="30" text-anchor="middle">STOP 3 · BROWSER</text>
+
+        <path class="a" d="M180 112H212"/><path class="h" d="M220 112l-9-5v10z"/>
+        <path class="a" d="M380 112H412"/><path class="h" d="M420 112l-9-5v10z"/>
+        <path class="a" d="M580 112H612"/><path class="h" d="M620 112l-9-5v10z"/>
+        <path class="a" d="M780 112H812"/><path class="h" d="M820 112l-9-5v10z"/>
+
+        <path class="a" d="M100 164V204"/><path class="h" d="M100 212l-5-9h10z"/>
+        <path class="a" d="M500 173V203"/><path class="h" d="M500 164l-5 9h10z"/><path class="h" d="M500 212l-5-9h10z"/>
+        <path class="a" d="M900 164V204"/><path class="h" d="M900 212l-5-9h10z"/>
+        <text class="s" x="110" y="194">saves</text>
+        <text class="s" x="512" y="194">prompt out, JSON back</text>
+        <text class="s" x="910" y="194">draws</text>
+
+        <g class="node" transform="translate(20 60)">
+          <rect width="160" height="104" rx="10"/>
+          <circle class="dot" cx="22" cy="22" r="11"/><text class="d" x="22" y="27" text-anchor="middle">1</text>
+          <text class="t" x="40" y="27">Send</text>
+          <text class="f" x="12" y="54">debrief.js</text>
+          <text class="f" x="12" y="73">fetchDebrief()</text>
+          <text class="s" x="12" y="94">sends your words</text>
+        </g>
+        <g class="node" transform="translate(220 60)">
+          <rect width="160" height="104" rx="10"/>
+          <circle class="dot" cx="22" cy="22" r="11"/><text class="d" x="22" y="27" text-anchor="middle">2</text>
+          <text class="t" x="40" y="27">Receive</text>
+          <text class="f" x="12" y="54">routes.py</text>
+          <text class="f" x="12" y="73">debrief()</text>
+          <text class="s" x="12" y="94">checks the input</text>
+        </g>
+        <g class="node" transform="translate(420 60)">
+          <rect width="160" height="104" rx="10"/>
+          <circle class="dot" cx="22" cy="22" r="11"/><text class="d" x="22" y="27" text-anchor="middle">3</text>
+          <text class="t" x="40" y="27">Ask the coach</text>
+          <text class="f" x="12" y="54">coach.py</text>
+          <text class="f" x="12" y="73">write_debrief()</text>
+          <text class="s" x="12" y="94">asks for JSON</text>
+        </g>
+        <g class="node" transform="translate(620 60)">
+          <rect width="160" height="104" rx="10"/>
+          <circle class="dot" cx="22" cy="22" r="11"/><text class="d" x="22" y="27" text-anchor="middle">4</text>
+          <text class="t" x="40" y="27">Check quotes</text>
+          <text class="f" x="12" y="54">rules.py</text>
+          <text class="f" x="12" y="73">verbatim_quotes()</text>
+          <text class="s" x="12" y="94">drops invented ones</text>
+        </g>
+        <g class="node" transform="translate(820 60)">
+          <rect width="160" height="104" rx="10"/>
+          <circle class="dot" cx="22" cy="22" r="11"/><text class="d" x="22" y="27" text-anchor="middle">5</text>
+          <text class="t" x="40" y="27">Mark</text>
+          <text class="f" x="12" y="54">progress.js</text>
+          <text class="f" x="12" y="73">markSegments()</text>
+          <text class="s" x="12" y="94">marks your phrases</text>
+        </g>
+
+        <g class="node" transform="translate(20 212)">
+          <rect width="160" height="80" rx="10"/>
+          <text class="t" x="12" y="26">Saved progress</text>
+          <text class="f" x="12" y="48">localStorage</text>
+          <text class="f" x="12" y="67">refrain.v1</text>
+        </g>
+        <g class="node ext" transform="translate(420 212)">
+          <rect width="160" height="80" rx="10"/>
+          <text class="t" x="12" y="26">Gemini 3.8 Flash</text>
+          <text class="s" x="12" y="48">on Vertex AI</text>
+          <text class="s" x="12" y="67">writes words only</text>
+        </g>
+        <g class="node" transform="translate(820 212)">
+          <rect width="160" height="80" rx="10"/>
+          <text class="t" x="12" y="26">What you see</text>
+          <text class="s" x="12" y="48">Your words card,</text>
+          <text class="s" x="12" y="67">phrases marked</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>Five steps, three stops. The dashed box is outside the app: Gemini is the only step that leaves the server. The route below walks the three stops in order.</figcaption>
+  </figure>
+</section>
+
+<section aria-labelledby="route-h">
+  <h2 id="route-h">The route in three stops</h2>
+  <p class="muted small">Each stop opens a real excerpt from that commit. Lines marked <code>...</code> are left out. If a name no longer matches, search the project for it.</p>
+
+  <div class="stop">
+    <h3>Stop 1 · Your words leave the browser <span class="muted small">(step 1)</span></h3>
+    <p class="where"><strong>Start in</strong> <code>static/js/screens/debrief.js</code> → <code>fetchDebrief()</code>, which calls <code>post()</code> in <code>static/js/api.js</code>.</p>
+    <p>Pressing <em>Get feedback</em> runs <code>submitTeach()</code>, which saves your explanation in the browser and then calls <code>fetchDebrief()</code>. <code>requestBody()</code> gathers what is sent: your age and goal, the topic, your explanation, the distraction taps with their notes, and how the session ended. <code>post()</code> sends it as JSON, waits up to 55 seconds, and turns every failure into one of two calm messages.</p>
+    <details>
+      <summary>Show the code: fetchDebrief() sends the request</summary>
+      <pre><code>async function fetchDebrief() {
+  const pending = store.state.pending;
+  const result = await post("/api/debrief", requestBody(pending));</code></pre>
+    </details>
+  </div>
+
+  <div class="stop">
+    <h3>Stop 2 · The server asks the coach, then checks the answer <span class="muted small">(steps 2–4)</span></h3>
+    <p class="where"><strong>Follow it through</strong> <code>refrain/routes.py</code> → <code>debrief()</code>, then <code>refrain/coach.py</code> → <code>write_debrief()</code>, then <code>refrain/rules.py</code> → <code>verbatim_quotes()</code>.</p>
+    <p>First <code>debrief()</code> checks the input and lets the fixed rules decide the roadmap change, so that answer exists even if the coach cannot respond. Then <code>write_debrief()</code> builds the prompt and asks Gemini for JSON that includes <code>got_quotes</code>: short phrases it says it copied from your explanation. Then comes the check that matters. <code>verbatim_quotes()</code> keeps a phrase only if it really appears in what you wrote (ignoring case and quotation marks) and returns your own characters, not the coach's. If the coach invented a phrase, the request gets one retry; after that the invented phrase is dropped.</p>
+    <details>
+      <summary>Show the code: debrief() decides the stage change first</summary>
+      <pre><code>@bp.post("/debrief")
+def debrief():
+    session, fields = schemas.parse_debrief(request.get_json(silent=True))
+    if fields:
+        return _error(400, "invalid_input", fields=fields)
+    # The fixed rules decide the roadmap change first, so it comes back even when the coach can't answer.
+    result = rules.progress(session.stages, session.stage_index, session.outcome, len(session.taps),
+                            session.planned_minutes)</code></pre>
+    </details>
+    <details>
+      <summary>Show the code: write_debrief() retries once, then keeps only real quotes</summary>
+      <pre><code>    def soft_problems(data):
+        problems = []
+        if needs["pattern"] and not rules.quotes_note(data["pattern"], notes):
+            problems.append("did not quote any of their notes word for word in the pattern")
+        if needs["explanation"] and rules.verbatim_quotes(data.get("got_quotes"), session.explanation)[1]:
+            problems.append("put phrases in got_quotes that are not copied exactly from their explanation")
+        return ", and ".join(problems) or None
+    ...
+    if needs["explanation"]:
+        out["got"] = data["got"].strip()
+        # Only words that are really theirs get marked; invented ones are dropped.
+        out["gotQuotes"] = rules.verbatim_quotes(data.get("got_quotes"), session.explanation)[0]</code></pre>
+    </details>
+    <details>
+      <summary>Show the code: verbatim_quotes() is the check</summary>
+      <pre><code>def verbatim_quotes(quotes, explanation, limit=3):
+    """(kept, dropped): the phrases that really are in the explanation, as the explanation writes them.
+
+    Matching ignores case and the quotation marks or end punctuation the coach may add, and each kept
+    phrase is the explanation's own text, so the browser can mark exactly those characters.
+    """
+    kept, dropped, lowered = [], 0, explanation.lower()
+    for quote in quotes if isinstance(quotes, list) else []:
+        phrase = quote.strip(_QUOTE_EDGES) if isinstance(quote, str) else ""
+        if len(phrase) &lt; 3:
+            continue
+        at = lowered.find(phrase.lower()) if len(lowered) == len(explanation) else explanation.find(phrase)
+        if at &lt; 0:
+            dropped += 1
+            continue
+        exact = explanation[at:at + len(phrase)]
+        if exact not in kept and len(kept) &lt; limit:
+            kept.append(exact)
+    return kept, dropped</code></pre>
+    </details>
+  </div>
+
+  <div class="stop">
+    <h3>Stop 3 · Your words come back marked <span class="muted small">(step 5)</span></h3>
+    <p class="where"><strong>Finish in</strong> <code>static/js/progress.js</code> → <code>markSegments()</code>, <code>static/js/screens/debrief.js</code> → <code>marked()</code> and <code>wordsCard()</code>, and <code>static/css/styles.css</code> → <code>.got-mark</code>.</p>
+    <p>The answer arrives with <code>coach.gotQuotes</code>. <code>markSegments()</code> cuts your text into pieces and flags each place a quote appears. <code>marked()</code> turns only the flagged pieces into <code>&lt;mark&gt;</code> elements; every piece goes in as plain text, so nothing you typed can run as code. The CSS then sweeps the highlighter across each mark. Afterwards <code>fetchDebrief()</code> saves the new rule and warm-up questions with <code>store.update()</code>. The marks are drawn from the response and are not saved.</p>
+    <details>
+      <summary>Show the code: markSegments() cuts the text into pieces</summary>
+      <pre><code>// The text in pieces, with every place a phrase appears (ignoring case) marked, so a screen can wrap
+// the marked pieces in &lt;mark&gt; while every piece still goes in as plain text.
+// markSegments("Slack pinged", ["slack"]) → [{ text: "Slack", marked: true }, { text: " pinged", marked: false }]
+export function markSegments(text, phrases) {
+  ...
+  const pieces = [];
+  let at = 0;
+  for (const [start, end] of merged) {
+    if (start &gt; at) pieces.push({ text: source.slice(at, start), marked: false });
+    pieces.push({ text: source.slice(start, end), marked: true });
+    at = end;
+  }
+  if (at &lt; source.length) pieces.push({ text: source.slice(at), marked: false });
+  return pieces;</code></pre>
+    </details>
+    <details>
+      <summary>Show the code: marked() and wordsCard() put the marks on the page</summary>
+      <pre><code>// Text with some phrases marked: every piece is plain text, and only the marks are elements.
+function marked(text, phrases, markClass) {
+  return markSegments(text, phrases).map((piece) =&gt;
+    piece.marked ? el("mark", { className: markClass, text: piece.text }) : piece.text,
+  );
+}
+
+function wordsCard(explanation, coach) {
+  const page = el("div", { className: "page" }, [
+    el("p", { className: "your-words" }, marked(explanation, coach.gotQuotes ?? [], "got-mark")),
+  ...</code></pre>
+    </details>
+    <details>
+      <summary>Show the code: .got-mark draws the highlighter</summary>
+      <pre><code>.got-mark {
+  padding: 0 2px;
+  margin: 0 -2px; /* the padding widens the marker, not the text, so no gaps show before the sweep */
+  color: var(--page-ink);
+  background: linear-gradient(var(--marker), var(--marker)) no-repeat 0 0 / 100% 100%;
+  border-radius: 3px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: mark-sweep 700ms var(--ease) 450ms both;
+}</code></pre>
+    </details>
+  </div>
+</section>
+
+<section aria-labelledby="change-h">
+  <h2 id="change-h">To change this, start here</h2>
+  <p>Pick what you want to change, open the file in the middle column, and let the right-hand column tell you whether it still works.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th scope="col">I want to change…</th><th scope="col">Start in</th><th scope="col">Then check with</th></tr></thead>
+      <tbody>
+        <tr><td>How the coach words its feedback</td><td><code>refrain/coach.py</code> → <code>SYSTEM</code> and <code>debrief_prompt()</code></td><td><code>pytest</code> (<code>tests/test_api.py</code> checks what the prompts ask for), then one real session</td></tr>
+        <tr><td>How many distractions a session allows</td><td><code>refrain/rules.py</code> → <code>tap_allowance()</code> (one tap per 5 planned minutes, at least 2)</td><td><code>tests/test_rules.py</code></td></tr>
+        <tr><td>The stages a new plan climbs through</td><td><code>refrain/rules.py</code> → <code>default_roadmap()</code></td><td><code>tests/test_rules.py</code></td></tr>
+        <tr><td>How soon a missed question comes back</td><td><code>static/js/progress.js</code> → <code>REVIEW_GAP</code></td><td><code>node --test "tests/js/*.test.mjs"</code></td></tr>
+        <tr><td>Colours, including the marker</td><td><code>static/css/styles.css</code> → the <code>:root</code> tokens (such as <code>--marker</code>)</td><td><code>tests/js/contrast.test.mjs</code>, which checks every text and background pair against WCAG AA</td></tr>
+        <tr><td>How many AI requests one visitor gets</td><td>The <code>REFRAIN_RATE_PER_HOUR</code> and <code>REFRAIN_DAILY_CAP</code> settings, read in <code>create_app()</code> in <code>refrain/__init__.py</code></td><td>Redeploy as in <code>README.md</code> → Deploy to Cloud Run; the settings are environment variables</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="practice" aria-labelledby="practice-h">
+  <h2 id="practice-h">A practice to reuse: let code check what the AI returns before the screen trusts it</h2>
+  <dl>
+    <dt>What was decided</dt>
+    <dd>The coach may only mark phrases that really appear in the user's own explanation. The AI proposes them; <code>verbatim_quotes()</code> decides. A phrase that is not found is never shown, and the user's own characters are what get marked.</dd>
+    <dt>Evidence in the project</dt>
+    <dd>Tests cover the rule itself (<code>tests/test_rules.py</code>, <code>test_verbatim_quotes_…</code>) and the whole request (<code>tests/test_api.py</code>, <code>test_quotes_that_are_not_their_words_are_retried_once_then_dropped</code>). Then it was measured with the real model: five scripted debriefs each came back with two or three quotes that were all the user's own text, so none needed a retry and none was dropped (<code>devpost/checklist.md</code> → Revisions → Slice 9).</dd>
+    <dt>Use it again</dt>
+    <dd>Whenever AI output is shown as fact (a citation, a name, a figure, a quoted sentence), write the smallest rule that code can verify (an exact match, a value in range, an item from an allowed list). Test it with a wrong answer on purpose, then run the real model a few times and count how often the rule had to step in. The tests tell you it works; the count tells you whether it is doing anything.</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="run-h">
+  <h2 id="run-h">Run it again</h2>
+  <p>After the one-time setup in <code>README.md</code> → Run it locally (on macOS or Linux, activate with <code>source .venv/bin/activate</code> instead):</p>
+<pre><code>.venv\Scripts\activate
+flask --app main run --port 8080
+pytest
+node --test "tests/js/*.test.mjs"</code></pre>
+  <p>Open <code>http://localhost:8080</code>. With <code>REFRAIN_FAKE_AI=1</code> in <code>.env</code> a simulated coach answers, labelled <em>Simulated coach</em> on screen, and no Google Cloud project is needed. The public link is <a href="https://refrain-476222056020.us-central1.run.app">https://refrain-476222056020.us-central1.run.app</a>, kept online through October 30, 2026, 5 pm ET.</p>
+</section>
+
+<footer>
+  <p>This page is a snapshot of commit <code>3fbd104</code>. The project keeps changing after it, so treat line order and file contents as a guide, and search for the function names when something has moved. It needs no scripts and makes no network requests.</p>
+</footer>
+
+</main>
+</body>
+</html>
