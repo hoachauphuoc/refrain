@@ -115,33 +115,54 @@
           <p class="tags" id="home-tags"></p>
         </div>
 
-        <div class="start card">
-          <label for="home-topic">What will you study?</label>
-          <input id="home-topic" type="text" maxlength="120" autocomplete="off" placeholder="For example: Project management course — managing risks">
-          <div class="start-row">
-            <label class="switch" for="home-demo">
-              <input id="home-demo" type="checkbox" role="switch">
-              <span class="track" aria-hidden="true"></span>
-              <span>Demo length (1 minute)</span>
-            </label>
-            <button type="button" class="primary go" id="home-start-btn" disabled>Start session</button>
+        <!-- Running totals: they only grow, so there is no streak to lose. -->
+        <ul class="counters" id="home-counters" aria-label="Your totals" hidden>
+          <li class="counter card"><span class="count" id="count-sessions">0</span><span class="count-label">Sessions</span></li>
+          <li class="counter card"><span class="count" id="count-minutes">0</span><span class="count-label">Minutes focused</span></li>
+          <li class="counter star card"><span class="count" id="count-returns">0</span><span class="count-label">Returns</span></li>
+          <li class="counter star card"><span class="count" id="count-kept">0</span><span class="count-label">Ideas kept</span></li>
+        </ul>
+
+        <!-- On wide screens: the main column (start, pick up) beside the side column (rule, what pulls you). -->
+        <div class="home-col main-col">
+          <div class="start card">
+            <label for="home-topic">What will you study?</label>
+            <input id="home-topic" type="text" maxlength="120" autocomplete="off" placeholder="For example: Project management course — managing risks">
+            <div class="start-row">
+              <label class="switch" for="home-demo">
+                <input id="home-demo" type="checkbox" role="switch">
+                <span class="track" aria-hidden="true"></span>
+                <span>Demo length (1 minute)</span>
+              </label>
+              <button type="button" class="primary go" id="home-start-btn" disabled>Start session</button>
+            </div>
+          </div>
+
+          <div class="pickup card" id="home-pickup" hidden>
+            <p class="pickup-label ico i-bookmark">Pick up where you left off</p>
+            <p class="pickup-topic" id="home-pickup-topic"></p>
+            <div id="home-pickup-lines"></div>
           </div>
         </div>
 
-        <div class="pickup card" id="home-pickup" hidden>
-          <p class="pickup-label ico i-bookmark">Pick up where you left off</p>
-          <p class="pickup-topic" id="home-pickup-topic"></p>
-          <div id="home-pickup-lines"></div>
-        </div>
+        <div class="home-col side-col">
+          <div class="rule-card card" id="home-rule">
+            <p class="rule-label ico i-compass" id="home-rule-label">Your rule</p>
+            <p class="rule-text" id="home-rule-text"></p>
+            <p class="rule-source" id="home-rule-source" hidden></p>
+            <p class="rule-work" id="home-rule-work" hidden></p>
+          </div>
 
-        <div class="rule-card card" id="home-rule">
-          <p class="rule-label ico i-compass" id="home-rule-label">Your rule</p>
-          <p class="rule-text" id="home-rule-text"></p>
-          <p class="rule-source" id="home-rule-source" hidden></p>
+          <section class="pulls card" id="home-pulls" aria-labelledby="home-pulls-title" hidden>
+            <h3 class="ico i-magnet" id="home-pulls-title">What pulls you away most</h3>
+            <ol class="pulls-list" id="home-pulls-list"></ol>
+            <p class="muted small" id="home-pulls-empty">Your notes will show here after a session where you note what pulled you.</p>
+          </section>
         </div>
 
         <section class="history card" aria-labelledby="home-history-title">
-          <h3 id="home-history-title">Sessions</h3>
+          <h3 id="home-history-title">Your sky</h3>
+          <p class="sky-hint muted small" id="home-sky-hint" hidden>One line for each session. Each star is a time you noticed a slip and came back.</p>
           <p class="totals" id="home-totals" hidden></p>
           <p class="muted" id="home-history-empty">Your first session is ready.</p>
           <ol class="history-list" id="home-history"></ol>

@@ -1,7 +1,7 @@
 // Home: the goal, the roadmap stages, the rule, starting a session, the history, and Reset everything.
 
 import { $, el } from "../dom.js";
-import { keptCount, warmupDue } from "../progress.js";
+import { ruleAtWork, topNotes, totals, warmupDue } from "../progress.js";
 import { store } from "../store.js";
 import { unlockSound } from "../timer.js";
 
@@ -39,6 +39,32 @@ function renderRule(rule) {
   const source = rule ? ruleSource(rule) : "";
   $("#home-rule-source").textContent = source;
   $("#home-rule-source").hidden = !source;
+  renderRuleAtWork(rule);
+}
+
+// Rule at work: how often the notes behind the rule came up in the last few sessions, oldest first.
+function renderRuleAtWork(rule) {
+  const line = $("#home-rule-work");
+  const work = ruleAtWork(rule, store.state.history);
+  line.hidden = !work;
+  if (!work) return;
+  const notes = rule.fromNotes.map((note) => `“${note}”`).join(" or ");
+  const most = Math.max(1, ...work.counts);
+  const bars = el("span", { className: "work-bars", attrs: { "aria-hidden": "true" } }, work.counts.map((count) => {
+    const bar = el("span", { className: count === 0 ? "work-bar zero" : "work-bar" });
+    bar.style.height = `${Math.max(14, (count / most) * 100)}%`;
+    return bar;
+  }));
+  const text = work.counts.length === 1
+    ? `${notes} came up ${plural(work.counts[0], "time")} last session. Your next sessions will show whether it pulls you less.`
+    : `${notes} came up ${work.counts.join(" → ")} times in your last ${work.counts.length} sessions.`;
+  const trend = { less: "Less often", same: "About the same", more: "More often" }[work.trend];
+  line.replaceChildren(
+    el("strong", { text: "Rule at work" }),
+    bars,
+    el("span", { className: "work-text", text }),
+    trend ? el("span", { className: `trend ${work.trend}`, text: trend }) : null,
+  );
 }
 
 // Where the rule came from, so it reads as yours rather than a generic tip.
@@ -86,32 +112,83 @@ function recallText(recall) {
   return `warm-up ${recall.got} of ${asked}${recall.partly ? `, ${recall.partly} partly` : ""}`;
 }
 
-// Running totals only: they grow with every session and never reset, so a missed day costs nothing.
-function renderTotals(history) {
-  $("#home-totals").hidden = history.length === 0;
-  if (history.length === 0) return;
-  const seconds = history.reduce((sum, row) => sum + row.secondsDone, 0);
-  const focused = seconds > 0 && seconds < 60 ? "under a minute focused" : `${plural(Math.floor(seconds / 60), "minute")} focused`;
-  const parts = [plural(history.length, "session"), focused];
-  const recalls = history.map((row) => row.recall).filter(Boolean);
-  if (recalls.length > 0) {
-    const total = (key) => recalls.reduce((sum, recall) => sum + recall[key], 0);
-    const asked = total("got") + total("partly") + total("missed");
-    parts.push(`${total("got")} of ${asked} warm-up answers recalled${total("partly") ? `, ${total("partly")} partly` : ""}`);
+// Counters count up once per visit, the first time Home shows them; with reduced motion they just appear.
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let counted = false;
+
+function countUp(node, target) {
+  if (counted || reducedMotion.matches || target === 0) {
+    node.textContent = String(target);
+    return;
   }
-  const kept = keptCount(store.state.reviews);
-  if (kept > 0) parts.push(`${plural(kept, "idea")} kept`);
-  $("#home-totals").textContent = parts.join(" · ");
+  const start = performance.now();
+  const step = (now) => {
+    const progress = Math.min(1, (now - start) / 700);
+    node.textContent = String(Math.round(target * (1 - (1 - progress) ** 3)));
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Running totals only: they grow with every session and never reset, so a missed day costs nothing.
+function renderCounters(history) {
+  const sum = totals(history, store.state.reviews);
+  $("#home-counters").hidden = sum.sessions === 0;
+  if (sum.sessions === 0) return;
+  const values = { sessions: sum.sessions, minutes: Math.floor(sum.seconds / 60), returns: sum.returns, kept: sum.kept };
+  for (const [key, value] of Object.entries(values)) countUp($(`#count-${key}`), value);
+  counted = true;
+  // Warm-up recall stays a line of its own: how much of what you studied you could bring back.
+  $("#home-totals").hidden = sum.recall.asked === 0;
+  $("#home-totals").textContent = `Warm-ups: ${sum.recall.got} of ${sum.recall.asked} answers recalled${sum.recall.partly ? `, ${sum.recall.partly} partly` : ""}.`;
+}
+
+// What pulls you away most: the three most frequent notes, each with a bar.
+function renderPulls(history) {
+  $("#home-pulls").hidden = history.length === 0;
+  const top = topNotes(history);
+  $("#home-pulls-empty").hidden = top.length > 0;
+  const most = top[0]?.count ?? 1;
+  $("#home-pulls-list").replaceChildren(
+    ...top.map(({ note, count }) => {
+      const bar = el("span", { className: "pull-bar" });
+      bar.style.width = `${Math.max(8, (count / most) * 100)}%`;
+      return el("li", { className: "pull" }, [
+        el("span", { className: "pull-note", text: note }),
+        el("span", { className: "pull-count", text: `${count}×` }),
+        el("span", { className: "pull-track", attrs: { "aria-hidden": "true" } }, [bar]),
+      ]);
+    }),
+  );
+}
+
+// One line of the sky: the session as a line, with a star at each return. Older rows have no tap times.
+function skyLine(row) {
+  if (!Array.isArray(row.tapSecs)) return null;
+  const length = row.plannedMinutes * 60;
+  const line = el("span", { className: "sky-line", attrs: { "aria-hidden": "true" } });
+  const done = el("span", { className: "sky-done" });
+  done.style.width = `${Math.min(100, (row.secondsDone / length) * 100)}%`;
+  line.append(done);
+  for (const sec of row.tapSecs) {
+    const star = el("span", { className: "sky-star" });
+    star.style.left = `${Math.min(100, (sec / length) * 100)}%`;
+    line.append(star);
+  }
+  return line;
 }
 
 function renderHistory(history) {
   $("#home-history-empty").hidden = history.length > 0;
-  renderTotals(history);
+  $("#home-sky-hint").hidden = !history.some((row) => Array.isArray(row.tapSecs));
+  renderCounters(history);
+  renderPulls(history);
   $("#home-history").replaceChildren(
     ...history.map((row) =>
       el("li", { className: "history-row" }, [
         el("span", { className: "h-when", text: when(row.endedAt) }),
         el("span", { className: "h-topic", text: row.topic }),
+        skyLine(row),
         el("span", {
           className: "h-meta",
           text: [sessionLength(row), OUTCOMES[row.outcome], `${row.taps} noted`, row.recall && recallText(row.recall)]

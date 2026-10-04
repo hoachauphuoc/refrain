@@ -172,18 +172,18 @@ Google Cloud: project `refrain-coach-fanr1s` — billing linked to "My Billing A
   Learner check: Miss one warm-up question on purpose, then run two more demo sessions. Does it come back, and does "kept" feel earned?
   Commit: `Bring missed warm-up ideas back until they're kept`
 
-- [ ] **11. Home shows your rule at work and your sky**
+- [x] **11. Home shows your rule at work and your sky**
   Becomes usable: Home becomes a dashboard:
   - counters for sessions, minutes focused, returns, and ideas kept;
-  - *Your North Star*, with "Rule at work": how often the notes behind the rule came up since it started;
+  - *Your rule*, with "Rule at work": how often the notes behind the rule came up in your last few sessions, oldest first;
   - *What pulls you away most*: your three most frequent notes;
   - *Your sky*: one row of stars per session.
   Why now: Monitoring progress helps people reach goals, more so when it is recorded (Harkin et al. 2016). Slices 8–10 now save what is needed to show it.
   PRD ref: `prd.md > Screens and Layout` (Home (Roadmap)), `prd.md > Possible Later Enhancements` (charts: only these in-app views now)
-  Spec ref: `spec.md > Components` (Home screen), `spec.md > Data Model` (`tapSecs`, `notes`, `rule.baseline`)
+  Spec ref: `spec.md > Components` (Home screen, Progress helpers), `spec.md > Data Model` (`tapSecs`, `notes`)
   Build:
-  - History rows save `tapSecs` and `notes`, and the rule saves `baseline`.
-  - `ruleAtWork` and `topNotes` in `progress.js`.
+  - History rows save `tapSecs` and `notes`.
+  - `totals`, `notesMatching`, `ruleAtWork`, and `topNotes` in `progress.js`.
   - The dashboard in `home.js`, with numbers that count up.
   - Old rows without tap times show only their count.
   - Tests.
@@ -332,3 +332,16 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
       - the box-2 question showed "…Get it once more to keep it." and, got again, **Idea kept**;
       - two new questions plus one review were checked in one three-item request;
       - Home's totals ended "· 2 ideas kept".
+- **Slice 11 built (Oct 4, 2026).**
+  - **Rule at work, redefined while building.** The plan was "how often the rule's notes came up since it started", against a `baseline` saved with the rule. A real run showed why that fails: the coach writes a fresh rule after almost every session with taps, so "since" is nearly always zero sessions and the line would never show anything. It now follows the rule's notes through the last five sessions saved with notes, oldest first ("“email ping” or “team chat” came up 2 → 2 times in your last 2 sessions.", **About the same**). That answers the same question — is this pull shrinking? — and needs no `baseline`, so none is saved.
+  - The cards sit in two column containers instead of fixed grid rows, so a hidden card (no pick-up note yet) leaves no gap.
+  - The old totals line keeps only warm-up recall ("Warm-ups: 5 of 14 answers recalled, 3 partly."), because the counters now show sessions, minutes, returns, and ideas kept.
+  - Verified:
+    - `node --test`: 68 passed (totals, `notesMatching`, `ruleAtWork` with old rows and rules without notes, `topNotes`). `pytest`: 282 passed.
+    - In the browser, with ten earlier sessions plus two new demo sessions ("team chat" twice; then "email ping" and "team chat"):
+      - the counters read 10 sessions, 7 minutes, 11 returns, 2 ideas kept;
+      - the rule card showed the line above;
+      - *What pulls you away most* listed team chat 3× and email ping 1×;
+      - *Your sky* drew star lines for the two new rows and text only for the older ones.
+    - The wide layout (1280 px) and 200% zoom showed no overflow; the counters wrap to 2 × 2.
+    - A reload kept everything, and **Reset everything** left no saved progress and showed Welcome.

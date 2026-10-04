@@ -142,3 +142,62 @@ export function backAgainLabel(review) {
   if (review.box === 2) return `Back again: you had this on ${day}. Get it once more to keep it.`;
   return review.last === "partly" ? `Back again: you partly had this on ${day}.` : `Back again: you missed this on ${day}.`;
 }
+
+// --- Home ---
+
+// Running totals for the counters: they only ever grow, so there is no streak to lose.
+export function totals(history, reviews) {
+  const rows = Array.isArray(history) ? history : [];
+  const recalls = rows.map((row) => row.recall).filter(Boolean);
+  const sum = (list, read) => list.reduce((total, item) => total + (Number(read(item)) || 0), 0);
+  return {
+    sessions: rows.length,
+    seconds: sum(rows, (row) => row.secondsDone),
+    returns: sum(rows, (row) => row.taps),
+    kept: keptCount(reviews),
+    recall: {
+      got: sum(recalls, (r) => r.got),
+      partly: sum(recalls, (r) => r.partly),
+      asked: sum(recalls, (r) => r.got + r.partly + r.missed),
+    },
+  };
+}
+
+// How many of these notes name one of the rule's notes ("team chat" also counts "team chat again").
+export function notesMatching(notes, ruleNotes) {
+  const words = (Array.isArray(ruleNotes) ? ruleNotes : []).map((w) => w.toLowerCase().trim()).filter(Boolean);
+  return (Array.isArray(notes) ? notes : []).filter((note) => {
+    const lowered = typeof note === "string" ? note.toLowerCase() : "";
+    return lowered && words.some((word) => lowered.includes(word));
+  }).length;
+}
+
+// Rule at work: how often the notes behind the rule came up in your last few sessions, oldest first,
+// so you can see whether that pull is shrinking. The coach rewrites the rule after most sessions, so this
+// follows its notes across sessions rather than counting from when the rule was written.
+// Only sessions saved with their notes count; older rows only know how many taps they had.
+export function ruleAtWork(rule, history, limit = 5) {
+  const fromNotes = rule?.fromNotes ?? [];
+  if (fromNotes.length === 0) return null;
+  const rows = (Array.isArray(history) ? history : []).filter((row) => Array.isArray(row.notes)).slice(0, limit).reverse();
+  if (rows.length === 0) return null;
+  const counts = rows.map((row) => notesMatching(row.notes, fromNotes));
+  const [first, last] = [counts[0], counts[counts.length - 1]];
+  const trend = counts.length < 2 ? null : last < first ? "less" : last > first ? "more" : "same";
+  return { counts, trend };
+}
+
+// The notes that pull you away most, across every session saved with its notes.
+export function topNotes(history, limit = 3) {
+  const counts = new Map();
+  for (const row of Array.isArray(history) ? history : []) {
+    for (const note of Array.isArray(row.notes) ? row.notes : []) {
+      const key = typeof note === "string" ? note.trim().toLowerCase() : "";
+      if (!key) continue;
+      const entry = counts.get(key) ?? { note: note.trim(), count: 0 };
+      entry.count += 1;
+      counts.set(key, entry);
+    }
+  }
+  return [...counts.values()].sort((a, b) => b.count - a.count).slice(0, limit);
+}

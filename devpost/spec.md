@@ -298,6 +298,11 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
     - `dueReviews(reviews, done, limit = 1)`: not kept, due now, the longest-waiting first.
     - `warmupDue(state)`: new questions are saved, or a review is due.
     - `keptCount(reviews)` and `backAgainLabel(review)`.
+  - Home:
+    - `totals(history, reviews)`: sessions, seconds, returns, ideas kept, and recall sums.
+    - `notesMatching(notes, ruleNotes)`: how many notes name one of the rule's notes, ignoring case ("team chat again" counts for "team chat").
+    - `ruleAtWork(rule, history, limit = 5)`: `{counts, trend}` for the last sessions saved with notes, oldest first, or `null`.
+    - `topNotes(history, limit = 3)`: `[{note, count}]`, keeping the first spelling seen.
 - **Talks to:** `focus.js` and `debrief.js`; later slices add the Home helpers here.
 - PRD ref: `prd.md > Focus Session and Distraction Logging`.
 
@@ -330,14 +335,23 @@ There is no red anywhere: a miss and an ease-back use `--muted`, never an alarm 
 
 #### Home screen
 - **Files:** `static/js/screens/home.js`.
-- **What it shows, in this order** (from 960 px wide, a grid: the roadmap card spans the top, the start and pick-up cards sit on the left, and the rule card on the right):
+- **What it shows, in this order** (from 960 px wide, a grid: the roadmap, the counters, and the sky span the page; a main column holds the start and pick-up cards, and a side column the rule and "What pulls you away most"):
   1. The goal as a heading.
   2. The stages as a path (minutes, sessions per day): a line through one node per stage, with finished stages lit teal, the current one a glowing star with its minutes in `--star`, and later ones dimmed. A small muted "Default plan" note appears when the roadmap came from the built-in plan.
-  3. The topic field (up to 120 characters), the **Demo length (1 minute)** switch, and **Start session** / **Start with warm-up** (`warmupDue`: questions saved, or a review due).
-  4. **Pick up where you left off**, when `resume` exists.
-  5. The rule card with its starlight edge, or "Your first rule will come from your first session". Under the rule, where it came from: "From your notes: “team chat”, “email ping”." from `rule.fromNotes`, or "Written after a session you were pulled away from." when `rule.pulledAway` and there were no notes.
-  6. A totals line — sessions, minutes focused (`secondsDone` summed), warm-up answers recalled (`recall` summed; partly counted separately), and ideas kept (`keptCount(reviews)`, once there is one) — then history rows, newest first: date, length ("6 of 10 min", or "1 min demo"), outcome (completed / pulled away / ended early), taps, "warm-up 1 of 2" when `recall` exists, and change (up / hold / ease back). Totals only grow, so there is no streak to lose. The first time, it shows "Your first session is ready" instead.
-  7. **Reset everything**, which opens an inline confirmation ("Erase all progress on this device?" with **Erase** / **Cancel**) and then shows Welcome.
+  3. Four counters from `totals(history, reviews)`, hidden before the first session: sessions, minutes focused (`secondsDone` summed, in whole minutes), returns (taps summed), and ideas kept (`keptCount`). They count up over 700 ms the first time Home shows them in a visit; with reduced motion they just appear.
+  4. The topic field (up to 120 characters), the **Demo length (1 minute)** switch, and **Start session** / **Start with warm-up** (`warmupDue`: questions saved, or a review due).
+  5. **Pick up where you left off**, when `resume` exists.
+  6. The rule card with its starlight edge, or "Your first rule will come from your first session".
+     - Under the rule, where it came from: "From your notes: “team chat”, “email ping”." from `rule.fromNotes`, or "Written after a session you were pulled away from." when `rule.pulledAway` and there were no notes.
+     - **Rule at work** (`ruleAtWork`): for the rule's notes, how many of each of the last five sessions' notes named one, oldest first. It shows one small bar per session (a dim stub for zero), the counts in words ("“team chat” came up 2 → 1 → 0 times in your last 3 sessions."), and **Less often** / **About the same** / **More often** from the first and last counts.
+     - It is hidden when the rule has no notes or no session was saved with notes. With one session: "…came up 2 times last session. Your next sessions will show whether it pulls you less."
+  7. **What pulls you away most** (`topNotes`): the three most frequent notes across sessions saved with notes, ignoring case, each with a count ("3×") and an amber bar scaled to the most frequent. Hidden before the first session; before any notes: "Your notes will show here after a session where you note what pulled you."
+  8. **Your sky**:
+     - a hint ("One line for each session. Each star is a time you noticed a slip and came back.");
+     - the recall line ("Warm-ups: 5 of 14 answers recalled, 3 partly.", once a warm-up was checked);
+     - history rows, newest first: date, topic, the session as a line (filled to `secondsDone`, with a star at each of `tapSecs`), length ("6 of 10 min", or "1 min demo"), outcome (completed / pulled away / ended early), taps, "warm-up 1 of 2" when `recall` exists, and change (up / hold / ease back).
+     - Rows saved before `tapSecs` existed show their tap count only. Totals only grow, so there is no streak to lose. The first time, it shows "Your first session is ready" instead.
+  9. **Reset everything**, which opens an inline confirmation ("Erase all progress on this device?" with **Erase** / **Cancel**) and then shows Welcome.
 - PRD ref: `prd.md > Screens and Layout > Home (Roadmap)`, `prd.md > Roadmap Progression`, `prd.md > Ending Early and Pulled Away`, `prd.md > Progress on This Device`.
 
 #### Warm-up screen
@@ -628,7 +642,8 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
   "pending": null,
   "history": [
     { "endedAt": "2026-10-05T12:19:00Z", "topic": "Managing risks", "plannedMinutes": 1, "demo": true,
-      "secondsDone": 60, "outcome": "completed", "taps": 2, "recall": null, "change": "up", "stageAfter": 1 }
+      "secondsDone": 60, "outcome": "completed", "taps": 2, "tapSecs": [8, 23], "notes": ["team chat", "team chat"],
+      "recall": null, "change": "up", "stageAfter": 1 }
   ],
   "settings": { "demoLength": true }
 }
@@ -652,7 +667,7 @@ Everything lives in the browser under one `localStorage` key, `refrain.v1`. The 
 | Questions back for review | `reviews` | After each successful warm-up check (`afterCheck`): `box` 1 or 2, `due` as a session count, `kept` once recalled twice. Added during `5-build`; saved progress from before has none, and `load()` merges it over `emptyState()` | Kept; kept ideas stay in the list so Home can count them |
 | "Pick up" note | `resume` | Replaced or cleared at every session end | Kept until the next session ends |
 | Finished session awaiting debrief | `pending` | Written at session end; explanation and `submitted` set at **Get feedback** or **Skip**; cleared when coaching arrives or at **Back to roadmap** | Reopens Teach-back (not sent yet) or the debrief retry state (sent) |
-| Session history | `history` | One row when the progression is applied; `recall` holds the warm-up's got / partly / missed counts when the session opened with a checked warm-up, otherwise `null` | Kept |
+| Session history | `history` | One row when the progression is applied; `recall` holds the warm-up's got / partly / missed counts when the session opened with a checked warm-up, otherwise `null`; `tapSecs` and `notes` (the non-empty ones) are kept for Home's sky, rule at work, and top notes — added during `5-build`, so older rows have neither | Kept |
 | Demo switch | `settings.demoLength` | When toggled | Kept |
 | Running session (timer, taps) | Memory only | During Focus | Discarded, as the PRD requires; the roadmap is unchanged |
 | Everything | — | **Reset everything** deletes the key | Welcome |

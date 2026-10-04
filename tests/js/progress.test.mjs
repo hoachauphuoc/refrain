@@ -3,8 +3,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  afterCheck, backAgainLabel, clock, dueReviews, keptCount, longestStretch, markSegments, planFrom,
-  RING, RING_LENGTH, starPoint, stretches, warmupDue,
+  afterCheck, backAgainLabel, clock, dueReviews, keptCount, longestStretch, markSegments, notesMatching, planFrom,
+  RING, RING_LENGTH, ruleAtWork, starPoint, stretches, topNotes, totals, warmupDue,
 } from "../../static/js/progress.js";
 
 test("the ring starts at the top and fills clockwise", () => {
@@ -131,4 +131,59 @@ test("the back-again line says why the question is back", () => {
   assert.equal(backAgainLabel(missed), "Back again: you missed this on Oct 3.");
   assert.equal(backAgainLabel(partly), "Back again: you partly had this on Oct 3.");
   assert.equal(backAgainLabel(got), "Back again: you had this on Oct 3. Get it once more to keep it.");
+});
+
+// --- Home ---
+
+const row = (endedAt, notes, extra = {}) => ({
+  endedAt, topic: TOPIC, plannedMinutes: 10, demo: false, secondsDone: 600, outcome: "completed",
+  taps: notes.length, tapSecs: notes.map((_, i) => 60 * (i + 1)), notes, recall: null, change: "up", stageAfter: 1, ...extra,
+});
+
+test("totals add up sessions, focus, returns, recall, and ideas kept", () => {
+  const history = [
+    row("2026-10-04T10:00:00Z", ["team chat"], { recall: { got: 1, partly: 1, missed: 0 } }),
+    row("2026-10-04T09:00:00Z", ["team chat", "email ping"], { secondsDone: 300 }),
+  ];
+  const kept = [{ kept: true }, { kept: false }];
+  assert.deepEqual(totals(history, kept), {
+    sessions: 2, seconds: 900, returns: 3, kept: 1, recall: { got: 1, partly: 1, asked: 2 },
+  });
+  assert.deepEqual(totals([], undefined), { sessions: 0, seconds: 0, returns: 0, kept: 0, recall: { got: 0, partly: 0, asked: 0 } });
+});
+
+test("a note counts for the rule when it names one of the rule's notes", () => {
+  assert.equal(notesMatching(["Team chat", "team chat again", "email", ""], ["team chat"]), 2);
+  assert.equal(notesMatching(["phone"], []), 0);
+});
+
+const RULE = {
+  text: "If team chat pings, then I'll note it and reply at the break.",
+  createdAt: "2026-10-04T11:05:00Z", fromNotes: ["team chat"], pulledAway: false,
+};
+
+test("rule at work follows the rule's notes through the last sessions, oldest first", () => {
+  const history = [
+    row("2026-10-04T11:00:00Z", ["email ping"]),
+    row("2026-10-04T10:00:00Z", ["team chat"]),
+    row("2026-10-04T09:00:00Z", ["team chat", "team chat"]),
+  ];
+  assert.deepEqual(ruleAtWork(RULE, history), { counts: [2, 1, 0], trend: "less" });
+  assert.deepEqual(ruleAtWork(RULE, history, 2), { counts: [1, 0], trend: "less" });
+  assert.deepEqual(ruleAtWork(RULE, [row("x", ["team chat"]), row("w", [])]), { counts: [0, 1], trend: "more" });
+  assert.deepEqual(ruleAtWork(RULE, [row("x", ["team chat"])]), { counts: [1], trend: null });
+});
+
+test("rule at work needs a rule with notes, and skips rows saved before notes were kept", () => {
+  const old = { ...row("2026-10-04T10:00:00Z", []), notes: undefined, tapSecs: undefined, taps: 3 };
+  assert.equal(ruleAtWork(RULE, [old]), null);
+  assert.equal(ruleAtWork(RULE, []), null);
+  assert.equal(ruleAtWork(null, [row("x", ["team chat"])]), null);
+  assert.equal(ruleAtWork({ ...RULE, fromNotes: [] }, [row("x", ["team chat"])]), null); // pulled away, no notes
+});
+
+test("top notes are the most frequent, ignoring case, with the first spelling kept", () => {
+  const history = [row("b", ["Team chat", "phone"]), row("a", ["team chat", "email", "phone", "team chat"])];
+  assert.deepEqual(topNotes(history), [{ note: "Team chat", count: 3 }, { note: "phone", count: 2 }, { note: "email", count: 1 }]);
+  assert.deepEqual(topNotes([{ ...row("c", []), notes: undefined }]), []);
 });

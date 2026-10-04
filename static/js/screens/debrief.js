@@ -226,6 +226,9 @@ function historyRow(pending, progression) {
     secondsDone: pending.secondsDone,
     outcome: pending.outcome,
     taps: pending.taps.length,
+    // When each return happened and what pulled them, for Home's sky and "What pulls you away most".
+    tapSecs: pending.taps.map((tap) => tap.atSec),
+    notes: pending.taps.map((tap) => tap.note).filter(Boolean),
     recall: pending.recall ?? null,
     change: progression.change,
     stageAfter: progression.newStageIndex,

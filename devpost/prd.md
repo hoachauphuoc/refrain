@@ -38,14 +38,16 @@ A headline ("Train your focus and your memory, from your own words."); a short p
 One screen, four fields stacked in this order: age; training goal (a few example goals the user can tap to fill in — for example "Study for a certification after work", "Revise for exams", "Remember more of what I read" — or type their own); minutes available per day; maximum minutes per session. **Build my roadmap** at the bottom.
 
 ### Home (Roadmap)
-The main screen after the survey, in this order (on wide screens the roadmap spans the top, the start and pick-up cards sit on the left, and the rule card on the right):
+The main screen after the survey, in this order. On wide screens, the roadmap, the counters, and the sky span the page; the start and pick-up cards sit on the left; the rule and "What pulls you away most" on the right.
 1. The goal as a heading.
 2. The roadmap as a path of stages (session length, sessions per day): finished stages are lit, the current stage glows as a star, and later stages are dimmed.
-3. "What will you study?" field, the **Demo length (1 minute)** switch, and **Start session**. If questions are waiting, the button reads **Start with warm-up**. (Moved up during `5-build`, so the main action comes right after the plan.)
-4. **Pick up where you left off** card — only when the last session ended with "I was pulled away" and a note was written: where they stopped and their next step.
-5. The active if-then rule on its own card (or "Your first rule will come from your first session"), with where it came from: "From your notes: “team chat”, “email ping”." (or, for a rule written after being pulled away with no notes, "Written after a session you were pulled away from.").
-6. Session history: one line of running totals — sessions, minutes focused, and warm-up answers recalled ("6 sessions · 4 minutes focused · 1 of 4 warm-up answers recalled") — then one row per session: date, length, outcome (completed / pulled away / ended early), distraction taps, the warm-up result when the session opened with one ("warm-up 1 of 2"), and the roadmap change (up / hold / ease back). Totals only ever grow; there is no streak.
-7. A small **Reset everything** link at the bottom.
+3. Four counters, once there is a session: sessions, minutes focused, returns (taps), and ideas kept. They count up when Home first appears. (Added during `5-build`.)
+4. "What will you study?" field, the **Demo length (1 minute)** switch, and **Start session**. If questions are waiting, the button reads **Start with warm-up**. (Moved up during `5-build`, so the main action comes right after the plan.)
+5. **Pick up where you left off** card — only when the last session ended with "I was pulled away" and a note was written: where they stopped and their next step.
+6. The active if-then rule on its own card (or "Your first rule will come from your first session"), with where it came from: "From your notes: “team chat”, “email ping”." (or, for a rule written after being pulled away with no notes, "Written after a session you were pulled away from."). Under it, **Rule at work**: how often those notes came up in the last few sessions, oldest first, as small bars and in words ("“team chat” came up 2 → 1 → 0 times in your last 3 sessions."), marked **Less often**, **About the same**, or **More often**. (Added during `5-build`.)
+7. **What pulls you away most**: the three most frequent notes across all sessions, each with a count and a bar. (Added during `5-build`.)
+8. **Your sky**: the warm-up recall line ("Warm-ups: 5 of 14 answers recalled, 3 partly."), then one row per session: date, topic, the session as a line with a star at each return, length, outcome (completed / pulled away / ended early), distraction taps, the warm-up result when the session opened with one ("warm-up 1 of 2"), and the roadmap change (up / hold / ease back). Totals only ever grow; there is no streak.
+9. A small **Reset everything** link at the bottom.
 
 ### Warm-up
 The two saved questions, and at most one earlier question back for review with its "Back again" line, each with an answer field; **Check**; then each question shows got it / partly / missed and a one-line answer (and **Idea kept** when a review is recalled the second time); **Start focusing**.
